@@ -17,7 +17,7 @@ ARCHIVE_NAME = "ARCHIVE_IDENTITY.json"
 
 def _execution_files():
     files = []
-    for top in ("src", "pipelines", "env"):
+    for top in ("src", "pipelines", "scripts/gpu"):
         for path in (ROOT / top).rglob("*"):
             # Editable setuptools installations regenerate these metadata files.
             # They are neither reviewed source nor portable between installations;

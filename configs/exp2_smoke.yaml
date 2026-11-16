@@ -1,22 +1,22 @@
-# Exp 2 smoke — protocol II.4.4 (in-place revision of 2026-09-25), 0.5 step 10a.
+# Exp 2 smoke — step 10a (revised 2026-09-25).
 # TBD convention: see configs/models.yaml header. Nothing here is a tunable of the experiment:
 # the smoke only shows that the chain runs on the real components. Its results never enter the
 # proposal or the paper, and they never change the controller prompt, the formatter, K, the
-# starting population or the controller's inputs (App. B.1).
+# starting population or the controller's inputs.
 #
 # One short pod session after step 10 and before step 11, on the fixed formal pod with the 203-state
-# numeric check (II.10). The controller prompt is the formal one, byte for byte (its hashes go into
+# numeric check. The controller prompt is the formal one, byte for byte (its hashes go into
 # the report); the seed namespace and the cache key use their own experiment id, so nothing here
 # shares a controller answer with Exp 1 or Exp 2.
 
 design:
-  arms: [A1]                        # II.4.4: A1 only -- no A1 - B contrast may decide anything
-  k: 4                              # II.8.3, unchanged; the loop refuses any other value
-  channel: identity                 # no channel in Exp 2 (II.1.3)
+  arms: [A1]                        # A1 only -- no A1 - B contrast may decide anything
+  k: 4                              # paper Sec. 4.4, unchanged; the loop refuses any other value
+  channel: identity                 # no channel in Exp 2 (paper Sec. 4.3)
 
 x0:
   # 30 E-UNSAFE states of the UNLABELED POOL by a seeded shuffle; their y* is read through the
-  # label gate under purpose DRY_RUN (II.2.4: pool + DRY_RUN is the one allowed combination).
+  # label gate under purpose DRY_RUN (paper Sec. 4.2: pool + DRY_RUN is the one allowed combination).
   # D_Exp1, D_fit, D_gate and D_gate_reserve are never touched.
   source: unlabeled_pool
   label_purpose: dry_run
@@ -26,14 +26,14 @@ x0:
 
 run:
   run_id_prefix: exp2_smoke
-  # The controller's seed namespace and hence its cache key (II.4.4: an experiment id of its own).
+  # The controller's seed namespace and hence its cache key (an experiment id of its own).
   experiment: exp2_smoke
   seed_component: exp2_smoke_run
   randomization_seed_component: exp2_smoke_randomization  # one arm: recorded, never matters
 
 report:
-  # II.4.4 report items. The accept-rate x (y1_obs, y2_obs) table is given for these rounds
-  # (the III.1.2 evidence-sensitivity table); the prompt spot-check covers at least this many
+  # report items. The accept-rate x (y1_obs, y2_obs) table is given for these rounds
+  # (the paper Sec. 4.6 evidence-sensitivity table); the prompt spot-check covers at least this many
   # trajectories, every round of each.
   evidence_rounds: [1, 2]
   prompt_spot_check_min_trajectories: 3

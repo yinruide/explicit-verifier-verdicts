@@ -1,4 +1,4 @@
-"""verifier_card.md for a configuration of the one scoring factory (App. A.2; task 2026-09-24 s. 3).
+"""verifier_card.md for a configuration of the one scoring factory.
 
     python -m rafr.verifiers.cards.factory_card --config-id sg_2b.native --config-id enc_paradetox
     python -m rafr.verifiers.cards.factory_card --from-config          # V1 and V2 as configured
@@ -12,7 +12,7 @@ imports -- nothing is typed in by hand and no weights are loaded:
   every scores-table row carries;
 * how tau_i is determined: pending step 7 (``tau-frozen``) until that git tag exists, then the
   value and fit record read from ``frozen/tau.json`` AS COMMITTED at the tagged commit (not the
-  working tree); the rule itself (F1-max on D_fit, plateau midpoint, II.4.1 / C.17) with the
+  working tree); the rule itself (F1-max on D_fit, plateau midpoint, paper Sec. 5) with the
   candidate threshold set and the plateau rule of ``rafr.validity.tau``;
 * score direction and range, what the score is read from, the batch cap and the inference batch
   size, the text budget and truncation;
@@ -49,8 +49,8 @@ VERSION_KEYS = ("python", "torch", "cuda", "transformers", "tokenizers", "huggin
 
 
 def step06_meta(config_id: str) -> dict[str, Any] | None:
-    """The step 6 scoring run's meta for ``config_id`` once ``env/step06_gpu.py sync`` has
-    pulled it, else None."""
+    """The step 6 scoring run's meta for ``config_id`` once the RunPod driver's ``sync`` (not
+    released) has pulled it, else None."""
     path = paths.DATA / "step06" / "pulled" / "meta" / f"{config_id}.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
@@ -100,7 +100,7 @@ def fit_for(config_id: str, payload: dict[str, Any] | None) -> dict[str, Any] | 
 
 
 def tau_rule_lines() -> list[str]:
-    """How tau_i is determined (II.4.1, C.17), as ``rafr.validity.tau`` implements it."""
+    """How tau_i is determined (paper Sec. 5), as ``rafr.validity.tau`` implements it."""
     return [
         "How tau_i is determined (II.4.1, C.17; `rafr.validity.tau.fit_tau`):",
         "",
@@ -192,7 +192,7 @@ def render_card(
     cfg = factory.config_for(config_id, prompt_dir)
     m = cfg.model
     # the card describes the formal verifier: formal scores come from a cuda record only
-    # (D-2026-09-24c point 6)
+    # (point 6)
     rec = factory.find_probe_record(m.model_id, records_dirs, device_kind="cuda")
     info = rec.config_meta(config_id)
     meta, env = rec.meta, rec.environment

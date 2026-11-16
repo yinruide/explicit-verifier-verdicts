@@ -281,7 +281,7 @@ def _y_star(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def test_smoke_states_come_from_outside_the_formal_sets(tmp_path: Path):
-    """Stop point D (2026-10-31): E-incorrect smoke = the pool's E-UNSAFE (DRY_RUN),
+    """The smokes (2026-10-31): E-incorrect smoke = the pool's E-UNSAFE (DRY_RUN),
     E-correct smoke = D_gate's SAFE minus the cohort (EXT_SMOKE); drawn without replacement."""
     from pipelines import _ext_smoke as X
 
@@ -324,7 +324,7 @@ def test_the_label_gate_of_the_three_new_purposes(tmp_path: Path):
         (Split.UNLABELED_POOL, purposes.CALIBRATION_DIAG),
         (Split.D_EXP1, purposes.ECORRECT_COHORT),
         (Split.D_GATE_RESERVE, purposes.ECORRECT_COHORT),
-        # stop point D's E-correct smoke opens D_gate only
+        # the E-correct smoke opens D_gate only
         (Split.D_EXP1, purposes.EXT_SMOKE),
         (Split.UNLABELED_POOL, purposes.EXT_SMOKE),
         (Split.D_FIT, purposes.EXT_SMOKE),

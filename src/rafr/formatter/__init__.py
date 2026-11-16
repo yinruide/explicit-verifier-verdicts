@@ -1,4 +1,4 @@
-"""Observation formatter — the ONLY place in the code base that may branch on arm (II.1.4).
+"""Observation formatter — the ONLY place in the code base that may branch on arm (paper App. E).
 
 ``format_observation`` is a pure function of the s^obs interface (``Observation``: s1_obs,
 s2_obs, tau1, tau2), the arm, and — for permuted-B only — the donor block. It never reads
@@ -7,15 +7,15 @@ receives the returned string and nothing else.
 
 Invariants with tests:
 
-* A1 contains tau1 and tau2 (II.7.1).
-* B = A1 + one blank line + the derived block; nothing else differs (II.1.4, I.6).
+* A1 contains tau1 and tau2 (paper Sec. 3).
+* B = A1 + one blank line + the derived block; nothing else differs (paper App. E, Sec. 5).
 * B's fields are computed by :func:`rafr.formatter.fields.compute_fields` from
-  (s1_obs, s2_obs, tau1, tau2) only; conflict direction is ``N/A`` on agreement (II.7.2).
-* permuted-B renders the donor's whole block verbatim over the state's own A1 (II.7.3).
+  (s1_obs, s2_obs, tau1, tau2) only; conflict direction is ``N/A`` on agreement (paper Sec. 3).
+* permuted-B renders the donor's whole block verbatim over the state's own A1 (paper Sec. 3).
 * Rendering rules: every score, threshold and distance has ``templates.SIGNIFICANT_DIGITS`` (5)
   significant digits, as a plain decimal with its trailing zeros (``0.83412``, ``0.0031513``,
   ``0.000033283``; zero ``0.0000``); distances are signed (``+0.33412`` / ``-0.062000``) and a
-  zero distance is ``+0.0000`` (2026-09-25, decisions.md D-2026-09-25b). Flags and
+  zero distance is ``+0.0000`` (2026-09-25). Flags and
   agreement ``yes`` / ``no``; checkers are ``Checker A`` / ``Checker B``, never the models'
   real names (2026-09-18).
 """
@@ -80,7 +80,7 @@ def render_a1(obs: Observation) -> str:
 
 
 def render_derived(fields: UncertaintyFields) -> str:
-    """The block B appends to A1 (the six II.7.2 fields plus their reading guide)."""
+    """The block B appends to A1 (the six paper Sec. 3 fields plus their reading guide)."""
     return tpl.DERIVED_BLOCK.format(
         v1_name=tpl.V1_NAME,
         v2_name=tpl.V2_NAME,

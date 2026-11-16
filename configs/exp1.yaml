@@ -1,30 +1,30 @@
-# Exp 1 — fixed-state controlled identification (protocol 0.2, II.1.3, II.8.2, II.9.3).
+# Exp 1 — fixed-state controlled identification (paper Sec. 4.3, 4.6, paper Sec. 3).
 # TBD convention: see configs/models.yaml header.
 
 design:
-  arms: [A1, B, permuted_B]         # II.7; primary contrast A1 - B, permuted_B secondary
-  lambdas: [low, mid, high]         # II.5.2 three levels; fully crossed within-state
-  states_split: d_exp1              # shared across all 9 cells (II.2.4)
+  arms: [A1, B, permuted_B]         # paper Sec. 3; primary contrast A1 - B, permuted_B secondary
+  lambdas: [low, mid, high]         # paper Sec. 4.3 three levels; fully crossed within-state
+  states_split: d_exp1              # shared across all 9 cells (paper Sec. 4.2)
 
 analysis:
-  # III.1.2 (v0.8). Primary D_i uses ONLY the two extreme levels; lambda_mid stays out of the
+  # paper Sec. 4.6. Primary D_i uses ONLY the two extreme levels; lambda_mid stays out of the
   # primary difference-in-differences and appears as a secondary result (the three-level
-  # Delta_FA(lambda) curve, for the monotonicity shape in III.2.3).
-  primary_lambdas: [high, low]      # LOCKED v0.8 (III.1.2)
+  # Delta_FA(lambda) curve, for the monotonicity shape).
+  primary_lambdas: [high, low]      # LOCKED (paper Sec. 4.6)
   secondary_lambdas: [low, mid, high]
   bootstrap:
     # 95% percentile bootstrap, resampling unit = x0 (one state per x0).
-    method: percentile_bootstrap    # LOCKED v0.8 (III.1.2)
-    n_boot: 10000                   # LOCKED v0.8 (III.1.2)
+    method: percentile_bootstrap    # LOCKED (paper Sec. 4.6)
+    n_boot: 10000                   # LOCKED (paper Sec. 4.6)
     # The bootstrap seed is this run's seed, derived from data.yaml seeds.master (component
-    # "exp1_run"). III.1.2 only requires that the seed be recorded and saved; the resolved
+    # "exp1_run"). The design only requires that the seed be recorded and saved; the resolved
     # value goes into the analysis output and the run snapshot.
-  # II.9.3 / III.1.2 (v0.9): D_Exp1 holds E-UNSAFE states only, so the false accept rate's
+  # paper Sec. 3, 4.6: D_Exp1 holds E-UNSAFE states only, so the false accept rate's
   # denominator is D_Exp1 in full (N = 300); step11 reports N and stops on a non-UNSAFE state.
   report_effective_n: true
 
 outcome:
-  # decision-level false accept rate = P(accept | state judged UNSAFE by E) (II.9.3).
+  # decision-level false accept rate = P(accept | state judged UNSAFE by E) (paper Sec. 3).
   # Decision 10 (2026-09-16): E judges every D_Exp1 state ONCE, shared by all arms, and its
   # output file + hash must exist BEFORE any controller call is made in step11.
   judge_before_controller: true
@@ -33,11 +33,11 @@ outcome:
 controller:
   # Decision 8 (2026-09-16): controller sees x0 as well as x_t (Exp 1 and Exp 2 alike).
   show_x0: true
-  parse_max_retries: 2              # LOCKED v0.6 (II.8.2): 2 retries, 3 attempts total
-  parse_fail_alert_threshold: 0.02  # LOCKED v0.6 (II.8.2): report loudly above 2% in any arm x lambda cell
+  parse_max_retries: 2              # LOCKED (paper Sec. 4.6): 2 retries, 3 attempts total
+  parse_fail_alert_threshold: 0.02  # LOCKED (paper Sec. 4.6): report loudly above 2% in any arm x lambda cell
 
 permuted_b:
-  # II.7.3 (v1.0, C.22; decision 6 of 2026-09-16 as revised by D-2026-09-25b): the whole
+  # paper Sec. 3 (of 2026-09-16 as revised): the whole
   # six-field block of another state, derangement (no state keeps its own block), ONE table
   # keyed by the seed only -- every state has the same donor at all three lambda levels and shows
   # that donor's block of the current level -- written to disk for reproducibility. Keying by
@@ -48,5 +48,5 @@ permuted_b:
 
 run:
   # seed derives from data.yaml seeds.master (component "exp1_run"); it is written on every
-  # log row and into the run snapshot (II.10).
+  # log row and into the run snapshot.
   run_id_prefix: exp1

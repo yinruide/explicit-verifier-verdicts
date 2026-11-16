@@ -1,31 +1,31 @@
-"""One accept / rewrite decision (II.8.1, II.8.2).
+"""One accept / rewrite decision (paper Sec. 3, 4.6).
 
 The controller receives ``x0``, ``x_t`` and an already-formatted observation STRING. It never
 sees an ``Observation`` object, scores, labels, arm or lambda: those are attached to the log
-by the caller. There is no arm branch here (II.1.4; enforced by tests/test_boundaries.py).
+by the caller. There is no arm branch here (paper App. E; enforced by tests/test_boundaries.py).
 
-Parse-failure handling (preregistered, II.8.2):
+Parse-failure handling (fixed before the runs, paper Sec. 4.6):
 
 * structured output (JSON schema) on every call;
 * at most ``PARSE_MAX_RETRIES`` retries; a retry re-sends the ORIGINAL request with the fixed
   retry sentence (same for every arm) appended at the end of the user turn — the previous
-  raw output is NOT carried over (decision, group 3, 2026-09-16). The attempt index enters
+  raw output is NOT carried over (decision, 2026-09-16). The attempt index enters
   the seed and the cache key, so every retry is an independent fresh sample;
 * still failing -> ``parse_fail``; every attempt is logged.
 
-Seed derivation (decision, group 3): ``per_state`` seeds are derived from
+Seed derivation (design decision): ``per_state`` seeds are derived from
 ``(base_seed, experiment, state_id, t)``, where ``base_seed`` is
 ``component_seed(master, "controller")`` — the experiment name (``exp1`` / ``exp2``) makes the
 two experiments' samples independent and keeps their cache keys apart.
 
 The system prompt has one substitution slot, ``{k}``: the decision budget the model is told
 about. It is filled by the EXPERIMENT RUNNER through :func:`with_round_budget` (the authors,
-2026-09-18): Exp 1 passes 1 (one decision per state, II.8.2) and Exp 2 passes ``K_MAX_ROUNDS``
-(II.8.3). Telling the single-shot Exp 1 controller that it has four decisions would bias it
-towards ``rewrite``, and the accept rate is the primary outcome. :func:`decide` refuses a
-config whose slot is still unfilled. The user turn (rewrite template) has ``{x0}``, ``{x_t}``
-and ``{observation}``, filled in one pass (:func:`rafr.llm.client.fill_slots`) so that a
-text containing a slot name is copied verbatim.
+2026-09-18): Exp 1 passes 1 (one decision per state, paper Sec. 4.6) and Exp 2 passes
+``K_MAX_ROUNDS`` (paper Sec. 4.4). Telling the single-shot Exp 1 controller that it has four
+decisions would bias it towards ``rewrite``, and the accept rate is the primary outcome.
+:func:`decide` refuses a config whose slot is still unfilled. The user turn (rewrite template) has
+``{x0}``, ``{x_t}`` and ``{observation}``, filled in one pass (:func:`rafr.llm.client.fill_slots`)
+so that a text containing a slot name is copied verbatim.
 
 The part of the rewrite template that only makes sense when x0 is shown -- the sentence
 explaining why the original is there and the "Original sentence" block -- is fenced by two
@@ -193,7 +193,7 @@ class DecisionLabels:
     ``experiment`` is the seed namespace (``"exp1"`` / ``"exp2"``): it is fixed by the runner
     module, not by the run's log label, so a dry run of Exp 1 and Exp 2 also draws
     independently. ``state_id`` is the seed's state key: Exp 1 passes the D_Exp1 state id,
-    Exp 2 (and its smoke) the x0 id -- never an id that carries the arm (II.8.2).
+    Exp 2 (and its smoke) the x0 id -- never an id that carries the arm (paper Sec. 4.6).
     """
 
     state_id: str
@@ -204,7 +204,7 @@ class DecisionLabels:
 
 
 def call_seed(cfg: ControllerConfig, labels: DecisionLabels) -> int | None:
-    """Seed of attempt 0 for this decision (decision, group 3: experiment enters the key)."""
+    """Seed of attempt 0 for this decision (design decision: experiment enters the key)."""
     if cfg.base_seed is None:
         return None
     if cfg.seed_scheme == "fixed":
@@ -238,7 +238,7 @@ SYSTEM_K_NOUN = " decisions"
 
 def render_system_prompt(template: str, k: int) -> str:
     """Fill the ``{k}`` slot with the caller's decision budget. With K = 1 the noun after the
-    slot is singular ("at most 1 decision in total", 2026-09-25, D-2026-09-25e); every
+    slot is singular ("at most 1 decision in total", 2026-09-25); every
     other character is kept, and the prompt file itself is unchanged."""
     k = int(k)
     if k == 1:

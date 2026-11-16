@@ -1,8 +1,8 @@
 """Exp 2 extension (post-pilot, 2026-10-31): full pairing over the starts. Code only in
 this batch: nothing here has been run, and every run waits for the authors' go-ahead.
 
-Not a preregistered step: ``pipelines/step12_exp2.py``, its run directory, its assignment and its
-statistics are only read. Two commands, each run in a directory of its own:
+Not part of the primary runs: ``pipelines/step12_exp2.py``, its run directory, its assignment and
+its statistics are only read. Two commands, each run in a directory of its own:
 
 * ``loop --cohort e_incorrect --arms ...``: the 300 D_Exp1 starts (the original x1, sha256
   checked). The new arms (priority P0 ``no_verifier B_pihat``, P1 ``verdict_only``) run from
@@ -15,11 +15,11 @@ statistics are only read. Two commands, each run in a directory of its own:
   Seed namespace ``exp2_ecorrect``.
 * ``judge --run-id ...``: E's post-loop pass on the laptop, as step 12's (t = 1 from step 5's y*:
   D_Exp1 under EXP2_T1, or D_gate under ECORRECT_COHORT).
-* ``panel --run-id ...``: every panel member (II.3; detox: Grok 4.6) re-judges every x_T of a
+* ``panel --run-id...``: every panel member (paper Sec. 3; detox: Grok 4.6) re-judges every x_T of a
   judged run on the laptop, as step 12's panel did for the original Exp 2 -- a sensitivity
   analysis (2026-10-31), read by ``analysis/ext_contrasts.py``.
 
-``loop --smoke N`` is stop point D's engineering smoke (2026-10-31;
+``loop --smoke N`` is the engineering smoke (2026-10-31;
 ``pipelines/_ext_smoke.py``): N starts outside every formal set, as step 10a (E-incorrect: the
 pool's E-UNSAFE states; E-correct: D_gate's SAFE states the cohort did not draw), every requested
 arm from every start, t = 1 never reused (verifier arms score it in process and compare it with
@@ -37,7 +37,8 @@ Three segments, as step 12's (2026-10-31): ``starts --cohort C --arms ... [--smo
 on the laptop writes the loop's start manifest (``state_id``, ``x0_id``, ``x0``, ``text`` and the
 arms of each start; no label) and its t = 1 file (the V1 / V2 scores of every start: the original
 round 1 to reuse, or step 6's table to compare with) under ``data/ext/exp2_pod/``, each with a
-``.sha256``; ``env/ext_exp2_gpu.py`` pushes them and runs ``loop --starts-file F --starts-sha256 H
+``.sha256``; the RunPod driver (not released) pushes them and runs ``loop --starts-file F
+--starts-sha256 H
 --t1-file T --t1-sha256 H2 --run-dir D --tau-file P ...`` on the pod, which reads nothing else
 of data/ or runs/; ``judge`` and ``panel`` run on the laptop. A loop with verifier arms takes its
 inputs from a manifest only.
@@ -495,7 +496,7 @@ def _existing_ext_run(run_id: str | None, ext: Mapping[str, Any]) -> Path:
 
 
 def cmd_panel(args: argparse.Namespace, cfgs: Mapping[str, Any], ext: Mapping[str, Any]) -> int:
-    """II.3 / III.1.2: every panel member re-judges every x_T of a judged extension run, exactly
+    """paper Sec. 3, 4.6: every panel member re-judges every x_T of a judged extension run, exactly
     as step 12's ``panel`` did for the original Exp 2 (2026-10-31: a sensitivity
     analysis). One ``panel_<member>.jsonl`` per member in the run directory; resumable."""
     rd = _existing_ext_run(args.run_id, ext)

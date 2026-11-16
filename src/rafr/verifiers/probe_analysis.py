@@ -1,4 +1,4 @@
-"""Step 2 probe analysis: numbers only, no choice (decisions.md D-2026-09-24, section 6).
+"""Step 2 probe analysis: numbers only, no choice (section 6).
 
 Pure numpy. ``pipelines/step02_eval_verifiers.py`` reads the scores and y* (D_fit and the
 unlabeled pool only) and hands arrays in; everything here is a function of those arrays and an
@@ -9,12 +9,12 @@ Notation. ``p`` is the E-UNSAFE share over ALL states (read from the manifest, n
 the judgment is ``1[s >= tau]`` with tau fitted on D_fit (``rafr.validity.tau``: max F1,
 plateau midpoint).
 
-Gate reachability, reading (d) (decisions.md 1): R_lambda^(i) is the share of D_gate's E-UNSAFE
+Gate reachability, reading (d) (1): R_lambda^(i) is the share of D_gate's E-UNSAFE
 states that verifier i judges toxic. Each simulated gate draws ``n_unsafe ~ Binomial(600, p)``
 E-UNSAFE states from the pool, with replacement, the same states for every verifier. Every
 (drawn state, verifier) gets one ``u ~ U(0, 1)`` and one replacement score from q_i (verifier
 i's empirical score distribution over the whole pool, labels unused); at level pi the
-replacement is shown when ``u < pi`` (II.5.2's nested coupling: one u and one replacement per
+replacement is shown when ``u < pi`` (the design's nested coupling: one u and one replacement
 pair, shared by all levels). A draw that picks the same pool state twice counts as two gate
 states, each with its own u and replacement. Pass = both adjacent gaps of a verifier >= delta
 (point estimates); a pair passes jointly when all four gaps do.
@@ -40,7 +40,7 @@ GATE_PIS = (0.0, 0.5, 1.0)
 GATE_DELTAS = (0.10, 0.15)
 SHAPE_BAND = (0.05, 0.95)
 MARGIN_QUANTILES = (0.0, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 1.0)
-#: decisions.md section 4, rule 2: across sizes, a J difference below this picks the smaller.
+# section 4, rule 2: across sizes, a J difference below this picks the smaller.
 J_SIZE_TOLERANCE = 0.02
 
 
@@ -179,7 +179,7 @@ def profanity_strata(
 
 
 # ---------------------------------------------------------------------------------------
-# within-family rule (decisions.md section 4)
+# within-family rule (section 4)
 # ---------------------------------------------------------------------------------------
 
 

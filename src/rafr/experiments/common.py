@@ -141,7 +141,7 @@ def done_keys(decisions_path: Path) -> set[tuple[str, str, str, int]]:
 
 
 def accepted(decision: Decision) -> bool:
-    """Main-analysis accounting (II.8.2): parse_fail counts as NOT accepted."""
+    """Main-analysis accounting (paper Sec. 4.6): parse_fail counts as NOT accepted."""
     return (not decision.parse_fail) and decision.action is Action.ACCEPT
 
 
@@ -150,8 +150,8 @@ def parse_fail_cells(
 ) -> dict[str, dict[str, Any]]:
     """parse_fail rate per arm x ``by``; cells above ``threshold`` are flagged.
 
-    II.8.2 (v0.8): Exp 1 reports the arm x lambda grid (``by="lam"``), Exp 2 the arm x round
-    grid (``by="t"``). ``analysis/parse_fail.py`` produces the full preregistered report; this
+    paper Sec. 4.6: Exp 1 reports the arm x lambda grid (``by="lam"``), Exp 2 the arm x round
+    grid (``by="t"``). ``analysis/parse_fail.py`` produces the full primary report; this
     is the quick in-run version.
     """
     agg: dict[str, list[bool]] = {}

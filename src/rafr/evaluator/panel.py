@@ -1,20 +1,20 @@
-"""The panel: two substitute judges for Exp 2's sensitivity analysis (II.3, III.1.2; v0.9).
+"""The panel: two substitute judges for Exp 2's sensitivity analysis (paper Sec. 3, 4.6).
 
 Grok 4.6 and Qwen3.8-Max each re-judge the x_T of BOTH arms after Exp 2 has finished. Each
 member is its own substitute judge: its labels give its own TFR_A1 - TFR_B and CI
 (``analysis.exp2_tfr.panel_sensitivity``), nothing is merged across members and there is no
-tie rule. The panel never enters tau, the gate or Exp 1 (II.3, App. B.1); it runs on the laptop
+tie rule. The panel never enters tau, the gate or Exp 1 (paper Sec. 3); it runs on the laptop
 after the loop, never on the pod.
 
-**Same prompt as E** (II.3): the member configs carry no prompt of their own. The prompt is
+**Same prompt as E** (paper Sec. 3): the member configs carry no prompt of their own. The prompt is
 ``models.evaluator.prompt_file``, read and checked against ``models.evaluator.prompt_sha256``
 by :func:`rafr.evaluator.judge.build_config`, rendered by the same one-pass slot fill, sent as
 ONE plain user message with no system prompt and no structured output, and the answer text is
 parsed by E's parser (:func:`rafr.evaluator.judge.parse_response`). The decoding block is each
 member's own (``models.panel.members.<name>.decoding``), because the knobs differ by provider.
 
-Failures (II.9.1 rule for E, applied here): a refusal / block or an unreadable answer is retried
-twice with the attempt index bumped. What a member's final failure does to the analysis is
+Failures (paper Sec. 3 rule for E, applied here): a refusal / block or an unreadable answer is
+retried twice with the attempt index bumped. What a member's final failure does to the analysis is
 ``models.panel.on_failure``: ``abort`` stops the step; ``exclude_and_report`` (2026-09-24)
 records the failure, leaves that trajectory out of THAT member's TFR only, and reports the count
 per arm.
@@ -61,7 +61,7 @@ class PanelMember:
     version: str | None
     decoding: dict[str, Any]
     prompt_template: str  # E's prompt, verbatim
-    prompt_sha256: str  # E's prompt hash (II.3: same prompt)
+    prompt_sha256: str  # E's prompt hash (paper Sec. 3: same prompt)
     network: dict[str, Any] = field(default_factory=dict)
 
     @property
@@ -181,7 +181,7 @@ class PanelJudgment(BaseModel):
 
 
 def judge_text(client: LLMClient, member: PanelMember, text: str) -> PanelJudgment:
-    """One member, one text: up to ``PARSE_MAX_RETRIES + 1`` attempts, as for E (II.9.1).
+    """One member, one text: up to ``PARSE_MAX_RETRIES + 1`` attempts, as for E (paper Sec. 3).
 
     Returns a judgment with ``label=None`` and every attempt's reason when all attempts fail;
     what that means for the run is the caller's ``on_failure`` rule.
@@ -244,7 +244,7 @@ def rejudge_x_t(
     on_failure: str,
     echo: Callable[[str], None] | None = None,
 ) -> dict[str, dict[str, Any]]:
-    """Every member re-judges the x_T of every trajectory, both arms (III.1.2).
+    """Every member re-judges the x_T of every trajectory, both arms (paper Sec. 4.6).
 
     One file per member, ``panel_<member>.jsonl``, one row per distinct x_T text (the members
     see text only, so identical terminal texts share a judgment); rows are appended as they are

@@ -1,13 +1,13 @@
-"""Manipulation-validity gate (II.6.1).
+"""Manipulation-validity gate (paper Sec. 4.3).
 
 Hard check (the only one):
 
     R_low^(i) > R_mid^(i) > R_high^(i)  and  adjacent gaps >= delta_R,   i = 1, 2
 
-Six R estimates, four adjacent-gap conditions. The level names are the ones fixed in II.5.1
-(v0.8): lambda1 = lambda_low, lambda2 = lambda_mid, lambda3 = lambda_high.
+Six R estimates, four adjacent-gap conditions. The level names are the ones fixed in paper Sec. 4.3
+lambda1 = lambda_low, lambda2 = lambda_mid, lambda3 = lambda_high.
 
-**What R is: gate metric (d)** (decisions.md D-2026-09-24 section 1). R_lambda^(i) is computed
+**What R is: gate metric (d)** (section 1). R_lambda^(i) is computed
 on the E-UNSAFE states of the gate split only -- the share of them with 1[s~_i >= tau_i], i.e.
 the verifier's recall on the post-channel scores (accuracy on that subset). The states E judged
 SAFE take no part in the verdict or in its CI; :func:`descriptive_accuracy` reports accuracy and
@@ -15,16 +15,16 @@ balanced accuracy over the WHOLE split next to it, descriptively. :func:`detecti
 builds the per-state indicators on the subset; everything downstream (point estimates,
 bootstrap) works on those vectors, so the CI resamples E-UNSAFE states only.
 
-**Verdict rule (v0.8, II.6.1): POINT ESTIMATES.** All four adjacent gaps must have a point
+**Verdict rule (paper Sec. 4.3): POINT ESTIMATES.** All four adjacent gaps must have a point
 estimate >= delta_R. :func:`ladder_ci` separately produces 95% percentile bootstrap CIs for
 the six R and the four gaps, resampling STATES; those intervals are carried on the result and
 written to the attempt record for reporting only. :func:`ladder_check` cannot compute them
 and never reads them - a CI is passed in already formed, so it cannot influence the verdict.
-The pilot makes no significance claims, hence no multiplicity correction (III.1.3).
+The pilot makes no significance claims, hence no multiplicity correction (paper App. B).
 
 P(at least one wrong) is descriptive only. The gate may run at most ``GATE_MAX_ATTEMPTS``
 (= 2) times; the second attempt must use D_gate_reserve, never the same D_gate data. r_ref is
-not an input anywhere here (II.1.1).
+not an input anywhere here (paper Sec. 3).
 """
 
 from __future__ import annotations
@@ -52,10 +52,10 @@ LADDER = (Lambda.LOW, Lambda.MID, Lambda.HIGH)
 VERIFIER_KEYS = ("v1", "v2")
 
 GATE_POPULATION = "e_unsafe"
-"""decisions.md D-2026-09-24 section 1, gate metric (d): R on the E-UNSAFE states only."""
+"""section 1, gate metric (d): R on the E-UNSAFE states only."""
 
 GAP_TOLERANCE = 1e-9
-"""Numerical slack on the `gap >= delta_R` comparison, NOT a loosening of II.6.1.
+"""Numerical slack on the `gap >= delta_R` comparison, NOT a loosening of paper Sec. 4.3.
 
 R values are ratios of counts, so a gap that is exactly delta_R is a realistic outcome — and
 in binary floating point it often is not: 170/200 - 140/200 evaluates to 0.1499999999999999,
@@ -115,7 +115,7 @@ LEVEL_PAIRS = ((Lambda.LOW, Lambda.MID), (Lambda.MID, Lambda.HIGH), (Lambda.LOW,
 def paired_correctness_correlation(
     vectors: Mapping[str, Mapping[Lambda, Sequence[int]]],
 ) -> dict[str, dict[str, dict[str, Any]]]:
-    """III.1.3 / App. D: per verifier and pair of levels, the phi correlation of the correctness
+    """paper App. B: per verifier and pair of levels, the phi correlation of the correctness
     indicators over the SAME E-UNSAFE states (correct = detected, gate metric (d)), with the 2x2
     counts. The pairing is what shrinks the variance of a gap; descriptive only, never part of
     the verdict. ``phi`` is None where one level's vector is constant (undefined)."""
@@ -143,7 +143,7 @@ def descriptive_accuracy(
 ) -> dict[str, dict[str, dict[str, float]]]:
     """Accuracy and balanced accuracy over the WHOLE split, per verifier and level.
 
-    Descriptive only (task 2026-09-24 section 2): reported next to the verdict, never part of it.
+    Descriptive only: reported next to the verdict, never part of it.
     """
     y = [int(v) for v in y_true]
     out: dict[str, dict[str, dict[str, float]]] = {v: {} for v in VERIFIER_KEYS}
@@ -179,7 +179,7 @@ def ladder_ci(
     seed: int = 0,
     alpha: float = BOOTSTRAP_ALPHA,
 ) -> dict[str, Any]:
-    """95% percentile bootstrap CIs for the six R and the four gaps (II.6.1, v0.8).
+    """95% percentile bootstrap CIs for the six R and the four gaps (paper Sec. 4.3).
 
     ``correct[verifier][lambda]`` is the per-state correctness indicator vector; all six
     vectors must be aligned on the same states, in the same order. The resampling UNIT is the
@@ -187,7 +187,7 @@ def ladder_ci(
     structure that makes the gaps precise is preserved.
 
     Reporting material only: it does not enter :func:`ladder_check`'s verdict, and no
-    multiplicity correction is applied (III.1.3).
+    multiplicity correction is applied (paper App. B).
     """
     missing = [
         (v, lam.value) for v in VERIFIER_KEYS for lam in LADDER if lam not in correct.get(v, {})
@@ -248,7 +248,7 @@ def ladder_check(
 ) -> LadderResult:
     """``r[verifier][lambda]`` -> pass/fail with every failed condition named.
 
-    The verdict is formed from the POINT estimates alone (II.6.1, v0.8). ``ci`` is an already
+    The verdict is formed from the POINT estimates alone (paper Sec. 4.3). ``ci`` is an already
     computed :func:`ladder_ci` block, carried onto the result for the report and nothing else;
     so are ``descriptive`` (whole-split accuracy) and ``n_states``.
     """
@@ -322,7 +322,7 @@ def record_attempt(
         "gaps": result.gaps,
         "failed_conditions": result.failed_conditions,
         "p_at_least_one_wrong": result.p_at_least_one_wrong,
-        "ci": result.ci,  # reporting only (II.6.1): the verdict above is the point estimate
+        "ci": result.ci,  # reporting only (paper Sec. 4.3): the verdict above is the point estimate
         "population": result.population,  # gate metric (d): R on the E-UNSAFE states
         "n_states": result.n_states,
         "descriptive_whole_split": result.descriptive,  # never part of the verdict

@@ -78,7 +78,7 @@ def reconstruct_original_channel(
     """No calls/writes: compare channel observations to original A1 decision rows.
 
     The original channel.jsonl is an assignment log, not the observed evidence. It is
-    deliberately not used as a channel reference (handoff 6.1). Independently replay
+    deliberately not used as a channel reference. Independently replay
     every original arm's request and permutation to protect prompt and seed identity.
     """
     cfg = controller_cfg or build_controller_config(source.master_seed, 1)

@@ -1,4 +1,4 @@
-"""Fake data for the analysis dry run (0.5 step 10, tag ``analysis-preregistered``).
+"""Fake data for the analysis dry run (step 10; the analysis code was then frozen, before Exp 1).
 
 NO number produced here is an experimental result. Nothing here reads a real label, score,
 threshold, channel file or controller output: every value is drawn from the seeds below.
@@ -74,7 +74,7 @@ def fake_exp1_rows(
     rows: list[dict[str, Any]] = []
     for i in range(n_states):
         sid, x0 = f"fake-{i}-g1", f"fake-{i}"
-        e_label = "UNSAFE"  # D_Exp1 holds E-UNSAFE states only (v0.9, C.16)
+        e_label = "UNSAFE"  # D_Exp1 holds E-UNSAFE states only
         s1, s2 = r.random(), r.random()
         for lam in ("low", "mid", "high"):
             d = {"low": 0.0, "mid": 0.1, "high": 0.25}[lam]
@@ -213,7 +213,7 @@ FAKE_GATE_R: dict[str, dict[str, float]] = {
     "v1": {"low": 0.70, "mid": 0.50, "high": 0.30},
     "v2": {"low": 0.65, "mid": 0.48, "high": 0.31},
 }
-"""Fake D_gate ladder for the drift table (II.6.3). Invented, not step 9's numbers."""
+"""Fake D_gate ladder for the drift table (paper App. C.1, D.1). Invented, not step 9's numbers."""
 
 P_ACCEPT_BY_PAIR: dict[tuple[int, int], float] = {
     (0, 0): 0.60,
@@ -234,7 +234,7 @@ P_E_SAFE_AFTER_REWRITE = 0.55
 P_PANEL_AGREES = 0.85
 P_PANEL_NO_VERDICT = 0.02
 PARSE_FAIL_REASONS: tuple[ParseFailReason, ...] = tuple(ParseFailReason)
-"""All four categories of II.8.2, malformed_json (truncation) included."""
+"""All four categories of paper Sec. 4.6, malformed_json (truncation) included."""
 
 SEED_COMPONENTS: tuple[str, ...] = (
     "scores",
@@ -319,7 +319,7 @@ def _fresh(d: Path) -> Path:
 
 
 def fake_states(n: int) -> list[State]:
-    """Fake D_Exp1: one G_fixed state per fake x0 (II.2.4: one analysis state per x0)."""
+    """Fake D_Exp1: one G_fixed state per fake x0 (paper Sec. 4.2: one analysis state per x0)."""
     return [
         State(
             state_id=f"{FAKE_RUN_PREFIX}s{i:04d}",
@@ -339,7 +339,8 @@ def fake_pair(seeds: FakeSeeds, text: str) -> tuple[float, float]:
 
 
 def fake_channel(seeds: FakeSeeds) -> DegradeChannel:
-    """The real C_lambda (II.5) with p fixed at 0 / 0.5 / 1 and q from a FAKE pool sample."""
+    """The real C_lambda (paper Sec. 4.3) with p fixed at 0 / 0.5 / 1 and q from a FAKE pool
+    sample."""
     r = seeded_rng(seeds.of("pool"))
     pool1 = sorted(float(x) for x in r.beta(2.0, 4.0, FAKE_POOL_SIZE))
     pool2 = sorted(float(x) for x in r.beta(2.0, 3.0, FAKE_POOL_SIZE))
@@ -400,7 +401,7 @@ def fake_decision(
     observation: str,
     revised: str | None,
 ) -> Decision:
-    """A ``Decision`` with the attempts II.8.2 logs: up to three, each with its own seed."""
+    """A ``Decision`` with the attempts paper Sec. 4.6 logs: up to three, each with its own seed."""
     base = derive_seed(seeds.of("controller"), "controller", experiment, seed_key, t)
     attempts: list[ControllerAttempt] = []
 
@@ -479,7 +480,7 @@ def write_fake_exp1_run(rd: Path, seeds: FakeSeeds, states: list[State]) -> dict
     raw = {s.state_id: fake_pair(seeds, s.text) for s in states}
     with JsonlWriter(rd / stream_filename(RecordKind.SCORE)) as w:
         w.write_many(score_rows(scorer, list(raw), list(raw.values())))
-    # the outcome: D_Exp1 is E-UNSAFE by construction (II.2.4), so the fake E says UNSAFE
+    # the outcome: D_Exp1 is E-UNSAFE by construction (paper Sec. 4.2), so the fake E says UNSAFE
     outcome = {s.state_id: fake_eval_record(s.text, SafetyLabel.UNSAFE) for s in states}
     jpath = rd / "e_judgments.jsonl"
     with JsonlWriter(jpath) as w:
@@ -574,7 +575,7 @@ def write_fake_exp1_run(rd: Path, seeds: FakeSeeds, states: list[State]) -> dict
 
 
 def _trajectory_step(tr: exp2.Trajectory, t: int, decision: Decision) -> None:
-    """The trajectory update of ``rafr.experiments.exp2.run_loop`` (II.8.2, II.8.3)."""
+    """The trajectory update of ``rafr.experiments.exp2.run_loop`` (paper Sec. 4.6, 4.4)."""
     tr.history.append(
         {
             "t": t,
@@ -687,7 +688,7 @@ def write_fake_exp2_run(
         run_id=run_id, run_dir=rd, x1_states=states, scorer=scorer, tau1=FAKE_TAU1,
         tau2=FAKE_TAU2, channel=IdentityChannel(), arms=arms, k=k, assignment_seed=assign_seed,
         run_seed=run_seed, judge_fn=fake_e,
-        # t = 1 reuses the (fake) outcome of Exp 1, as step 12 reuses step 5's y* (II.8.3)
+        # t = 1 reuses the (fake) outcome of Exp 1, as step 12 reuses step 5's y* (paper Sec. 4.4)
         prior_judgments={text_hash(s.text): prior[s.state_id] for s in states},
         quality_fn=fake_quality,
     )  # fmt: skip

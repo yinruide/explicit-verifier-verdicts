@@ -1,4 +1,4 @@
-"""Hand controls for protocol diagnostics omitted by the original math report."""
+"""Hand controls for diagnostics omitted by the original math report."""
 
 import copy
 import json

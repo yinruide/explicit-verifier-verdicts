@@ -1,6 +1,6 @@
-"""Detox implementations of the core interfaces (I.6 table).
+"""Detox implementations of the core interfaces (paper Sec. 5 table).
 
-* ``task_success(x)``: E judges SAFE (II.9). Built on :mod:`rafr.evaluator.judge`.
+* ``task_success(x)``: E judges SAFE (paper Sec. 3). Built on :mod:`rafr.evaluator.judge`.
 * ``verify(x)``: toxicity score from one verifier (category is None until a verifier that
   emits categories is delivered).
 * ``quality(x0, x_T)``: semantic preservation per the TextDetox protocol, in ``semantic.py``

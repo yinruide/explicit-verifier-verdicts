@@ -1,4 +1,4 @@
-"""Math extension wording under the 2026-11-01 handoff.
+"""Math extension wording (2026-11-01).
 
 Verdict/pi blocks are referenced from detox, never copied. NoVerifier files only delete
 checker-related sentences from the original math controller prompts.

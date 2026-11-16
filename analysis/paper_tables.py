@@ -226,7 +226,7 @@ class Builder:
             f"{mi['n_incorrect']}/{mi['n_valid']}); oracle assumes no corruption.",
         )
 
-    # -- appendix A / B ---------------------------------------------------------------------
+    # B ---------------------------------------------------------------------
 
     def cue(self) -> None:
         for dom in ("detox", "math"):

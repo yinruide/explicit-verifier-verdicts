@@ -54,8 +54,8 @@ FROZEN_CHANNEL = FROZEN / "channel.json"
 FROZEN_GATE_ATTEMPTS = FROZEN / "gate_attempts.json"
 
 ARCHIVE = ROOT / "archive"
-"""Retired rounds (protocol v0.9, II.10). The formal pipeline never reads anything under it
-(App. B.1); :func:`is_archived` is what the config guard and the tests check against. Not in
+"""Retired rounds. The formal pipeline never reads anything under it
+:func:`is_archived` is what the config guard and the tests check against. Not in
 ``_REDIRECTED``: nothing may write here either, fake or formal."""
 
 

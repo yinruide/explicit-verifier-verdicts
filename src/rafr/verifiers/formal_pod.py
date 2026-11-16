@@ -1,10 +1,10 @@
-"""The formal pod's image and GPU (2026-09-24; decisions.md D-2026-09-24c point 6).
+"""The formal pod's image and GPU (2026-09-24; point 6).
 
 Formal scores (step 6's D_gate / D_Exp1, Exp 2's in-process scoring) come from one fixed pod:
 image ``runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`` on an A100 SXM 80GB, written in
-``configs/models.yaml: verifiers.formal_pod``. ``env/step06_gpu.py`` and ``env/exp2_gpu.py`` check
-it over ssh when they bring the pod up and before every job they start, and the jobs check it
-again on the pod itself before a model is loaded; any difference stops them.
+``configs/models.yaml: verifiers.formal_pod``. the RunPod driver (not released) and the RunPod
+driver (not released) check it over ssh when they bring the pod up and before every job they start,
+and the jobs check it again on the pod itself before a model is loaded; any difference stops them.
 
 The image name is not visible from inside a container, so what is checked is what the tag
 promises and the container can show: the CUDA toolkit version the image was built with

@@ -2,8 +2,8 @@
 
 Every random decision in the pipeline derives its seed from a *named* key so that
 reproducibility never depends on call order. In particular the channel's randomness is
-keyed by ``(state_id, lambda)`` and never by arm (II.5.1), and Exp 2 randomization is keyed
-by ``x0_id`` (II.8.3).
+keyed by ``(state_id, lambda)`` and never by arm (paper Sec. 4.3), and Exp 2 randomization is keyed
+by ``x0_id`` (paper Sec. 4.4).
 """
 
 from __future__ import annotations
@@ -32,8 +32,8 @@ def derive_seed(base_seed: int, *keys: object) -> int:
 
 COMPONENTS: tuple[str, ...] = (
     "sampling",  # step00's processing order of the x0 pool (so a --limit batch is random)
-    "splits",  # round 1 (v0.8) splits; kept only for the retired annotation export order
-    "splits_v09",  # the v0.9 split procedure (II.2.4); fixed before step 5 judges any state
+    "splits",  # round 1 splits; kept only for the retired annotation export order
+    "splits_v09",  # the split procedure (paper Sec. 4.2); fixed before step 5 judges any state
     "g_fixed",
     "controller",
     "channel",
@@ -43,22 +43,22 @@ COMPONENTS: tuple[str, ...] = (
     "exp2_randomization",
     "gate_ci",
     "step02_probe",  # step 2 probe: bootstrap CIs and the gate-reachability simulation
-    "exp2_smoke",  # pre-II.4.4 smoke runs: which unlabeled-pool x0 (kept for old run dirs)
-    # the step 10a Exp 2 smoke (II.4.4, 2026-09-25; configs/exp2_smoke.yaml): its 30 E-UNSAFE
+    "exp2_smoke",  # pre- smoke runs: which unlabeled-pool x0 (kept for old run dirs)
+    # the step 10a Exp 2 smoke (2026-09-25; configs/exp2_smoke.yaml): its 30 E-UNSAFE
     # pool x0, its run seed and its (one-arm) randomization -- an experiment id of its own
     "exp2_smoke_x0",
     "exp2_smoke_run",
     "exp2_smoke_randomization",
-    "dry_run",  # step 3 dry run: which E-UNSAFE pool x0 (II.4.4; engineering only)
+    "dry_run",  # step 3 dry run: which E-UNSAFE pool x0 (engineering only)
     "pod_numeric_check",  # the 203 D_fit states re-scored on the pod before step 6 / Exp 2
-    "perturb_sample",  # step 6 II.4.2 stability: the 150 + 150 states and their prefixes
-    "perturb_paraphrase",  # step 6 II.4.2 stability: the per-state seed of each paraphrase call
+    "perturb_sample",  # step 6 stability: the 150 + 150 states and their prefixes
+    "perturb_paraphrase",  # step 6 stability: the per-state seed of each paraphrase call
     # post-pilot extension (2026-10-31); new names, so no existing stream moves
     "ext_pihat_mismatch",  # the pi-hat mismatch derangement, independent of permuted_b's
     "ext_calibration_boot",  # bootstrap of the calibration diagnostics on D_gate
     "ext_ecorrect_cohort",  # which E-correct D_gate states form the E-correct cohort
     "ext_analysis_boot",  # bootstrap of the extension contrasts
-    "ext_smoke",  # stop point D's smokes: which states outside the formal sets (as step 10a)
+    "ext_smoke",  # the smoke: which states outside the formal sets (as step 10a)
     # post hoc (2026-11-01), after the detox extension's results had been seen
     "ext_decision_quality_boot",  # bootstrap of analysis/ext_decision_quality.py
 )
@@ -89,5 +89,5 @@ def py_rng(base_seed: int, *keys: object) -> random.Random:
 
 
 def attempt_seed(base_seed: int, *keys: object, attempt: int) -> int:
-    """Seed for the ``attempt``-th regeneration of the same item (II.2.3: "next seed")."""
+    """Seed for the ``attempt``-th regeneration of the same item (paper Sec. 4.2: "next seed")."""
     return derive_seed(base_seed, *keys, "attempt", attempt)

@@ -1,4 +1,4 @@
-"""Deterministic external boundaries for Appendix M integration tests only.
+"""Deterministic external boundaries for paper Sec. 5, App. D integration tests only.
 
 The production pipeline, Core controller, cache, ledger, labels, channel, formatter,
 round storage and analysis are exercised. No model/API/GPU is used here.

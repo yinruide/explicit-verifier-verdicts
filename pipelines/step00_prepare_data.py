@@ -1,17 +1,17 @@
-"""Step 00 — prepare data (protocol v0.9: 0.5 step 0, II.2.1, II.2.3).
+"""Step 00 — prepare data (step 0, paper Sec. 4.2).
 
     download ParaDetox -> clean + dedupe -> E prefilter of EVERY x0 (keep those judged UNSAFE)
 
-**No split happens here any more** (v0.9): the splits are drawn in step05, after E has judged
+**No split happens here any more**: the splits are drawn in step05, after E has judged
 every state. So there is no candidate cap, no "enough x0 to fill the splits" stop and no
 "the pool cannot fill the splits" projection: the whole deduplicated pool is judged.
 
-**One E** (II.9.1, v0.9). E is built from ``models.evaluator`` by ``judge.build_config``, which
+**One E** (paper Sec. 3). E is built from ``models.evaluator`` by ``judge.build_config``, which
 refuses to run when the prompt file's sha256 is not the pinned one. Every row of
 ``data/pools/prefilter.jsonl`` names the E that made it (model, version, decoding, prompt
 sha256). A re-run reuses the judgments of the SAME E only; a file holding any judgment by a
-different E stops the step (exit 5): v0.9 withdrew v0.8's "the prefilter is never redone"
-(C.15), and an E change means archiving the old chain and rebuilding it, never mixing.
+different E stops the step (exit 5): withdrew 's "the prefilter is never redone"
+and an E change means archiving the old chain and rebuilding it, never mixing.
 
 Spending controls (2026-09-20 / 2026-09-23):
 
@@ -32,15 +32,15 @@ count; only when one request's backoff runs out does the run stop (``transient_e
 resumed later. Each such event is a row of ``runs/step00_<ts>/transient_errors.jsonl``.
 
 An x0 on which E still fails after its 2 retries is dropped with the reason recorded
-(II.2.3); a later run retries it, because a failure is not a judgment. Only when the loop has
-gone through every x0 is the prefilter complete: then ``data/pools/x0_prefiltered.jsonl``
+(paper Sec. 4.2); a later run retries it, because a failure is not a judgment. Only when the loop
+has gone through every x0 is the prefilter complete: then ``data/pools/x0_prefiltered.jsonl``
 (the input of step04) is written and the manifest says ``prefilter.complete: true``.
 
 The processing order is a seeded shuffle of the whole pool (component ``sampling``), so a
 ``--limit`` batch is a random sample of ParaDetox, not its first block of rows.
 
-The first run also pins the v0.9 split plan (seed + procedure) in the manifest, before any
-state exists (II.2.4); see ``rafr.data.splits.split_plan``.
+The first run also pins the split plan (seed + procedure) in the manifest, before any
+state exists (paper Sec. 4.2); see ``rafr.data.splits.split_plan``.
 
 Usage::
 
@@ -95,7 +95,7 @@ GUARD_SECTIONS: tuple[str, ...] = (
     "data.source",
     "data.cleaning",
     "data.prefilter",
-    "data.splits",  # the split plan is pinned here, before any state exists (II.2.4)
+    "data.splits",  # the split plan is pinned here, before any state exists (paper Sec. 4.2)
     "models.evaluator",
 )
 """Config sections step00 actually reads; the formal-run guard checks these and nothing else
@@ -114,7 +114,7 @@ DEFAULT_WORKERS = 4
 written in input order whatever the number; ``--workers 1`` is the serial run."""
 
 MAX_CONSECUTIVE_E_FAILURES = 10
-"""Default for ``--max-consecutive-e-failures``. Each failure is already 3 attempts (II.9.1),
+"""Default for ``--max-consecutive-e-failures``. Each failure is already 3 attempts (paper Sec. 3),
 so a run of 10 is 30 calls spent on what is most likely a provider-side outage."""
 
 PREFILTER_FILE = "prefilter.jsonl"
@@ -145,7 +145,7 @@ class PrefilterResult:
     n_judged: int = 0  # x0 sent to E in this run (including the ones that failed)
     n_processed: int = 0  # x0 looked at (reused + judged)
     n_candidates: int = 0  # x0 offered to the loop: the whole deduplicated pool
-    n_parse_retries: int = 0  # re-sends after a refusal / unreadable answer (II.9.1)
+    n_parse_retries: int = 0  # re-sends after a refusal / unreadable answer (paper Sec. 3)
     failed_attempts: dict[str, int] = field(default_factory=dict)  # by reason, all attempts
     n_transient_gave_up: int = 0  # x0 whose 429 / network retries ran out: not judged
     transient: dict[str, float] = field(default_factory=dict)  # the client's transient_stats
@@ -222,7 +222,7 @@ def row_identity(row: dict) -> dict:
 
 
 def check_prefilter_file(path: Path, ecfg: judge.EvaluatorConfig) -> int:
-    """Refuse a prefilter file that any other E has written to (II.9.1, v0.9).
+    """Refuse a prefilter file that any other E has written to (paper Sec. 3).
 
     Every row -- judgments and failures alike -- must name the configured E; a row from an
     older schema names no E at all and is refused the same way. Returns the number of rows.
@@ -388,7 +388,7 @@ def prefilter(  # noqa: C901 - one loop with the stop conditions it must not out
     # is consumed, so a crash never costs a judgment that has been paid for and written.
     # load_prefilter_rows keeps the last row per (x0_id, text): a retried failure supersedes
     # its null row.
-    crlf_append_notice(out_path)  # written before 2026-09-27: CRLF (D-2026-09-27)
+    crlf_append_notice(out_path)  # written before 2026-09-27: CRLF
     with (
         out_path.open("a", encoding="utf-8", newline="\n") as fh,
         ThreadPoolExecutor(n_workers) as pool,
@@ -558,7 +558,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 - a linear script 
         allow_placeholders=args.fake,
         allow_tbd=args.fake,
     )
-    # The one E; refuses a prompt file whose sha256 is not the pinned one (II.9.1).
+    # The one E; refuses a prompt file whose sha256 is not the pinned one (paper Sec. 3).
     ecfg = judge.build_config(models_cfg, allow_tbd=args.fake)
     prices = prices_for(ecfg.model)
     if not args.fake:
@@ -609,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 - a linear script 
         print(f"[step00] refusing to run: {e}", file=sys.stderr)
         return 5
 
-    # E identity of what is already on disk (II.9.1): refuse before spending a cent
+    # E identity of what is already on disk (paper Sec. 3): refuse before spending a cent
     pre_path = paths.DATA_POOLS / PREFILTER_FILE
     try:
         n_rows = check_prefilter_file(pre_path, ecfg)
@@ -686,7 +686,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 - a linear script 
     )
     print(f"[step00] cleaned: {cleaned.stats}; all {len(x0s)} x0 go to the E prefilter")
 
-    # 3) E prefilter of every x0 (II.2.3): before any split, before any randomization
+    # 3) E prefilter of every x0 (paper Sec. 4.2): before any split, before any randomization
     if not bool(get(data_cfg, "prefilter.enabled", True)):
         print("[step00] refusing to run: data.prefilter.enabled is false (II.2.3 requires it)")
         return 2

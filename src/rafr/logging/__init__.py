@@ -1,4 +1,4 @@
-"""Run logging (II.10): JSONL writer, record kinds, run snapshots.
+"""Run logging: JSONL writer, record kinds, run snapshots.
 
 Note: this package is ``rafr.logging``; with the ``src`` layout and absolute imports it
 never shadows the standard library ``logging`` module (see README).

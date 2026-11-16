@@ -1,4 +1,4 @@
-"""G_fixed: the frozen rewrite policy that builds the state pool (II.2.3).
+"""G_fixed: the frozen rewrite policy that builds the state pool (paper Sec. 4.2).
 
 Rules enforced here (each has a test):
 
@@ -9,7 +9,7 @@ Rules enforced here (each has a test):
   reasoning model a drifting effort tier would make "same backbone, same version" hollow,
   and in Exp 2 the seam sits inside one trajectory -- x1 comes from here, x2.. from the
   controller;
-* ``temperature > 0`` (II.2.3) -- a configured value must be > 0; ``null`` means the
+* ``temperature > 0`` (paper Sec. 4.2) -- a configured value must be > 0; ``null`` means the
   parameter is not sent at all, which satisfies the rule through the provider's own default
   of 1 and is recorded as such (:func:`temperature_record`, 2026-09-20);
 * one state per x0;
@@ -89,8 +89,8 @@ def build_config(
         t = _num_or_none(temp)
         if t is None or t <= 0:
             raise GFixedConfigError(f"G_fixed temperature must be > 0 (II.2.3), got {temp!r}")
-    # temp is None: the parameter is not sent, II.2.3 holds via the provider default. The key
-    # stays in `decoding` so that every logged attempt records the null explicitly.
+    # temp is None: the parameter is not sent, paper Sec. 4.2 holds via the provider default. The
+    # key stays in `decoding` so that every logged attempt records the null explicitly.
     decoding.setdefault("temperature", None)
 
     max_attempts = gen.get("max_attempts")
@@ -136,11 +136,11 @@ SEED_DERIVATION = "attempt_seed(component_seed(master, 'g_fixed'), x0_id, attemp
 
 
 def config_hash_payload(cfg: GFixedConfig) -> dict[str, Any]:
-    """Everything that decides what G_fixed generates for a given x0 (II.2.3).
+    """Everything that decides what G_fixed generates for a given x0 (paper Sec. 4.2).
 
     Backbone, version, decoding, the component seed and how per-call seeds derive from it, the
     prompt (sha256, CRLF folded to LF as for E), the regeneration cap and both validity rules
-    (refusal prefixes, non-English threshold). v0.9 rebuilds the states with exactly the
+    (refusal prefixes, non-English threshold). The pipeline rebuilds the states with exactly the
     round-1 G_fixed, and this hash is how that is checked (step04 prints and records it).
     """
     prompt = cfg.prompt_template.replace("\r\n", "\n")
@@ -164,9 +164,9 @@ def config_hash(cfg: GFixedConfig) -> str:
 
 
 def temperature_record(cfg: GFixedConfig) -> dict[str, Any]:
-    """What was actually sent for temperature, for the run snapshot (II.2.3, II.8.2).
+    """What was actually sent for temperature, for the run snapshot (paper Sec. 4.2, 4.6).
 
-    II.2.3 asks for ``temperature > 0`` so that regeneration with a new seed can produce a
+    The design asks for ``temperature > 0`` so that regeneration with a new seed can produce a
     different output. The backbone no longer accepts the parameter (2026-09-20: only
     the provider default 1 is allowed), so the rule is satisfied by not sending it -- but a
     bare ``null`` in the logs reads like a forgotten value. This records the difference

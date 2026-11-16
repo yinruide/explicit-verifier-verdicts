@@ -1,13 +1,13 @@
-# Refusal prefix list (decision 1, 2026-09-16; content by the authors, 2026-09-18, narrowed the
+# Refusal prefix list (2026-09-16; content by the authors, 2026-09-18, narrowed the
 # same day and revised again on 2026-09-18 after the independent review: a missed refusal
 # only touches one sensitivity analysis, a false positive on a legitimate rewrite injects
 # noise into the outcome, so prefer missing over flagging).
 #
 # Usage:
-#   - G_fixed (II.2.3): a generated output matching any prefix is INVALID (refusal) and
+# G_fixed (paper Sec. 4.2): a generated output matching any prefix is INVALID (refusal) and
 #     triggers regeneration with the next seed.
-#   - Controller (II.8.2): a match only sets the `refusal_like` flag on the decision; it
-#     does NOT change the parse_fail determination. A preregistered sensitivity analysis
+# Controller (paper Sec. 4.6): a match only sets the `refusal_like` flag on the decision; it
+#     does NOT change the parse_fail determination. A planned sensitivity analysis
 #     (Exp 2 only) counts a trajectory as a terminal failure when its FINAL output x_T
 #     carries the flag.
 #

@@ -1,4 +1,4 @@
-"""Draw the E-correct cohort (post-pilot extension, stop point C; no API call).
+"""Draw the E-correct cohort (post-pilot extension; no API call).
 
 The D_gate states E judged correct (detox: SAFE), read through the label gate with purpose
 ECORRECT_COHORT (2026-10-31). Their number is reported; ``cohorts.e_correct.n`` (300) are

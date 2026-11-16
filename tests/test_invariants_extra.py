@@ -1,12 +1,12 @@
-"""Group 5: remaining section-4 invariants not covered elsewhere.
+"""Remaining invariants not covered elsewhere.
 
 * network retries (the SDK knob, off in the frozen config since 2026-09-23, and the client's
-  counted backoff) are separate from the 2 parse retries (II.8.2);
+  counted backoff) are separate from the 2 parse retries (paper Sec. 4.6);
 * provider parameter mapping (seed only on OpenAI Chat Completions; E has no seed);
-* Exp 2 scores every active trajectory as ONE batch per round (II.8.3);
-* every decision row on disk validates as a LogRecord with all II.10 fields;
+* Exp 2 scores every active trajectory as ONE batch per round (paper Sec. 4.4);
+* every decision row on disk validates as a LogRecord with all fields;
 * G_fixed inherits the controller backbone in the real configs, and their decoding blocks
-  match except where the protocol licenses a difference (II.2.3);
+  match except where the design licenses a difference (paper Sec. 4.2);
 * formal steps (step11/12 later) are blocked by the formatter template placeholder.
 """
 
@@ -92,7 +92,7 @@ def test_openai_sends_a_configured_reasoning_effort():
 
 
 def test_controller_reasoning_effort_is_explicit_and_moves_the_cache_key():
-    """II.8.2 / II.10: a decoding parameter counts as recorded only if changing it moves the
+    """paper Sec. 4.6: a decoding parameter counts as recorded only if changing it moves the
     cache key -- otherwise a re-run at another tier could be served the old tier's output.
     Checked on the real config, not a fixture."""
     decoding = load_config()["models"]["controller"]["decoding"]
@@ -229,8 +229,8 @@ def test_real_configs_gfixed_inherits_controller_backbone():
 
 
 #: Decoding keys G_fixed and the controller are allowed to differ on (2026-09-20).
-#: `temperature` -- II.2.3 puts a `> 0` floor on G_fixed that no rule puts on the controller
-#: (II.8.2 wanted the controller LOW for power), and the two were deliberately 1.0 vs 0.2
+# `temperature` -- the design puts a `> 0` floor on G_fixed that no rule puts on the controller
+# (paper Sec. 4.6 wanted the controller LOW for power), and the two were deliberately 1.0 vs 0.2
 #: until 2026-09-20. `seed` -- never a yaml value: both build_config()s pop it and the caller
 #: passes a per-component seed, so the per-call seeds necessarily differ. Nothing else in the
 #: block has a rule licensing a difference.
@@ -238,7 +238,7 @@ DECODING_MAY_DIFFER: frozenset[str] = frozenset({"temperature", "seed"})
 
 
 def test_gfixed_and_controller_decoding_match_except_where_the_protocol_allows():
-    """II.2.3: G_fixed runs the controller's backbone and version, and that identity is what
+    """paper Sec. 4.2: G_fixed runs the controller's backbone and version, and that identity is what
     the transport argument rests on -- in Exp 2 the seam is inside one trajectory (x1 from
     G_fixed, x2.. from the controller). A decoding parameter that silently drifts apart makes
     "same backbone, same version" hollow; on a reasoning model `reasoning_effort` is exactly
@@ -258,7 +258,7 @@ def test_gfixed_and_controller_decoding_match_except_where_the_protocol_allows()
 
 def test_templates_placeholder_blocks_formal_steps(tmp_path):
     """A templates file still carrying the placeholder word blocks the formal steps; the real
-    one no longer does (descriptions filled in 2026-09-25, D-2026-09-25e)."""
+    one no longer does (descriptions filled in 2026-09-25)."""
     src = TEMPLATES_PATH.read_text(encoding="utf-8")
     marked = tmp_path / "templates.py"
     marked.write_text(src.replace("Checker A is a text", "PLACE" + "HOLDER Checker A"), "utf-8")

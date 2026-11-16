@@ -1,4 +1,4 @@
-"""Step 10 — every preregistered analysis on FAKE logs (0.5 step 10, tag analysis-preregistered).
+"""Step 10 — every primary analysis on FAKE logs (step 10).
 
     python pipelines/step10_fake_data_test.py [--seed S] [--n-states 300] [--n-boot 10000]
 
@@ -10,12 +10,13 @@
    carries the FAKE marker and every row a ``FAKE-`` run_id. Nothing is read from ``data/`` or
    ``frozen/``: no real label, score, threshold or controller output.
 2. ``analysis.prereg_tables`` in fake mode -- it refuses any input without the FAKE marker --
-   computes every table of ``prereg/analysis_plan.md`` section by section and writes them to
+   computes every table of the analysis plan, section by section and writes them to
    ``runs/step10_<ts>/tables/`` as ``FAKE_<table>.json`` plus ``FAKE_tables.md``. The formal
    readers (step11, step12, ``analysis.prereg_tables`` without fake) refuse these files.
 
 Every arm effect is zero by construction; any number here is a property of the fake generator,
-not a result. When the authors are satisfied they tag ``analysis-preregistered``.
+not a result. When the authors are satisfied, the analysis code is frozen (commit and git tag)
+before Exp 1 runs.
 """
 
 from __future__ import annotations
@@ -62,7 +63,8 @@ def main(argv: list[str] | None = None) -> int:
     inp = prereg_tables.load_inputs(
         runs.exp1_dir, runs.exp2_dir, gate_report=runs.gate_report, fake=True
     )
-    # the preregistered cutpoint as configured; TBD today, so the semantic table has counts only
+    # the cutpoint fixed before Exp 2 as configured; TBD today, so the semantic table has counts
+    # only
     cut = get(cfgs["exp2"], "analysis.semantic_preservation.cutpoint")
     results = prereg_tables.compute(
         inp,

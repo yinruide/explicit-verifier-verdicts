@@ -470,7 +470,7 @@ def test_overlength_is_its_final_text_reported_by_arm_and_dropped_like_parse_fai
     assert report["secondary"]["A1"]["n_v_input_overlength"] == 1
     assert report["secondary"]["A1"]["v_input_overlength_rate"] == pytest.approx(1 / 3)
     assert report["secondary"]["B"]["n_v_input_overlength"] == 0
-    # complete-case sensitivity (M.8, as a parse_fail trajectory): dropped
+    # complete-case sensitivity (paper App. E, as a parse_fail trajectory): dropped
     complete = report["sensitivities"]["complete_case"]["by_arm"]["A1"]
     assert complete["n"] == 2 and complete["n_excluded_by_sensitivity"] == 1
     smoke = [overlength(f"s{i}", "A1", ["incorrect"] * 2, ["rewrite"]) for i in range(2)]

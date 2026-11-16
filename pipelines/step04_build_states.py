@@ -1,6 +1,6 @@
-"""Step 04 — build the state pool with G_fixed (protocol v0.9: 0.5 step 4, II.2.3).
+"""Step 04 — build the state pool with G_fixed (step 4, paper Sec. 4.2).
 
-One state for EVERY x0 that passed the E prefilter (v0.9: the states are built before the
+One state for EVERY x0 that passed the E prefilter (the states are built before the
 split, which step05 draws after E has judged them). Invalid outputs are regenerated with the
 next seed up to ``generation.g_fixed.max_attempts``; then the x0 is dropped. Every attempt is
 logged. G_fixed itself -- model, prompt, decoding, seed derivation, invalid-output rules -- is
@@ -11,7 +11,7 @@ states are never built from part of the pool.
 
 Formal-run protection: refuses while the controller / G_fixed backbone, decoding, seed,
 regeneration cap, non-English threshold, refusal phrase list or G_fixed prompt are TBD /
-PLACEHOLDER. There is no dry-run exception here (the authors, decision 11).
+PLACEHOLDER. There is no dry-run exception here (the authors).
 
 Spending controls (2026-09-20 / 2026-09-23):
 
@@ -134,7 +134,7 @@ def load_existing() -> dict[str, State]:
 
 
 def load_dropped() -> dict[str, dict]:
-    """x0 that already ran out of attempts, keyed by x0_id (II.2.3: they are dropped).
+    """x0 that already ran out of attempts, keyed by x0_id (paper Sec. 4.2: they are dropped).
 
     A re-run skips them instead of buying ``max_attempts`` more calls on each.
     """
@@ -165,7 +165,7 @@ class BuildResult:
 
     @property
     def n_regenerations(self) -> int:
-        """Attempts beyond the first one for an x0 (II.2.3's "next seed" re-rolls)."""
+        """Attempts beyond the first one for an x0 (the design's "next seed" re-rolls)."""
         return max(0, self.n_attempts - self.n_done)
 
     def summary_dict(self) -> dict:
@@ -496,7 +496,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 - a linear script 
         return 2
 
     run_dir = paths.run_dir(f"step04_{_ts()}")
-    # II.2.3's `temperature > 0` is now satisfied by the provider default rather than by a
+    # The design's `temperature > 0` is now satisfied by the provider default rather than by a
     # configured value; the snapshot says so instead of just carrying a bare null.
     temp_rec = g_fixed.temperature_record(cfg)
     write_snapshot(
@@ -538,7 +538,7 @@ def main(argv: list[str] | None = None) -> int:  # noqa: C901 - a linear script 
     attempts_path = paths.DATA_POOLS / "generation_attempts.jsonl"
     attempts_log = JsonlWriter(attempts_path)
     dropped_log = JsonlWriter(dropped_path())
-    crlf_append_notice(states_path())  # written before 2026-09-27: CRLF (D-2026-09-27)
+    crlf_append_notice(states_path())  # written before 2026-09-27: CRLF
     states_fh = states_path().open("a", encoding="utf-8", newline="\n")
 
     def write_state(state: State) -> None:

@@ -1,6 +1,6 @@
 """Exp 2 extension (post-pilot, 2026-10-31): full pairing over the starts.
 
-Not part of the preregistered Exp 2: its 150 / 150 trajectories, its assignment and its statistics
+Not part of the primary Exp 2: its 150 / 150 trajectories, its assignment and its statistics
 are only read. Every extension run writes a run directory of its own, with ``exp2``'s round layout
 (one COMPLETE directory per round, resume from the latest one) and its post-loop judge pass.
 
@@ -12,8 +12,8 @@ are only read. Every extension run writes a run directory of its own, with ``exp
   Verdict-only and B + pi-hat from every start. Seed namespace ``exp2_ecorrect``.
 
 Several arms now start from the same x0, so a trajectory is (x0, arm); its round id stays
-``{x0_id}-{arm}-t{t}`` and its seed key the x0 (II.8.2: no arm in the seed). The start subset is
-the run's ``plan`` (x0 -> arms), written to ``plan.jsonl``.
+``{x0_id}-{arm}-t{t}`` and its seed key the x0 (paper Sec. 4.6: no arm in the seed). The start
+subset is the run's ``plan`` (x0 -> arms), written to ``plan.jsonl``.
 
 **t = 1 scores.** With ``t1_scores`` given (``e_incorrect``; 2026-10-31: on), round 1 takes
 each start's (s1, s2) from the original Exp 2's round-1 scores instead of scoring it; the source's
@@ -414,7 +414,7 @@ def run_loop_ext(
             )
             if decision.parse_fail:
                 tr.n_parse_fail += 1
-                tr.t = t + 1  # x_{t+1} = x_t; the round is consumed (II.8.2)
+                tr.t = t + 1  # x_{t+1} = x_t; the round is consumed (paper Sec. 4.6)
             elif decision.action is Action.ACCEPT:
                 tr.accepted = True
                 tr.accepted_at = t

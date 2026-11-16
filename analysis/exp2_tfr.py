@@ -1,13 +1,13 @@
-"""Exp 2 analysis (III.1.2, II.9.3, C.10).
+"""Exp 2 analysis (paper Sec. 4.6, 3).
 
 Primary: TFR(arm) = P(task_success(x_T) = False) over ALL randomized trajectories; the
 contrast is TFR(A1) - TFR(B) (positive = B better) with a 95% percentile bootstrap CI that
-resamples TRAJECTORIES WITHIN ARM (stratified), B = 10000, seed recorded (III.1.2, v0.8).
+resamples TRAJECTORIES WITHIN ARM (stratified), B = 10000, seed recorded (paper Sec. 4.6).
 Stratifying keeps each replicate at the randomized arm sizes instead of letting a pooled draw
 move them; the pilot makes no significance claims, the interval only expresses uncertainty.
 Secondary: conditional FAR = P(failure | accepted) (post-treatment selection, mechanism
 only), rewrite rounds (median + distribution, right-censored at K), non-convergence rate.
-Sensitivities (II.8.2): trajectories whose x_T carries the refusal_like flag re-coded as
+Sensitivities (paper Sec. 4.6): trajectories whose x_T carries the refusal_like flag re-coded as
 terminal failures (a refusal-looking rewrite mid-trajectory whose final output is fine does
 not count); complete-case (drop trajectories with any parse_fail); "parse_fail as accept": the
 trajectory is treated as accepted at its first parse_fail round, so its terminal text is the
@@ -15,7 +15,7 @@ x_t of that round and the outcome is E's judgment of that text — available bec
 runner judges every round text after the loop (group 6d decision) and stores it in the
 finals as ``round_e_labels``.
 
-Mechanism quantities (protocol II.9.3 table, "机制"): decision accuracy and rewrite
+Mechanism quantities (paper Sec. 3 table, "机制"): decision accuracy and rewrite
 improvement rate, computed from the decision rows and the per-round E judgments
 (``round_judgments.jsonl``); ``R_t^(a)`` lives in ``analysis/reliability.py``.
 """
@@ -31,7 +31,7 @@ from rafr.contracts.schemas import BOOTSTRAP_B, text_hash
 
 RULES = ("main", "refusal_like_as_failure", "complete_case", "parse_fail_as_accept")
 ACCOUNTING_RULES = ("main", "parse_fail_as_accept", "complete_case")
-"""II.8.2: the three parse_fail accountings whose directions must agree for robustness."""
+"""paper Sec. 4.6: the three parse_fail accountings whose directions must agree for robustness."""
 
 
 def _failure(f: dict[str, Any], rule: str) -> bool | None:
@@ -39,7 +39,7 @@ def _failure(f: dict[str, Any], rule: str) -> bool | None:
     if rule == "main":
         return fail
     if rule == "refusal_like_as_failure":
-        # II.8.2: only x_T's own flag counts, not refusal_like rewrites earlier in the run
+        # paper Sec. 4.6: only x_T's own flag counts, not refusal_like rewrites earlier in the run
         return fail or bool(f.get("x_T_refusal_like"))
     if rule == "complete_case":
         return None if f.get("n_parse_fail", 0) > 0 else fail
@@ -68,7 +68,7 @@ def tfr_by_arm(finals: list[dict[str, Any]], rule: str = "main") -> dict[str, di
 def contrast(
     finals: list[dict[str, Any]], rule: str = "main", *, seed: int = 0, n_boot: int = BOOTSTRAP_B
 ) -> dict[str, Any]:
-    """TFR(A1) - TFR(B) with an arm-stratified percentile bootstrap CI (III.1.2, v0.8)."""
+    """TFR(A1) - TFR(B) with an arm-stratified percentile bootstrap CI (paper Sec. 4.6)."""
     strata: dict[str, list[float]] = {}
     for f in finals:
         fail = _failure(f, rule)
@@ -114,8 +114,8 @@ def low_preservation_among_safe(
     finals: list[dict[str, Any]], cutpoint: float | None
 ) -> dict[str, Any]:
     """Descriptive report (2026-09-18): among terminal texts E judged SAFE, the share
-    whose semantic-preservation score ``semantic_score`` = quality(x0, x_T) (I.6) is strictly
-    below the preregistered ``cutpoint``, per arm.
+    whose semantic-preservation score ``semantic_score`` = quality(x0, x_T) (paper Sec. 5) is
+    strictly below the primary ``cutpoint``, per arm.
 
     A rewrite can satisfy E by saying nothing; this watches for that hollowing-out. It is not
     an outcome and not a sensitivity analysis: the primary TFR contrast is untouched by it.
@@ -145,7 +145,7 @@ def low_preservation_among_safe(
 
 
 def mechanism(rows: list[dict[str, Any]], truth: dict[str, str]) -> dict[str, dict[str, Any]]:
-    """Decision accuracy and rewrite improvement rate per arm (II.9.3 "机制" rows).
+    """Decision accuracy and rewrite improvement rate per arm (paper Sec. 3 "机制" rows).
 
     ``truth`` maps ``text_hash(text) -> "SAFE" | "UNSAFE"`` (E's per-round judgments).
 
@@ -207,7 +207,7 @@ def panel_sensitivity(
     seed: int = 0,
     n_boot: int = BOOTSTRAP_B,
 ) -> dict[str, Any]:
-    """III.1.2 (v0.9): each panel member as its own substitute judge of x_T.
+    """paper Sec. 4.6: each panel member as its own substitute judge of x_T.
 
     ``panel_labels[member]`` maps ``text_hash(x_T) -> "SAFE" | "UNSAFE" | None`` (None = the
     member gave no verdict; with ``on_failure = exclude_and_report`` that trajectory leaves THIS
@@ -271,7 +271,7 @@ def analyze(
             # None only when the finals carry no per-round E judgments (pre-group-6d runs)
             "parse_fail_as_accept": contrasts.get("parse_fail_as_accept"),
         },
-        # II.8.2: robust iff main, (a) parse_fail as accept and (b) complete case share a
+        # paper Sec. 4.6: robust iff main, (a) parse_fail as accept and (b) complete case share a
         # direction; the refusal_like sensitivity is reported on its own and is not part of it.
         # Without per-round E judgments (a) cannot be computed, so robustness is undetermined.
         "robust_across_accountings": (

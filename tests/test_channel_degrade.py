@@ -1,4 +1,5 @@
-"""channel: q as independent resampling, per-verifier nested C_lambda (II.5.1-II.5.3;
+"""channel: q as independent resampling, per-verifier nested C_lambda (paper Sec. 4.3-paper Sec.
+4.3;
 group 6a/6b decisions, 2026-09-16)."""
 
 from __future__ import annotations
@@ -159,7 +160,7 @@ def test_degrade_save_load_roundtrip(tmp_path: Path):
 
 
 def test_assignment_reports_flags_derived_z_and_replacement_scores():
-    """II.10 log fields: which verifier was perturbed, the derived z mode, the replacement
+    """log fields: which verifier was perturbed, the derived z mode, the replacement
     score actually used. Identity (and any channel without the hook) perturbs nothing."""
     from rafr.channel import NO_PERTURBATION, channel_assignment
     from rafr.channel.degrade import z_mode
@@ -186,7 +187,7 @@ def test_assignment_reports_flags_derived_z_and_replacement_scores():
     assert b.assignment("s1", Lambda.MID) == mid
 
 
-# ---- p fixed ex ante at 0 / 0.5 / 1 (protocol II.5.1, C.27; 2026-09-26) ----------------
+# p fixed ex ante at 0 / 0.5 / 1 (paper Sec. 4.3, 2026-09-26) ----------------
 
 
 def _degrade_cfg() -> dict:
@@ -196,7 +197,7 @@ def _degrade_cfg() -> dict:
 
 
 def test_the_levels_are_fixed_at_0_05_1_for_both_verifiers():
-    """II.5.1 / C.27: configs/channel.yaml carries p = 0 / 0.5 / 1, both verifiers alike; the
+    """paper Sec. 4.3: configs/channel.yaml carries p = 0 / 0.5 / 1, both verifiers alike; the
     solve rule (and its lambda_low anchor flag) is gone."""
     cfg = _degrade_cfg()
     assert "anchor_lambda_low_at_zero" not in cfg
@@ -218,7 +219,7 @@ def test_the_levels_are_fixed_at_0_05_1_for_both_verifiers():
 @pytest.mark.parametrize(
     ("tpr", "floor"),
     [
-        ((0.6875, 0.69792), (0.332, 0.270)),  # step 7's D_fit TPR, step 2's pool r (C.27)
+        ((0.6875, 0.69792), (0.332, 0.270)),  # step 7's D_fit TPR, step 2's pool r
         ((0.9, 0.85), (0.5, 0.45)),
         ((0.55, 0.52), (0.50, 0.49)),  # a span far below any delta_R
         ((1.0, 1.0), (0.0, 0.0)),
@@ -226,7 +227,7 @@ def test_the_levels_are_fixed_at_0_05_1_for_both_verifiers():
     ],
 )
 def test_p_does_not_move_with_tpr_or_r(tpr, floor):
-    """C.27: p is fixed ex ante; no measurement enters it. levels_from_config takes the config
+    """p is fixed ex ante; no measurement enters it. levels_from_config takes the config
     only, and the expected ladder is TPR_i, (TPR_i + r_i)/2, r_i whatever TPR_i and r_i are."""
     assert list(inspect.signature(levels_from_config).parameters) == ["degrade_cfg"]
     levels = levels_from_config(_degrade_cfg())
@@ -239,7 +240,7 @@ def test_p_does_not_move_with_tpr_or_r(tpr, floor):
         assert ladder[v]["low"] == pytest.approx(t[v])
         assert ladder[v]["mid"] == pytest.approx((t[v] + r[v]) / 2)
         assert ladder[v]["high"] == pytest.approx(r[v])
-        # adjacent levels are (TPR - r)/2 apart in expectation (II.5.2)
+        # adjacent levels are (TPR - r)/2 apart in expectation (paper Sec. 4.3)
         assert ladder[v]["low"] - ladder[v]["mid"] == pytest.approx((t[v] - r[v]) / 2)
         assert ladder[v]["mid"] - ladder[v]["high"] == pytest.approx((t[v] - r[v]) / 2)
 
@@ -263,7 +264,7 @@ def _lv(low=(0.0, 0.0), mid=(0.5, 0.5), high=(1.0, 1.0), **extra) -> dict:
     ],
 )
 def test_levels_other_than_the_fixed_ones_are_refused(levels):
-    """II.5.1 / C.27: anything but p = 0 / 0.5 / 1 for both verifiers -- another number, the two
+    """paper Sec. 4.3: anything but p = 0 / 0.5 / 1 for both verifiers -- another number, the two
     verifiers apart, a missing or unknown level, a TBD, a non-monotone set, no levels at all --
     is refused, never run."""
     cfg = {**_degrade_cfg(), "levels": levels}

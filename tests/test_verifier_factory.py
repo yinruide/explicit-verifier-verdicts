@@ -1,4 +1,4 @@
-"""The one scoring factory (task 2026-09-24 section 3; decisions.md D-2026-09-24b point 4).
+"""The one scoring factory.
 
 Two layers:
 
@@ -53,7 +53,7 @@ def test_every_probe_configuration_is_a_config_id():
 
 
 def test_no_verifier_from_e_the_controller_or_the_panel():
-    """II.9.1 (v0.9): V1, V2 not from Anthropic, OpenAI, Qwen or xAI."""
+    """paper Sec. 3: V1, V2 not from Anthropic, OpenAI, Qwen or xAI."""
     for m in P.MODELS.values():
         F.check_source(m)  # the probe's candidates are Google, Meta, IBM, s-nlp
     for vendor, repo in (("Alibaba", "Qwen/Qwen3Guard-Gen-8B"), ("xAI", "xai-org/grok-guard")):
@@ -147,7 +147,7 @@ def test_transformers_must_be_the_probe_version(tmp_path):
 def test_the_formal_entry_accepts_only_the_factory_and_two_distinct_config_ids():
     models = copy.deepcopy(load_config("models"))
     assert models["verifiers"]["factory"] == F.FACTORY_PATH
-    # 2026-09-25 (decisions.md D-2026-09-25)
+    # 2026-09-25
     assert F.configured_ids(models) == ("enc_paradetox", "sg_9b.native")
     models["verifiers"]["v2"]["id"] = "TBD"
     with pytest.raises(VerifierConfigError, match="TBD"):
@@ -169,7 +169,7 @@ def test_the_formal_entry_accepts_only_the_factory_and_two_distinct_config_ids()
 
 
 def test_the_legacy_guard_backend_is_off_the_formal_path(tmp_path):
-    """decisions.md D-2026-09-24b point 4: the registry guard backend (double BOS) never scores
+    """point 4: the registry guard backend (double BOS) never scores
     formally: the factory refuses it as an object, batch_score refuses it as a candidate."""
     from rafr.verifiers import batch_score
     from rafr.verifiers.candidates import registry
@@ -529,7 +529,7 @@ def test_a_numerical_drift_is_refused_unless_tolerated(probe_world):
 
 
 # ---------------------------------------------------------------------------------------
-# device kinds, formal mode, fixed batch shape (2026-09-24, D-2026-09-24c point 6)
+# device kinds, formal mode, fixed batch shape (2026-09-24, point 6)
 # ---------------------------------------------------------------------------------------
 
 

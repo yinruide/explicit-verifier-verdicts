@@ -1,4 +1,5 @@
-"""Semantic preservation for detox: the TextDetox 2024 official evaluation (I.6, II.2.1, II.9.3).
+"""Semantic preservation for detox: the TextDetox 2024 official evaluation (paper Sec. 5, 4.2, paper
+Sec. 3).
 
 Reference implementation: pan-webis-de/pan-code, ``clef24/text-detoxification/evaluate.py`` at
 commit 88037f4602d013698c31985764a17f086baa451f (2024-03-13). Its three sub-metrics, each
@@ -18,7 +19,7 @@ reproduced here from that file:
 
 ``quality(x0, x_T)`` is SIM (2026-09-28). A quality score is always computed the same
 way -- one (x0, x) pair per ``encode`` call -- so the Exp 2 scores and the D_fit scores behind
-the preregistered cutpoint come from one code path; :func:`similarity` with the reference's
+the cutpoint fixed before Exp 2 come from one code path; :func:`similarity` with the reference's
 batch of 32 is kept for the diagnostic that compares the two.
 
 Model ids, revisions and library versions come from ``configs/exp2.yaml:

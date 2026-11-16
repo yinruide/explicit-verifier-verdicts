@@ -1,1 +1,1 @@
-"""Domain implementations of the core interfaces (I.6). Pilot: detox only."""
+"""Domain implementations of the core interfaces (paper Sec. 5). Pilot: detox only."""

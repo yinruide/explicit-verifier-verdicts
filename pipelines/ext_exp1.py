@@ -1,7 +1,7 @@
 """Exp 1 extension (post-pilot, 2026-10-31): the four new arms on two cohorts.
 
-Not a preregistered step: ``pipelines/step11_exp1.py``, its run directory and its report are only
-read. One cohort per run, each in a run directory of its own:
+Not part of the primary runs: ``pipelines/step11_exp1.py``, its run directory and its report are
+only read. One cohort per run, each in a run directory of its own:
 
 * ``--cohort e_incorrect``: D_Exp1, the arms No Verifier, Verdict-only, B + pi-hat and
   B + pi-hat (mismatched); A1 / B / permuted-B are the original run's decisions (read only). The
@@ -14,13 +14,14 @@ Refused while ``configs/ext.yaml`` has a TBD (the frozen calibrator's and the co
 sha256, the contrast list's confirmation) or an extension prompt file a placeholder; also refused
 with a stub controller and without ``--confirm`` (controller calls cost money).
 
-``--smoke N`` is stop point D's engineering smoke (2026-10-31; ``pipelines/_ext_smoke.py``):
+``--smoke N`` is the engineering smoke (2026-10-31; ``pipelines/_ext_smoke.py``):
 N states outside every formal set, as step 10a -- E-incorrect from the pool's E-UNSAFE states,
 E-correct from D_gate's SAFE states the cohort did not draw -- with their y* as the outcome; the
 controller seed namespace ``<namespace>_smoke`` and a cache of its own (no request can share a
 seed or a cached answer with the formal run); its own run directory
 ``runs/exp1ext_smoke_<cohort>_<ts>``. Its states are not D_Exp1's, so the check of the channel
-against the original run does not apply (stop point B's regression covers all 2,700 cells).
+against the original run does not apply (the regression check against the primary runs covers all
+2,700 cells).
 """
 
 from __future__ import annotations
@@ -79,7 +80,7 @@ def cohort_states(ext: dict[str, Any], cohort: str) -> list[State]:
 
 
 def cohort_outcome(states: list[State], cohort: str, ecfg: judge.EvaluatorConfig) -> dict:
-    """state_id -> E's judgment, recorded before any controller call (decision 10)."""
+    """state_id -> E's judgment, recorded before any controller call ."""
     if cohort == exp1_ext.E_INCORRECT:
         return S11.outcome_from_y_star(states, ecfg)
     out = {}

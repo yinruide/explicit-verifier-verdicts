@@ -4,7 +4,7 @@ The second module in the package that touches ``torch`` / ``transformers`` (the 
 ``torch_backend.py``, which serves the older registry candidates); both import them lazily, so
 the test suite runs without either installed.
 
-Inference follows decisions.md section 4: ``model.eval()``, ``torch.no_grad()``, no sampling,
+Inference follows section 4: ``model.eval``, ``torch.no_grad``, no sampling,
 one forward pass per prompt with the logits of the last position only. Decoder batches are
 left-padded, ``position_ids`` are rebuilt from the attention mask, and with ``fixed_shape``
 every batch has ``batch_size`` rows (the last one is filled with copies and the copies are

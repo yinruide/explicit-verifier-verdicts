@@ -1,14 +1,14 @@
-"""Step 05 — E judges every state (= y*), then the split (protocol v0.9: 0.5 step 5, II.2.3,
-II.2.4, II.3).
+"""Step 05 — E judges every state (= y*), then the split (step 5, paper Sec. 4.2,
+paper Sec. 4.2, 3).
 
     python pipelines/step05_label_and_split.py judge --workers 4 --budget 1 --limit 20  # dry run
     python pipelines/step05_label_and_split.py judge --workers 4 --budget 30  # every state
     python pipelines/step05_label_and_split.py split                          # no API calls
 
-``judge`` -- one E call per state (II.2.3: a single judgment, and it IS y*, II.3). Every
-judgment is appended to ``data/labels/state_judgments.jsonl`` the moment it is made, with the
+``judge`` -- one E call per state (paper Sec. 4.2: a single judgment, and it IS y*, paper Sec. 3).
+Every judgment is appended to ``data/labels/state_judgments.jsonl`` the moment it is made, with the
 E that made it; a re-run reuses them and retries only failures. A state on which E still fails
-after its 2 retries is dropped together with its x0 (II.9.1), before the split. When every
+after its 2 retries is dropped together with its x0 (paper Sec. 3), before the split. When every
 state has been through E the file is complete and its sha256 goes into the manifest
 (``labels``) -- after that it is never written again. Same spending controls as step00 /
 step04: ``--budget`` required, ``--limit`` for the dry run (it prints the measured price per
@@ -22,16 +22,16 @@ request's backoff runs out does the run stop (``transient_errors``), to be resum
 such event is a row of ``runs/step05_judge_<ts>/transient_errors.jsonl``.
 
 ``split`` -- no API calls. Checks the judgment file against the recorded sha256 and the split
-plan against the one pinned in the manifest before any state was judged (II.2.4), then draws
+plan against the one pinned in the manifest before any state was judged (paper Sec. 4.2), then draws
 (rafr.data.splits.PROCEDURE): D_fit, D_gate, D_gate_reserve at random from all states, D_Exp1
 at random from the remaining E-UNSAFE states, the rest to the unlabeled pool. Too few E-UNSAFE
 states left -> exit 3 and nothing written; no other split is shrunk. Writes
 ``data/splits/<split>.jsonl`` and ``data/pools/states_<split>.jsonl`` and reports, per split,
 sizes, and the E-UNSAFE count and share of D_fit only (2026-09-23): no other split's
-y* is opened, so the reserve's count cannot be recovered from the reports (II.6.1).
+y* is opened, so the reserve's count cannot be recovered from the reports (paper Sec. 4.3).
 
 Formal-run protection covers exactly what this step reads: the seeds, the split plan, the
-labels section and the one E (whose prompt sha256 is re-checked, II.9.1).
+labels section and the one E (whose prompt sha256 is re-checked, paper Sec. 3).
 """
 
 from __future__ import annotations
@@ -119,7 +119,7 @@ class JudgeResult:
     n_judged: int = 0  # sent to E in this run (failures included)
     n_processed: int = 0
     failed: list[dict] = field(default_factory=list)  # this run's failures
-    n_parse_retries: int = 0  # re-sends after a refusal / unreadable answer (II.9.1)
+    n_parse_retries: int = 0  # re-sends after a refusal / unreadable answer (paper Sec. 3)
     failed_attempts: dict[str, int] = field(default_factory=dict)  # by reason, all attempts
     n_transient_gave_up: int = 0  # states whose 429 / network / 5xx retries ran out: no row
     transient: dict[str, float] = field(default_factory=dict)  # the client's transient_stats
@@ -174,7 +174,7 @@ def judge_states(  # noqa: C901 - one loop with the stop conditions it must not 
     on_checkpoint: Callable[[JudgeResult], None] | None = None,
     echo: Callable[[str], None] = print,
 ) -> JudgeResult:
-    """One E judgment per state, appended to ``out_path`` as it is consumed (II.2.3, II.3).
+    """One E judgment per state, appended to ``out_path`` as it is consumed (paper Sec. 4.2, 3).
 
     States with a judgment by this E are reused; a recorded failure is retried.
 
@@ -268,7 +268,7 @@ def judge_states(  # noqa: C901 - one loop with the stop conditions it must not 
     # APPEND: rows already on disk stay untouched and each new judgment lands as soon as it is
     # consumed; load_judgment_rows keeps the last row per state, so a retried failure
     # supersedes its null row.
-    crlf_append_notice(out_path)  # written before 2026-09-27: CRLF (D-2026-09-27)
+    crlf_append_notice(out_path)  # written before 2026-09-27: CRLF
     with (
         out_path.open("a", encoding="utf-8", newline="\n") as fh,
         ThreadPoolExecutor(n_workers) as pool,
@@ -654,7 +654,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cfgs = load_config()
     assert_frozen(cfgs, only_sections=GUARD_SECTIONS)
-    ecfg = judge.build_config(cfgs["models"])  # re-checks the prompt sha256 (II.9.1)
+    ecfg = judge.build_config(cfgs["models"])  # re-checks the prompt sha256 (paper Sec. 3)
     paths.ensure_dirs()
     manifest = Manifest.load()
     try:

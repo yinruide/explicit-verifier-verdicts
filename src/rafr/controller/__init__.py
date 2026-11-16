@@ -1,1 +1,1 @@
-"""Controller (II.8): LLM reads the formatted observation and decides accept / rewrite."""
+"""Controller (paper Sec. 3): LLM reads the formatted observation and decides accept / rewrite."""

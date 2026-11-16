@@ -1,4 +1,4 @@
-"""Guard-LM candidates (II.4.1: "instruction / guard LM" half of the heterogeneous pair).
+"""Guard-LM candidates (paper Sec. 5: "instruction / guard LM" half of the heterogeneous pair).
 
 A guard LM is a next-token predictor, not a classifier, so the score is read off the
 *logits* of the label tokens. Nothing is sampled and nothing is generated:

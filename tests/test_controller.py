@@ -109,7 +109,7 @@ def test_decide_uses_structured_output_and_records_prompt():
 
 def test_decision_rows_carry_the_configured_reasoning_effort():
     """2026-09-20: the controller's tier is sent explicitly, so every Decision row on
-    disk must name it -- a null would only have recorded "not sent" (II.8.2, II.10)."""
+    disk must name it -- a null would only have recorded "not sent" (paper Sec. 4.6)."""
     from rafr.core.config import load_config
 
     assert load_config()["models"]["controller"]["decoding"]["reasoning_effort"] == "medium"
@@ -217,7 +217,7 @@ def test_decide_retries_twice_with_fixed_prompt_then_parse_fail():
     assert all(a.parse_fail_reason is ParseFailReason.BAD_ACTION for a in d.attempts)
     assert all(a.raw_output for a in d.attempts)  # raw output of every attempt kept
     # retry = the ORIGINAL request with the fixed sentence appended; the previous raw output
-    # is not carried over (decision, group 3)
+    # is not carried over (design decision)
     first = fp.calls[0].messages
     assert first == [{"role": "user", "content": "X0: a\nXT: b\nOBS: o"}]
     for call in fp.calls[1:]:
@@ -271,7 +271,7 @@ def test_seed_schemes():
 
 
 def test_per_state_seed_differs_between_exp1_and_exp2():
-    """Decision (group 3): same state, same t, same prompt -> different seed in exp1 vs exp2,
+    """Design decision: same state, same t, same prompt -> different seed in exp1 vs exp2,
     hence different cache keys, so the two experiments sample independently."""
     cfg = _cfg("per_state")
     l1, l2 = _labels(experiment="exp1"), _labels(experiment="exp2")
@@ -326,7 +326,7 @@ def test_real_system_prompt_k_is_filled_by_the_caller_per_experiment():
     assert D.SYSTEM_K_SLOT in cfg.system_prompt and cfg.round_budget is None
     one = D.with_round_budget(cfg, 1)
     four = D.with_round_budget(cfg, K_MAX_ROUNDS)
-    # D-2026-09-25e: the singular with K = 1, the plural otherwise; nothing else changes
+    # the singular with K = 1, the plural otherwise; nothing else changes
     assert "You have at most 1 decision in total." in one.system_prompt and one.round_budget == 1
     assert "1 decisions" not in one.system_prompt
     assert f"You have at most {K_MAX_ROUNDS} decisions in total." in four.system_prompt
@@ -391,8 +391,8 @@ def _controller_task_side() -> tuple[list[str], list[str], str]:
 
 
 def test_g_fixed_and_rewrite_prompts_carry_the_same_detox_instruction():
-    """II.2.3 (the authors' ruling, 2026-09-18): G_fixed is compared against the whole of what
-    the controller is told about the task -- the task segment of system.txt PLUS the
+    """paper Sec. 4.2 (the authors' ruling, 2026-09-18): G_fixed is compared against the whole of
+    what the controller is told about the task -- the task segment of system.txt PLUS the
     rewrite prompt -- minus any verifier feedback.
 
     * rewrite paragraph 1 == g_fixed paragraph 1 up to the referent (\"the sentence below\"

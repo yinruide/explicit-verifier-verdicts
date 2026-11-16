@@ -1,10 +1,10 @@
-"""Run snapshots and freeze tags (II.10).
+"""Run snapshots and freeze tags.
 
 * :func:`write_snapshot` stores ``git rev-parse HEAD``, the dirty flag, a verbatim copy of
   ``configs/``, ``sys.argv`` and timestamps into the run directory.
 * :func:`create_freeze_tag` is a helper for the three freeze tags (``tau-frozen``,
   ``channel-frozen``, ``analysis-preregistered``). It creates a LOCAL annotated tag only;
-  pushing is the authors' job (App. A.1).
+  pushing is the authors' job.
 """
 
 from __future__ import annotations
@@ -67,7 +67,7 @@ def write_snapshot(
     dst = run_dir / "configs"
     if dst.exists():
         shutil.rmtree(dst)
-    copy_tree_lf(cdir, dst)  # LF whatever the checkout holds (D-2026-09-27)
+    copy_tree_lf(cdir, dst)  # LF whatever the checkout holds
     snap = {
         "step": step,
         "started_at": utc_now_iso(),
@@ -87,7 +87,7 @@ def write_snapshot(
 def create_freeze_tag(name: str, message: str, *, repo: Path | None = None) -> str:
     """Create a local annotated tag. ``name`` must be one of :data:`FREEZE_TAGS`.
 
-    The message must say what was frozen and on which data (II.10). Never pushes.
+    The message must say what was frozen and on which data. Never pushes.
     """
     if name not in FREEZE_TAGS:
         raise ValueError(f"{name!r} is not a freeze tag; expected one of {FREEZE_TAGS}")

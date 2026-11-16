@@ -1,12 +1,12 @@
-"""Transport diagnostic (II.10, I.5.4, II.6.3): compare the Exp 1 state pool with the Exp 2
+"""Transport diagnostic (paper Sec. 4.1, App. C.1, D.1): compare the Exp 1 state pool with the Exp 2
 decision points on toxicity (raw scores), margins and UNSAFE share. Reported after the fact;
 a KS statistic summarizes each distributional gap (no test claim in the pilot).
 
 Exp 2's x0 source is D_Exp1 (decision, group 6d): the t = 1 decision points ARE the Exp 1
 states, so the all-rounds comparison is diluted by identical rows. Only the rounds t >= 2
-carry information; ``compare`` reports them separately and says so in ``note``. Since v0.9 the
-Exp 1 state pool is E-UNSAFE by construction (C.16); the note says that the UNSAFE share
-therefore differs by design (II.10)."""
+carry information; ``compare`` reports them separately and says so in ``note``. Since the
+Exp 1 state pool is E-UNSAFE by construction; the note says that the UNSAFE share
+therefore differs by design ."""
 
 from __future__ import annotations
 
@@ -71,7 +71,7 @@ def compare(
     """``exp1_rows``: one row per state (any arm/lambda; raw s is the same); ``exp2_rows``:
     every decision point of Exp 2 (all rounds). Exp 2 rows carry no E label, so the UNSAFE share
     of its decision points needs ``truth`` (``text_hash(x_t) -> label`` from
-    ``round_judgments.jsonl``, II.8.3); without it that share has n = 0."""
+    ``round_judgments.jsonl``, paper Sec. 4.4); without it that share has n = 0."""
     # de-duplicate Exp 1 to one row per state
     seen, e1 = set(), []
     for r in exp1_rows:

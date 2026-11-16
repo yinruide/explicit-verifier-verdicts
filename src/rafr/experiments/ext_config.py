@@ -1,11 +1,11 @@
 """configs/ext.yaml and the extension's formal-run guard (post-pilot, 2026-10-31).
 
 The extension has a config file of its own, outside ``rafr.core.config.CONFIG_FILES``: nothing the
-preregistered steps check moves because of it, and its TBDs stop extension runs only.
+primary steps check moves because of it, and its TBDs stop extension runs only.
 
 * :func:`assert_ext_frozen` refuses while any ext.yaml value is TBD or any extension prompt file
   (the No Verifier controller prompts, detox's pi-hat block) still carries the placeholder marker;
-* :func:`checked` returns a preregistered file the extension reads, after checking it has the
+* :func:`checked` returns a primary file the extension reads, after checking it has the
   sha256 written in ext.yaml (a changed file is refused, never used);
 * :func:`no_verifier_config` is the No Verifier controller: the formal controller config with the
   two No Verifier prompt files in place of system.txt / rewrite.txt.

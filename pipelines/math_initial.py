@@ -1,4 +1,4 @@
-"""Math initial-state producer and split writer (M.2.3–M.2.4).
+"""Math initial-state producer and split writer (paper App. D.1–paper App. D.1).
 
 This is the sole math producer allowed to inspect the complete initial judgment file.
 All post-split consumers go through the Core label-purpose gate.
@@ -74,7 +74,7 @@ def _generate_one(pipeline, qid, question, max_attempts):
 
 
 def generate_all(pipeline, *, workers=1) -> dict:
-    """G_fixed + E for every question without an outcome row (M.2.3).
+    """G_fixed + E for every question without an outcome row (paper App. D.1).
 
     Concurrency as detox step04 (2026-10-04): up to ``workers`` questions are in
     flight on a thread pool, each running its attempts in order with the seeds and requests

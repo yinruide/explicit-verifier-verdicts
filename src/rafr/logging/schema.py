@@ -1,4 +1,4 @@
-"""Log record kinds and the file layout of a run directory (II.10).
+"""Log record kinds and the file layout of a run directory.
 
 The row schemas themselves live in :mod:`rafr.contracts.schemas` (``LogRecord``,
 ``GenerationAttempt``, ``EvalRecord``, ``Score``); this module only names the streams.

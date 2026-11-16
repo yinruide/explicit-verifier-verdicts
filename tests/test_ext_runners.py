@@ -122,7 +122,7 @@ def _setup1(tmp_path: Path, states, cohort: str, arms, label, **kw) -> exp1_ext.
 
 
 def _original_exp1(tmp_path: Path, states) -> Path:
-    """An original Exp 1 run (A1 / B / permuted-B) through the preregistered runner."""
+    """An original Exp 1 run (A1 / B / permuted-B) through the primary runner."""
     v1, v2 = stub_pair()
     setup = exp1.Exp1Setup(
         run_id="orig", run_dir=tmp_path / "orig", states=states, scorer=InProcessScorer(v1, v2),
@@ -216,7 +216,7 @@ def test_ext_exp2_smoke_flag_belongs_to_loop():
 
 
 def test_exp1_e_incorrect_smoke_runs_without_the_original_channel(tmp_path, calibrator):
-    """Stop point D (2026-10-31): the smoke's E-UNSAFE pool states are not D_Exp1's, so
+    """The smokes (2026-10-31): the smoke's E-UNSAFE pool states are not D_Exp1's, so
     there is nothing to match; the run says so and is marked smoke."""
     states = _states(4, prefix="pool")
     fp = FakeProvider(responder=_accept)

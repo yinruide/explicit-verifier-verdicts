@@ -305,7 +305,7 @@ class MathSource:
             labels_dir=self.root / "labels",
             split_dir=self.root / "splits",
             # Reserve is rejected above, regardless of any shared gate history.
-            # Never fall back to detox's global gate-attempts file (handoff 3.3).
+            # Never fall back to detox's global gate-attempts file.
             gate_attempts_path=self.root / "gate_attempts.json",
         )
         expected = {s.state_id: s.x0_id for s in self.states(split)}

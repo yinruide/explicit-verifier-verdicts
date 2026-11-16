@@ -1,4 +1,4 @@
-"""data: cleaning/dedupe, the v0.9 split, y* access matrix, reserve lock, manifest."""
+"""data: cleaning/dedupe, the split, y* access matrix, reserve lock, manifest."""
 
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ def test_load_raw_reads_fixture_dir(tmp_path: Path, paradetox_sample):
         paradetox.load_raw(tmp_path, text_field="nope")
 
 
-# ---------------------------------------------------------------- splits (v0.9, II.2.4)
+# splits (paper Sec. 4.2)
 
 SIZES = {"d_fit": 10, "d_gate": 10, "d_gate_reserve": 10, "d_exp1": 5, "unlabeled_pool": "rest"}
 
@@ -52,7 +52,7 @@ def _unsafe_set(ids: list[str], every: int = 3) -> set[str]:
 
 
 def test_split_order_random_first_then_e_unsafe_only():
-    """II.2.4 (v0.9): D_fit, D_gate, D_gate_reserve are drawn from all x0 without looking at
+    """paper Sec. 4.2: D_fit, D_gate, D_gate_reserve are drawn from all x0 without looking at
     a label; D_Exp1 only from the E-UNSAFE x0 that remain; the pool takes the rest."""
     ids = _ids()
     unsafe = _unsafe_set(ids)
@@ -93,7 +93,7 @@ def test_d_exp1_is_a_random_draw_from_the_remaining_e_unsafe():
 
 
 def test_too_few_e_unsafe_stops_and_shrinks_nothing():
-    """II.2.4: fewer than d_exp1 E-UNSAFE x0 remaining -> stop and report."""
+    """paper Sec. 4.2: fewer than d_exp1 E-UNSAFE x0 remaining -> stop and report."""
     ids = _ids(40)  # 30 go to the random splits, 10 remain
     unsafe = set(ids[:3])  # at most 3 of the remaining can be UNSAFE
     with pytest.raises(S.InsufficientUnsafeError) as ei:
@@ -113,7 +113,7 @@ def test_make_splits_rejects_bad_sizes_and_duplicates():
 
 
 def test_split_plan_comes_from_the_config_and_is_pinned_in_the_manifest(tmp_path: Path):
-    """II.2.4: seed and procedure are written into the config and the manifest before step 5
+    """paper Sec. 4.2: seed and procedure are written into the config and the manifest before step 5
     judges any state, and may not change afterwards."""
     from rafr.core.config import load_config, master_seed
     from rafr.core.seeding import COMPONENTS, component_seed
@@ -161,7 +161,7 @@ def test_save_and_load_splits_roundtrip(tmp_path: Path):
     assert S.split_of(m[Split.D_FIT][0], back) is Split.D_FIT
 
 
-# ---------------------------------------------------------------- y* (v0.9: y* = E)
+# y* (y* = E)
 
 
 def _record(text: str, label: SafetyLabel):
@@ -209,7 +209,7 @@ ALLOWED_READS = {
     (Split.D_FIT, L.LabelPurpose.CHANNEL_CHECK),
     (Split.D_FIT, L.LabelPurpose.BASELINE_DIAGNOSTICS),
     (Split.D_FIT, L.LabelPurpose.VERIFIER_SELECTION),
-    (Split.D_FIT, L.LabelPurpose.VERIFIER_DIAGNOSTICS),  # step 6, II.4.2 (D-2026-09-25c)
+    (Split.D_FIT, L.LabelPurpose.VERIFIER_DIAGNOSTICS),  # step 6,
     (Split.D_FIT, L.LabelPurpose.SPLIT_REPORT),
     (Split.D_GATE, L.LabelPurpose.GATE),
     (Split.D_EXP1, L.LabelPurpose.EXP1_OUTCOME),
@@ -221,14 +221,14 @@ ALLOWED_READS = {
     (Split.UNLABELED_POOL, L.LabelPurpose.CALIBRATION_FIT),
     (Split.D_GATE, L.LabelPurpose.CALIBRATION_DIAG),
     (Split.D_GATE, L.LabelPurpose.ECORRECT_COHORT),
-    (Split.D_GATE, L.LabelPurpose.EXT_SMOKE),  # stop point D's E-correct smoke
+    (Split.D_GATE, L.LabelPurpose.EXT_SMOKE),  # the E-correct smoke
 }
 
 
 @pytest.mark.parametrize("split", [sp for sp in S.SPLIT_ORDER if sp is not Split.D_GATE_RESERVE])
 @pytest.mark.parametrize("purpose", list(L.LabelPurpose))
 def test_y_star_access_matrix(tmp_path: Path, split, purpose):
-    """Coding instructions section 4 (v0.9): who may read which split's y*."""
+    """Coding instructions section 4: who may read which split's y*."""
     labels_dir, split_dir = _write_y_star(tmp_path, FIVE)
     if (split, purpose) in ALLOWED_READS:
         ys = L.read_labels(split, purpose, labels_dir=labels_dir, split_dir=split_dir)
@@ -241,7 +241,7 @@ def test_y_star_access_matrix(tmp_path: Path, split, purpose):
 
 
 def test_reserve_y_star_is_unreadable_until_the_first_gate_fails(tmp_path: Path):
-    """II.6.1: D_gate_reserve's y* is not read, scored or fitted before a recorded failed
+    """paper Sec. 4.3: D_gate_reserve's y* is not read, scored or fitted before a recorded failed
     first gate attempt -- then the gate, and only the gate, may read it."""
     labels_dir, split_dir = _write_y_star(tmp_path, FIVE)
     attempts = tmp_path / "gate_attempts.json"
@@ -266,7 +266,8 @@ def test_reserve_y_star_is_unreadable_until_the_first_gate_fails(tmp_path: Path)
 def test_the_split_report_reads_d_fit_only(tmp_path: Path):
     """(2026-09-23): the split report gives D_fit's E-UNSAFE count and share and every
     other split's size only; D_gate's y* is read by the gate alone, and with the segment-3 total
-    nothing lets the reserve's count be recovered by subtraction (II.6.1). The report works with
+    nothing lets the reserve's count be recovered by subtraction (paper Sec. 4.3). The report works
+    with
     every other split's judgments absent from the file -- it does not open them."""
     others = {x for sp in S.SPLIT_ORDER if sp is not Split.D_FIT for x in FIVE[sp]}
     labels_dir, split_dir = _write_y_star(tmp_path, FIVE, skip=others)

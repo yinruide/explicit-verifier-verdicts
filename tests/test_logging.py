@@ -1,4 +1,4 @@
-"""logging: JSONL writer, snapshot contents (II.10), freeze-tag guard."""
+"""logging: JSONL writer, snapshot contents, freeze-tag guard."""
 
 from __future__ import annotations
 

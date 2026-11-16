@@ -1,7 +1,7 @@
-"""parse_fail reporting (II.8.2). Any cell above 2% is flagged loudly, with a breakdown by
-failure reason (the three preregistered categories + the malformed_json guard).
+"""parse_fail reporting (paper Sec. 4.6). Any cell above 2% is flagged loudly, with a breakdown by
+failure reason (the three categories fixed before the runs + the malformed_json guard).
 
-**Reporting grid (v0.8, II.8.2).** The dimension differs by experiment: Exp 1 reports
+**Reporting grid (paper Sec. 4.6).** The dimension differs by experiment: Exp 1 reports
 arm x lambda, Exp 2 reports arm x round. ``by`` selects it — ``"lam"`` (the default, Exp 1) or
 ``"t"`` (Exp 2). The reason is unchanged: B's input is longer, so its failure rate may be
 higher, and the main-analysis accounting (parse_fail = not accepted) depresses FA, which
@@ -16,13 +16,13 @@ from typing import Any
 from rafr.contracts.schemas import PARSE_FAIL_ALERT_THRESHOLD, ParseFailReason
 
 MALFORMED_JSON = ParseFailReason.MALFORMED_JSON.value
-"""II.8.2's fourth category (structured output cut off): counted and reported on its own."""
+"""The design's fourth category (structured output cut off): counted and reported on its own."""
 
 BY_LAMBDA = "lam"
-"""Exp 1 grid: arm x lambda (II.8.2)."""
+"""Exp 1 grid: arm x lambda (paper Sec. 4.6)."""
 
 BY_ROUND = "t"
-"""Exp 2 grid: arm x round (II.8.2, v0.8)."""
+"""Exp 2 grid: arm x round (paper Sec. 4.6)."""
 
 
 def report(
@@ -55,7 +55,7 @@ def report(
             "n_parse_fail": n_fail,
             "parse_fail_rate": rate,
             "ALERT": rate > threshold,
-            # II.8.2: the category of each parse_fail DECISION is its last attempt's; the
+            # paper Sec. 4.6: the category of each parse_fail DECISION is its last attempt's; the
             # truncated structured output (malformed_json) is counted and reported on its own
             "parse_fail_by_final_reason": dict(sorted(final.items(), key=lambda kv: str(kv[0]))),
             "n_parse_fail_malformed_json": final.get(MALFORMED_JSON, 0),

@@ -1,8 +1,8 @@
-"""Exp 2's round loop for math (II.8.3, M.8), shared by the laptop pipeline and the pod.
+"""Exp 2's round loop for math (paper Sec. 4.4, App. E), shared by the laptop pipeline and the pod.
 
 One round, as before: the Core round barrier scores every active trajectory before any
 decision, then the controller decides for each in turn, then the round is written atomically.
-What changed (II.10 math entry, 2026-10-12): the barrier scores all active trajectories
+What changed (math entry, 2026-10-12): the barrier scores all active trajectories
 together, each V in fixed-shape batches (``score_batch``), instead of one full batch per
 trajectory; fixed shape and batch invariance are unchanged, so every score is the one a single
 call would give. Score reuse by state is kept: a text already scored for its question
@@ -12,20 +12,22 @@ call would give. Score reuse by state is kept: a text already scored for its que
 
 * on the laptop inside :class:`pipelines.math_pipeline.MathPipeline` (fixtures and stubs; the
   scores go to the run's ``scores.jsonl``), and
-* on the pod (``env/math_exp2_remote.py``; the smoke of step 6 and the formal Exp 2, the authors
+* on the pod (``scripts/gpu/math_exp2_remote.py``; the smoke of step 6 and the formal Exp 2, the
+authors
   2026-10-13), where :class:`TextScoreStore` keeps the scores in the loop's own directory and
   loads one V at a time: the two generative V do not fit on one GPU together at their fixed
   shapes, so each round loads V1, scores, frees it, then V2.
 
-E never runs here (M.8: after the whole loop, on the laptop; no reference answer on the pod).
+E never runs here (paper App. E: after the whole loop, on the laptop; no reference answer on the
+pod).
 
 A text longer than a V's L_in (2026-10-13; the loop's L_in is 4,096): truncation is
 forbidden, so the trajectory ends there. Its current text -- the rewrite of the previous
 round -- is its final text for E; the previous round's history entry carries
 ``v_input_overlength`` (the round, the V, the token count, L_in), the trajectory makes no
 further decision, and the analysis reports it by arm and drops it from the complete-case
-sensitivity analysis as it does a parse_fail (M.8). Any other text a V refuses (control-token
-text) still stops the loop.
+sensitivity analysis as it does a parse_fail (paper App. E). Any other text a V refuses
+(control-token text) still stops the loop.
 """
 
 from __future__ import annotations

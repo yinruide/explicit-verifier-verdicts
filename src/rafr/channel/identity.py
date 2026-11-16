@@ -1,4 +1,5 @@
-"""Identity channel: ``s_obs = s`` (Exp 2, II.1.3; and lambda = none in Exp 1 diagnostics)."""
+"""Identity channel: ``s_obs = s`` (Exp 2, paper Sec. 4.3; and lambda = none in Exp 1
+diagnostics)."""
 
 from __future__ import annotations
 
@@ -15,5 +16,5 @@ class IdentityChannel:
         return float(s1), float(s2)
 
     def assignment(self, state_id: str, lam: Lambda) -> dict[str, Any]:
-        """Nothing is ever perturbed here (II.10 log fields)."""
+        """Nothing is ever perturbed here (log fields)."""
         return dict(NO_PERTURBATION)

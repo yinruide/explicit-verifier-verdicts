@@ -1,4 +1,4 @@
-"""Real V1 / V2 candidates (II.4.1, App. A.2).
+"""Real V1 / V2 candidates (paper Sec. 5).
 
 Layout::
 

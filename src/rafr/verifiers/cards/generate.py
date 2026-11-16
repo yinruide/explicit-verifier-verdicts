@@ -1,16 +1,16 @@
-"""Generate ``verifier_card.md`` from the download manifest (App. A.2).
+"""Generate ``verifier_card.md`` from the download manifest.
 
     python -m rafr.verifiers.cards.generate \\
         --manifest /workspace/models/model_manifest.json \\
         --out-dir src/rafr/verifiers/cards
 
-App. A.2 requires the card to state: model identity, HF repo + commit hash + weight sha256,
+The design requires the card to state: model identity, HF repo + commit hash + weight sha256,
 how tau_i is determined, score direction and range, the batch cap, and the determinism
 guarantee. the authors additionally asked for the truncation policy, which logit / which class the
 score is read from, and the normalisation. Every one of those has a section below.
 
 The revision and the sha256 are never typed in: they come from the manifest
-``env/download_models.sh`` writes when it downloads the weights. A model that is not in the
+the RunPod driver (not released) writes when it downloads the weights. A model that is not in the
 manifest gets a card that says so, rather than a card with a blank where the hash should be.
 """
 

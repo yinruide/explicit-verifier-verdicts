@@ -1,4 +1,4 @@
-"""Appendix M orchestration using Core decisions, streams, labels and channels.
+"""paper Sec. 5, App. D orchestration using Core decisions, streams, labels and channels.
 
 Only the E boundary reads private references. The controller and verifiers receive
 public problem/solution values. Engineering fixtures inject external boundaries;
@@ -44,13 +44,13 @@ from rafr.validity.cue_diagnostics import compute as compute_cues
 from rafr.validity.gate import detection_vectors, ladder_check, ladder_ci, reliability_by_level
 from rafr.validity.tau import fit_tau
 
-# M.2.1 (2026-10-04 revision): >= 110 E-INCORRECT in each of D_fit and D_gate is a
+# paper App. D.1 (2026-10-04 revision): >= 110 E-INCORRECT in each of D_fit and D_gate is a
 # scale design target. A shortfall is reported loudly and recorded in the step's
 # report; it never stops step 7 / 9 and never adjusts a split.
 INCORRECT_DESIGN_TARGET = 110
 
-# M.9 in-place revision 2026-10-08: in the Exp 2 judgments, a text whose E still times out
-# on the Math-Verify worker wall clock after two retries is UNRESOLVED; its E record keeps
+# paper App. D.1 in-place revision 2026-10-08: in the Exp 2 judgments, a text whose E still times
+# out on the Math-Verify worker wall clock after two retries is UNRESOLVED; its E record keeps
 # this reason. The detail string is the one MathGrader returns (domains/math/grading.py).
 WALL_CLOCK_TIMEOUT = "worker_wall_clock_deadline"
 E_TIMEOUT_UNRESOLVED_REASON = f"e_timeout_after_retries:{WALL_CLOCK_TIMEOUT}"
@@ -180,7 +180,7 @@ class MathPipeline:
             (row["state_id"], row["verifier_id"]): Score.model_validate(row)
             for row in read_jsonl(self.root / "scores.jsonl")
         }
-        # Pending M.12 choices may be filled later; consumed choices may never drift.
+        # Pending choices may be filled later; consumed choices may never drift.
         for phase, expected in read_json(snapshot).get("math_phase_bindings", {}).items():
             if expected != self._phase_values(phase):
                 raise IntegrityError(f"frozen {phase} configuration changed; rebuild in a new run")
@@ -260,7 +260,7 @@ class MathPipeline:
         return digest([qid, self.grader.cache_key(question.problem, reference, candidate)])
 
     def grade_once(self, qid, candidate, *, deferred=None):
-        """Single E call; callers implement M.2.3's two retries for actual E errors.
+        """Single E call; callers implement the design's two retries for actual E errors.
 
         With ``deferred`` (a list), the E log row is appended to it instead of written: a
         worker thread of the initial generation grades without writing, and the main thread
@@ -338,13 +338,15 @@ class MathPipeline:
         return self._evaluations[self._grade_key(qid, candidate)]
 
     def _grade_after_loop(self, qid, candidate):
-        """E for one Exp 2 text after the loop (M.8); an E error is retried twice (II.9.1).
+        """E for one Exp 2 text after the loop (paper App. E); an E error is retried twice (paper
+        Sec. 3).
 
-        M.9 in-place revision 2026-10-08: if all three attempts time out on the Math-Verify
-        worker wall clock, the text is UNRESOLVED -- a task failure counted in M.8's
-        unresolved rate and sensitivity analysis (c) -- and its E record says so, so a
-        rerun reads the same label. Any other E error still stops the step (II.9.1). The
-        initial answers keep M.2.3 (``math_initial``): there an E error excludes the question.
+        paper App. D.1 in-place revision 2026-10-08: if all three attempts time out on the
+        Math-Verify worker wall clock, the text is UNRESOLVED -- a task failure counted in the
+        design's unresolved rate and sensitivity analysis (c) -- and its E record says so, so a
+        rerun reads the same label. Any other E error still stops the step (paper Sec. 3). The
+        initial answers keep paper App. D.1 (``math_initial``): there an E error excludes the
+        question.
         """
         attempts = []
         for _ in range(3):
@@ -573,7 +575,7 @@ class MathPipeline:
         return run_diagnostics(self, stability=stability)
 
     def require_diagnostics(self):
-        """II.4.2 is a required descriptive deliverable, not an effect-size gate."""
+        """The design is a required descriptive deliverable, not an effect-size gate."""
         from pipelines.math_verifier_diagnostics import diagnostic_prompt_identity
         from rafr.domains.math.generation import frozen_models
 
@@ -949,7 +951,7 @@ class MathPipeline:
         self._bind("feedback")
         out = self.root / "exp1"
         out.mkdir(exist_ok=True)
-        self.record_exp1_outcome(out)  # 0.5 step 11: before any controller call
+        self.record_exp1_outcome(out)  # step 11: before any controller call
         states = self._initial_cohort()
         channel = self._channel()
         ids = [state.state_id for state in states]
@@ -1047,7 +1049,7 @@ class MathPipeline:
         return {"n_questions": len(states), "n_decisions": len(completed)}
 
     def require_exp1(self):
-        """0.5 step 12 consumes a completed, unchanged step 11 in formal runs."""
+        """step 12 consumes a completed, unchanged step 11 in formal runs."""
         out = self.root / "exp1"
         marker = self._read_fixed(out / "COMPLETE.json")
         if (
@@ -1134,7 +1136,7 @@ class MathPipeline:
         return {key: arm.value for key, arm in assignment.items()}
 
     def install_loop(self, src, *, smoke, taus=None):
-        """Take a loop the pod ran (``env/math_exp2_remote.py``) into this run, as
+        """Take a loop the pod ran (``scripts/gpu/math_exp2_remote.py``) into this run, as
         ``exp2`` would have written it, so that ``judge`` and ``report`` run on the laptop
         (2026-10-13: E's judgments back on the laptop, no reference on the pod).
 
@@ -1303,12 +1305,12 @@ class MathPipeline:
         return self.report(smoke=True)
 
     def record_exp1_outcome(self, out):
-        """0.5 step 11 / II.9.1: Exp 1's outcome is D_Exp1's y* from step 5 (E); its hash is
+        """step 11 / paper Sec. 3: Exp 1's outcome is D_Exp1's y* from step 5 (E); its hash is
         recorded before any controller call of Exp 1, its single-round smoke included. Frozen."""
         ys = self._labels(Split.D_EXP1, label_access.LabelPurpose.EXP1_OUTCOME)
         rows = [[row.x0_id, row.label.value] for row in ys]
         # Only D_Exp1's rows, read through the label gate: the y* file itself also holds
-        # D_gate_reserve's judgments and is never opened here (II.6.1).
+        # D_gate_reserve's judgments and is never opened here (paper Sec. 4.3).
         record = {
             "split": Split.D_EXP1.value,
             "source": "step 5's E judgments of D_Exp1 via read_labels (purpose exp1_outcome)",
@@ -1320,7 +1322,7 @@ class MathPipeline:
         return read_json(out / "outcome_hash.json"), {row.x0_id: row.label for row in ys}
 
     def exp1_smoke(self):
-        """Math Exp 1's single-round live smoke (2026-10-15; II.4.4 / M.10)."""
+        """Math Exp 1's single-round live smoke (2026-10-15)."""
         from pipelines.math_exp1_smoke import run
 
         if self.config.stage == "smoke":
@@ -1328,7 +1330,7 @@ class MathPipeline:
         return run(self)
 
     def require_smoke_for_exp1(self):
-        """II.4.4 / M.10 (2026-10-15): math's Exp 1 may run before the Exp 2 smoke once its
+        """(2026-10-15): math's Exp 1 may run before the Exp 2 smoke once its
         own single-round live smoke passed; with an Exp 2 smoke report on disk, that one rules."""
         from pipelines.math_exp1_smoke import require
 
@@ -1438,7 +1440,7 @@ class MathPipeline:
         return exp1_rows
 
     def report_exp1(self):
-        """Exp 1's preregistered report before Exp 2 exists (2026-10-15: math's Exp 1 may
+        """Exp 1's primary report before Exp 2 exists (2026-10-15: math's Exp 1 may
         precede the Exp 2 smoke): everything ``report`` computes from Exp 1 alone -- the primary
         and permuted-B contrasts with sensitivities (a) and (b), the Exp 1 diagnostics with the
         gate's r_ref, the drift against the gate, the Exp 1 error boundary and result shape.
@@ -1485,7 +1487,7 @@ class MathPipeline:
 
             report = summarize_smoke(trajectories)
             audit = audit_smoke(self, out, trajectories)
-            # M.10 (2026-10-12): the thresholds the loop ran with -- in step 6, the
+            # (2026-10-12): the thresholds the loop ran with -- in step 6, the
             # session tau, computed before step 7 freezes the same rule on the same data;
             # require_smoke compares them with the frozen ones.
             loop = self._read_fixed(out / "loop_complete.json")

@@ -1,4 +1,5 @@
-"""M.2.1 (2026-10-04): 110 E-INCORRECT per D_fit / D_gate is a design target, not a stop."""
+"""paper App. D.1 (2026-10-04): 110 E-INCORRECT per D_fit / D_gate is a design target, not a
+stop."""
 
 from pipelines import math_pipeline
 

@@ -1,4 +1,4 @@
-"""Math G_fixed and domain prompt configuration, using the Core LLM/controller (M.2, M.8).
+"""Math G_fixed and domain prompt configuration, using the Core LLM/controller (paper App. D.1, E).
 
 Only generation validity differs by domain. Decisions, parsing, retries and decision
 logging remain in ``rafr.controller``. No backbone override exists here.
@@ -26,9 +26,9 @@ from rafr.logging import JsonlWriter
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
 TRUNCATION_REASONS = frozenset({"length", "max_tokens", "max_output_tokens"})
-# M.8 in-place revision 2026-10-04: output cap of math G_fixed and controller requests,
-# reasoning tokens included. Core (detox, II.8.2) keeps 8192 in configs/models.yaml. The
-# M.2.1 probe's longest G_fixed output was 7,468 tokens; truncation is an invalid output,
+# paper App. E in-place revision 2026-10-04: output cap of math G_fixed and controller requests,
+# reasoning tokens included. Core (detox, paper Sec. 4.6) keeps 8192 in configs/models.yaml. The
+# paper App. D.1 probe's longest G_fixed output was 7,468 tokens; truncation is an invalid output,
 # so a tight cap would systematically drop hard questions.
 MAX_OUTPUT_TOKENS = 16384
 
@@ -39,7 +39,7 @@ class MathGenerationOutput(BaseModel):
 
 
 def frozen_models() -> dict[str, Any]:
-    """The Core models configuration with the math output cap applied (M.8).
+    """The Core models configuration with the math output cap applied (paper App. E).
 
     Backbone, effort and temperature are read from Core and drift is rejected, never
     overridden. Only ``max_output_tokens`` is replaced, on a copy: the Core value
@@ -145,7 +145,7 @@ def generate_initial(
     max_attempts: int,
     writer: JsonlWriter | None = None,
 ) -> dict[str, Any]:
-    """Generate one valid first answer before any randomization (M.2.3).
+    """Generate one valid first answer before any randomization (paper App. D.1).
 
     The callback owns the private reference and E logging. Reference data is never
     passed to request construction. E errors retry the same candidate at most twice;

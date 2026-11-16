@@ -1,9 +1,10 @@
-"""The pod's numeric check before any formal score (2026-09-24; decisions.md D-2026-09-24c).
+"""The pod's numeric check before any formal score (2026-09-24).
 
-After loading a verifier on the pod, step 6 (``env/step06_gpu.py``) and Exp 2's loop
-(``env/exp2_gpu.py``) re-score 203 D_fit states drawn with a fixed seed and compare every score
-with the step 2 probe's, bit for bit. One difference stops the job before a single formal score
-is written; the error names the largest absolute difference and how many of the 203 differ.
+After loading a verifier on the pod, step 6 (the RunPod driver (not released)) and Exp 2's loop
+(the RunPod driver (not released)) re-score 203 D_fit states drawn with a fixed seed and compare
+every score with the step 2 probe's, bit for bit. One difference stops the job before a single
+formal score is written; the error names the largest absolute difference and how many of the 203
+differ.
 
     laptop:  build_reference(config_ids, ...) -> data/step06/numeric_check.jsonl (+ .sha256)
     pod:     check_verifier(verifier, reference_rows_of_that_config) -> raises on a difference

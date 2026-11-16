@@ -1,6 +1,6 @@
-"""tau_i selection on D_fit (II.4.1, v0.9): maximize F1; on a plateau take the midpoint.
+"""tau_i selection on D_fit (paper Sec. 5): maximize F1; on a plateau take the midpoint.
 
-v0.9 (C.17) replaced F2 with the symmetric F1, so that the threshold choice is no longer
+  replaced F2 with the symmetric F1, so that the threshold choice is no longer
 coupled to the direction of the primary metric; F2 is still reported, as an auxiliary.
 
 Candidate thresholds are the midpoints between consecutive distinct scores plus the two

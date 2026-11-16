@@ -30,7 +30,7 @@ CONFIG_FILES = (
     "channel",
     "exp1",
     "exp2",
-    "exp2_smoke",  # 0.5 step 10a: the Exp 2 smoke (II.4.4, 2026-09-25)
+    "exp2_smoke",  # step 10a: the Exp 2 smoke (2026-09-25)
     "refusal_phrases",
 )
 
@@ -147,8 +147,7 @@ def prompt_files(
 
 
 class ArchiveReferenceError(RuntimeError):
-    """A config value points into ``archive/``, which the formal pipeline must never read
-    (protocol v0.9, II.10 / App. B.1)."""
+    """A config value points into ``archive/``, which the formal pipeline must never read."""
 
     def __init__(self, found: list[str]):
         self.found = list(found)
@@ -217,7 +216,7 @@ def assert_frozen(
     so that a step is blocked only by the values it actually consumes.
 
     Independently of all that, and with no dry-run exception, the whole config is checked for
-    paths into ``archive/`` (:class:`ArchiveReferenceError`; v0.9, II.10).
+    paths into ``archive/`` (class:`ArchiveReferenceError`).
     """
     assert_no_archive(configs)
     tbd: list[str] = []

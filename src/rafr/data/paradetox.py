@@ -1,7 +1,7 @@
-"""ParaDetox EN (II.2.1): download, clean, deduplicate the x0 pool.
+"""ParaDetox EN (paper Sec. 4.2): download, clean, deduplicate the x0 pool.
 
 Only the toxic source sentence is used; gold neutral references are never used as states
-(II.2.2). Cleaning = whitespace normalization (decision 2b) + exact dedupe on the normalized
+(paper Sec. 4.2). Cleaning = whitespace normalization + exact dedupe on the normalized
 text + drop empties. Nothing else is altered.
 """
 

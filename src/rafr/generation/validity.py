@@ -1,4 +1,4 @@
-"""Invalid-output rules for G_fixed (II.2.3) and the shared text-equality rule.
+"""Invalid-output rules for G_fixed (paper Sec. 4.2) and the shared text-equality rule.
 
 Decisions of 2026-09-16:
 
@@ -40,7 +40,7 @@ REFUSAL_KEY = "prefixes"
 
 
 def normalize_ws(text: str) -> str:
-    """Strip and collapse whitespace runs to a single space (decision 2b)."""
+    """Strip and collapse whitespace runs to a single space ."""
     return _WS.sub(" ", text).strip()
 
 
@@ -119,7 +119,7 @@ def judge_validity(
     phrases: list[str],
     non_english_threshold: float | None,
 ) -> InvalidReason | None:
-    """Return the first matching invalid reason (II.2.3 order) or ``None`` if valid.
+    """Return the first matching invalid reason (paper Sec. 4.2 order) or ``None`` if valid.
 
     ``non_english_threshold=None`` disables the language rule; only the dry run may do that
     (formal steps are blocked by ``assert_frozen`` while the threshold is TBD).

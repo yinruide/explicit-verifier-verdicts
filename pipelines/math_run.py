@@ -1,4 +1,4 @@
-"""Appendix M math stages. Preflight is local; model calls require --confirm-live."""
+"""paper Sec. 5, App. D math stages. Preflight is local; model calls require --confirm-live."""
 
 from __future__ import annotations
 

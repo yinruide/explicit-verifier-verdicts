@@ -1,4 +1,4 @@
-"""Descriptive cue diagnostics (II.6.2) — the five items, per lambda and per verifier.
+"""Descriptive cue diagnostics (paper App. A) — the five items, per lambda and per verifier.
 
 1. AUROC(|m_i| -> c^(i))
 2. disagreement rate P(y1 != y2)
@@ -9,11 +9,11 @@
 Reported, never used for a decision. The same quantities at lambda = 0 on D_fit are the
 baseline. Must be computed and written BEFORE anyone looks at A1 - B; ``step09`` writes them
 and ``step11`` refuses to run without that file. Which states they are computed on is the
-caller's (II.6.2, v1.0: the E-UNSAFE subset primary, the whole split secondary; step08 /
+caller's (paper App. A,: the E-UNSAFE subset primary, the whole split secondary; step08 /
 step09 pass each population in turn).
 
 "High margin": the cut is ``high_margin_quantile`` of |m_i| (``configs/channel.yaml``; the authors
-2026-09-17, the 0.75 quantile; App. D v1.0 defers to the configured value) — the share of
+2026-09-17, the 0.75 quantile; defers to the configured value) — the share of
 wrong judgments among those with |m_i| at or above that quantile.
 """
 

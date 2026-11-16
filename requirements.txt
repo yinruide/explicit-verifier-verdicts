@@ -1,0 +1,23 @@
+# Exact versions of every third-party package this repository imports, as installed in the
+# environment that ran the test suite and regenerated the tables (Python 3.11.5, Windows, CPU).
+# pyproject.toml groups the same packages into extras; its `gpu` extra pins torch 2.8.0, the
+# version the GPU stages ran with (torch 2.8.0+cu128 on an A100).
+# torch 2.14.0+cpu is a CPU build from the PyTorch index (https://download.pytorch.org/whl/cpu).
+anthropic==1.6.0
+huggingface_hub==1.31.0
+math-verify==0.9.0
+matplotlib==3.11.2
+numpy==2.4.6
+openai==3.14.1
+pandas==3.0.5
+pyarrow==25.0.1
+pydantic==2.13.5
+pytest==9.1.1
+python-dotenv==1.2.3
+PyYAML==6.0.3
+sacrebleu==2.6.0
+scipy==1.17.1
+sentence-transformers==6.1.0
+tokenizers==0.23.2
+torch==2.14.0+cpu
+transformers==5.16.1

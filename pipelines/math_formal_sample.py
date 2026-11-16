@@ -1,4 +1,5 @@
-"""M.2.1 formal sample: N eligible DeepMath-103K questions by seed, outside MATH-500 and the probe.
+"""paper App. D.1 formal sample: N eligible DeepMath-103K questions by seed, outside MATH-500 and
+the probe.
 
     python pipelines/math_formal_sample.py --raw-dir data/raw/math/DeepMath-103K \
         --development-source data/raw/math/MATH-500/test.jsonl \
@@ -6,7 +7,7 @@
         --additional-development data/math/m21_probe_2/probe_public.jsonl \
         --out data/math/formal_n9000 [--n 9000] [--workers 6]
 
-No model call. Protocol v1.1 M.2.1 (2026-10-04): the formal generation draws
+No model call. Paper App. D.1 (2026-10-04): the formal generation draws
 N = 9000 questions by seed from the eligible population; the probed questions are not in
 it. Eligibility is the formal loader's own screen, ``dataset._screen_source`` with the
 same development exclusions the formal config declares (MATH-500 and the probe files, by

@@ -1,4 +1,4 @@
-"""Permuted-B (II.7.3 as of protocol v1.0, C.22; decision 6, 2026-09-16, revised by D-2026-09-25b).
+"""Permuted-B (paper Sec. 3; 2026-09-16, revised 2026-09-25).
 
 The whole six-field block of a state is replaced by the block of another state. The mapping is
 a derangement (no state keeps its own block), keyed by the seed ONLY, and written to disk so
@@ -6,7 +6,7 @@ that the run is reproducible: every state has the same donor at all three lambda
 each level it shows the donor's block of THAT level (the donor's fields at the current lambda).
 Keying by (lambda, seed), as before, added a fresh donor draw to every lambda contrast of
 permuted-B, noise that A1 and B do not have -- in a cell whose evidence did not change they
-share one controller answer, and now permuted-B does too (2026-09-25; protocol v1.0).
+share one controller answer, and now permuted-B does too (2026-09-25).
 """
 
 from __future__ import annotations

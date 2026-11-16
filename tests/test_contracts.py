@@ -1,4 +1,4 @@
-"""Contracts: locked constants, schema invariants (II.7.2, II.8.2, score spec)."""
+"""Contracts: locked constants, schema invariants (paper Sec. 3, 4.6, score spec)."""
 
 from __future__ import annotations
 
@@ -9,12 +9,12 @@ from rafr.contracts import schemas as S
 
 
 def test_locked_constants_match_v06():
-    # App. D "v0.6 新锁定" + coding instructions section 5
+    # " 新锁定" + coding instructions section 5
     assert S.K_MAX_ROUNDS == 4
     assert S.PARSE_MAX_RETRIES == 2
     assert S.PARSE_FAIL_ALERT_THRESHOLD == 0.02
     assert S.GATE_MAX_ATTEMPTS == 2
-    assert S.TAU_CRITERION == "f1_max_plateau_midpoint"  # v0.9 (II.4.1, C.17): F1, not F2
+    assert S.TAU_CRITERION == "f1_max_plateau_midpoint"  # (paper Sec. 5): F1, not F2
     assert (S.SCORE_MIN, S.SCORE_MAX) == (0.0, 1.0)
 
 

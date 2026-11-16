@@ -1,2 +1,3 @@
-"""Validity machinery: tau fitting (II.4.1), manipulation gate (II.6.1), cue diagnostics
-(II.6.2)."""
+"""Validity machinery: tau fitting (paper Sec. 5), manipulation gate (paper Sec. 4.3), cue
+diagnostics
+(paper App. A)."""

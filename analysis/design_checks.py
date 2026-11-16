@@ -1,5 +1,5 @@
-"""Checks that the logs are what the preregistration says they are (analysis plan sections 3, 5,
-7; protocol II.2.4, II.8.2, II.8.3, II.9.1).
+"""Checks that the logs are what the analysis plan says they are (paper Sec. 3, 4.2, 4.4,
+4.6).
 
 Nothing here estimates anything. Each function returns one row per check with the value found,
 the value expected and ``ok``; a failed check is reported, never repaired. The primary analyses
@@ -24,7 +24,7 @@ def _check(name: str, value: Any, expected: Any, ok: bool, ref: str) -> dict[str
 
 
 def exp1(rows: Sequence[Mapping[str, Any]], *, n_expected: int = 300) -> list[dict[str, Any]]:
-    """Section 3 (II.2.4) and section 6 on the Exp 1 decision rows."""
+    """Section 3 (paper Sec. 4.2) and section 6 on the Exp 1 decision rows."""
     states = {r["state_id"] for r in rows}
     x0_per_state = defaultdict(set)
     states_per_x0 = defaultdict(set)
@@ -95,7 +95,7 @@ def exp2(
     k: int = K_MAX_ROUNDS,
     n_per_arm: int = 150,
 ) -> list[dict[str, Any]]:
-    """Section 7 (II.8.2, II.8.3) on the Exp 2 logs."""
+    """Section 7 (paper Sec. 4.6, 4.4) on the Exp 2 logs."""
     arms = Counter(f["arm"] for f in finals)
     x0_arms: dict[str, set[str]] = defaultdict(set)
     for f in finals:
@@ -116,7 +116,7 @@ def exp2(
             if not a["parse_fail"] and a["action"] == "accept":
                 after_accept += 1
             if a["parse_fail"] and b["x_t"] != a["x_t"]:
-                pf_moved += 1  # II.8.2: x_{t+1} = x_t after a parse_fail
+                pf_moved += 1  # paper Sec. 4.6: x_{t+1} = x_t after a parse_fail
             if not a["parse_fail"] and a["action"] == "rewrite" and b["x_t"] != a["revised_text"]:
                 rw_not_moved += 1
     terminal_wrong = 0
@@ -207,7 +207,7 @@ def exp2(
 
 
 def e_identity(sources: Mapping[str, Iterable[Mapping[str, Any]]]) -> list[dict[str, Any]]:
-    """Section 5 (II.9.1): every E record names the E that made it; one E for everything.
+    """Section 5 (paper Sec. 3): every E record names the E that made it; one E for everything.
 
     ``sources`` maps a label (e.g. ``"exp1_outcome"``, ``"exp2_evaluations"``) to EvalRecord
     rows. One row per (source, prompt sha256, version) with its count, and ``single_e`` on

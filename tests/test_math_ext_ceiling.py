@@ -119,7 +119,7 @@ def counting_rewrites():
 
 
 def test_unresolved_e_is_a_failure_the_trajectory_continues_and_resume_works(tmp_path):
-    """2026-11-05, the original math Exp 2 rule (M.9): E's UNRESOLVED (three wall-clock
+    """2026-11-05, the original math Exp 2 rule (paper App. D.1): E's UNRESOLVED (three wall-clock
     timeouts) is a task failure; the ceiling goes on as after incorrect, never STOPPED."""
     c, p = client(tmp_path, counting_rewrites())
     seen = []

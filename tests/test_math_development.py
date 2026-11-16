@@ -92,7 +92,8 @@ def test_first_round_acceptance_has_no_later_controller_decision(tmp_path, monke
     "candidate,expected,all_equivalent",
     [
         (r"An intermediate value is \boxed{1}. The final answer is \boxed{2}.", "correct", False),
-        # M.9 (2026-10-03): a self-contradiction is judged by its last box, not arbitrated.
+        # paper App. D.1 (2026-10-03): a self-contradiction is judged by its last box, not
+        # arbitrated.
         (r"The final answer is \boxed{3}. The final answer is \boxed{2}.", "correct", False),
         (r"The final answer is \boxed{4/2}. The final answer is \boxed{2}.", "correct", True),
     ],

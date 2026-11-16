@@ -1,4 +1,4 @@
-"""Appendix M / II.4.2 diagnostics using Core sampling and metric implementations.
+"""paper Sec. 5, App. D / diagnostics using Core sampling and metric implementations.
 
 Only D_fit and pool labels are consumed. SafetyLabel exists solely at the Core
 sampler boundary; every persisted label is CORRECT/INCORRECT/UNRESOLVED. Baseline
@@ -6,9 +6,9 @@ reporting reads existing scores (all of D_fit and the whole pool) and makes no m
 or E calls. Stability adds neutral prefixes and one single-attempt paraphrase of each
 sampled solution.
 
-Stability sample (M.4, 2026-10-13): D_fit only, 150 E-INCORRECT and 150
-E-CORRECT, as detox. The prefixes follow Core II.4.2; the paraphrase instruction is
-the authors' (M.4), its file pinned by sha256 for live runs. The prefixed and paraphrased
+Stability sample (paper Sec. 5, 2026-10-13): D_fit only, 150 E-INCORRECT and 150
+E-CORRECT, as detox. The prefixes follow Core; the paraphrase instruction is
+the authors' (paper Sec. 5), its file pinned by sha256 for live runs. The prefixed and paraphrased
 texts are scored in batches (``MathPipeline._score_items``). With ``score=False`` the
 run stops before scoring and returns those texts: the laptop prepares them (the
 controller's paraphrases, E on them), the pod scores them, and once their scores are in
@@ -39,10 +39,10 @@ from rafr.verifiers import perturb
 PROMPT_DIR = generation.PROMPT_DIR / "perturb"
 N_PER_CLASS = 150
 POPULATIONS = (Split.D_FIT, Split.UNLABELED_POOL)
-#: M.4 (2026-10-13): the stability sample is drawn from D_fit alone.
+# paper Sec. 5 (2026-10-13): the stability sample is drawn from D_fit alone.
 SAMPLE_POPULATION = Split.D_FIT
-#: LF-normalized sha256 of the two perturbation files (M.4: the authors' paraphrase instruction,
-#: 2026-10-12; the three neutral prefixes of Core II.4.2). Live runs refuse any other text.
+# LF-normalized sha256 of the two perturbation files (paper Sec. 5: the authors' paraphrase
+# instruction, 2026-10-12; the three neutral prefixes of Core). Live runs refuse any other text.
 PINNED_PROMPTS = {
     perturb.PARAPHRASE_FILE: "3baf73511556a4afcfe847639f45a38bdb7c90e5ea419733b39046b08aa102d0",
     perturb.PREFIX_FILE: "699d5ea567e654a0af4d5d89e7017841b744a4a5e6874e3f3b0c3edd1d1eba20",
@@ -178,7 +178,7 @@ def _baseline(pipeline, populations, taus, source):
 
 
 def _sample(pipeline, n_per_class):
-    """Core's sampler on D_fit alone (M.4, 2026-10-13); its labels only."""
+    """Core's sampler on D_fit alone (paper Sec. 5, 2026-10-13); its labels only."""
     states = pipeline._states()
     rows = pipeline._labels(SAMPLE_POPULATION, LabelPurpose.VERIFIER_DIAGNOSTICS)
     if any(row.label not in {MathLabel.CORRECT, MathLabel.INCORRECT} for row in rows):
@@ -251,7 +251,7 @@ def _paraphrase(pipeline, row, template):
             if not solution.strip():
                 reason = InvalidReason.EMPTY
     # No identical/non-English check and no extra model retries. Final validity
-    # is completed after E: M.2.3's UNRESOLVED is an invalid wording perturbation.
+    # is completed after E: The design's UNRESOLVED is an invalid wording perturbation.
     return {
         "state_id": row.state_id,
         "question_id": row.x0_id,
@@ -320,7 +320,7 @@ def _stability_key(row, kind, text):
 
 
 def run_diagnostics(pipeline, *, stability=False, n_per_class=N_PER_CLASS, score=True):
-    """Write baseline metrics; optionally run the preregistered stability sample.
+    """Write baseline metrics; optionally run the planned stability sample.
 
     Smaller samples exist only for explicitly offline fixtures. No CLI may select
     an alternate sample size for a live run. Stability is descriptive, not a

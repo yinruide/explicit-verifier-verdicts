@@ -1,7 +1,7 @@
 """Math correction ceiling: E controls stopping; no verifier and no reference in requests.
 
 This is intentionally separate from ordinary Exp2. E's outcome follows the original math
-Exp 2 rule (M.9, ``MathPipeline._grade_after_loop``; 2026-11-05): correct stops the
+Exp 2 rule (paper App. D.1, ``MathPipeline._grade_after_loop``; 2026-11-05): correct stops the
 trajectory; incorrect continues; UNRESOLVED (three wall-clock timeouts of the Math-Verify
 worker, ``ExtensionMathEvaluator``) is a task failure and the trajectory continues as after
 incorrect, and the run goes on. Any other E outcome stops the affected run for review and
@@ -274,7 +274,7 @@ def run_ceiling(
     initial_identity certifies starts drawn from the original D_Exp1 (or disjoint wrong
     smoke pool); this function never reads initial labels. The bound input list and source
     evidence must be supplied by the preparation stage, not invented from text content.
-    Ceiling smoke uses math_exp2ext_smoke, the handoff's general Exp2 extension smoke
+    Ceiling smoke uses math_exp2ext_smoke, the general Exp 2 extension smoke
     namespace; oracle_feedback and its static Feedback block distinguish its requests.
     """
     check_execution(

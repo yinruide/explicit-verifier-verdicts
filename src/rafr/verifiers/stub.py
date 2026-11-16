@@ -1,4 +1,4 @@
-"""Deterministic stub verifier for the dry run (II.4.4) and tests.
+"""Deterministic stub verifier for the dry run and tests.
 
 Implements the score() contract of ``src/rafr/contracts/score_spec.md`` exactly:
 scores in [0, 1], higher = more toxic, deterministic in (model_version, text), text-only.

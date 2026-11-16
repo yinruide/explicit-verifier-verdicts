@@ -1,4 +1,4 @@
-"""Math step 6 on the laptop (docs/math/step06_handoff.md; runbook docs/math/runbook_step06_pod.md).
+"""Math step 6 on the laptop.
 
     python pipelines/math_step06.py inputs                 # D_gate, D_Exp1, rest of the pool
     python pipelines/math_step06.py tau                    # session tau, reused D_fit scores
@@ -7,7 +7,7 @@
     python pipelines/math_step06.py lengths                # every pod input against L_in
     python pipelines/math_step06.py check                  # ready for `up`
     python pipelines/math_step06.py import                 # after the pod: tables -> scores
-    python pipelines/math_step06.py stability-finish       # II.4.2 report (no model)
+    python pipelines/math_step06.py stability-finish # report (no model)
     python pipelines/math_step06.py loop-install --run-id R --smoke   # pulled loop -> run
     python pipelines/math_step06.py smoke-report           # E on every round, smoke report
     python pipelines/math_step06.py cost                   # the session's time and cost
@@ -16,17 +16,17 @@ The pod gets public text, state ids and the session tau only; every label read h
 the laptop, with the purpose Core allows for it:
 
 * ``inputs``: no label. D_gate and D_Exp1 (split order) and the pool states step 2 did not score
-  (pool order) -- the II.10 math entry (2026-10-12): the whole pool is scored, so q_i and
-  the II.4.2 baseline need no label. D_gate_reserve is never an input. ``state_id``, question
+  (pool order) -- the math entry (2026-10-12): the whole pool is scored, so q_i and
+  the baseline need no label. D_gate_reserve is never an input. ``state_id``, question
   id, split, problem, solution; sha256 next to each file.
-* ``tau``: II.4.1 (Core ``fit_tau``, F1, plateau midpoint) on all 1,500 D_fit states with the
+* ``tau``: paper Sec. 5 (Core ``fit_tau``, F1, plateau midpoint) on all 1,500 D_fit states with the
   scores of step 2 (screening 300 + full stage 1,200), y* read for ``tau_fit`` exactly as step 7
-  (``MathPipeline.fit``) reads it; step 7 freezes the same rule on the same data (M.10, the authors
+  (``MathPipeline.fit``) reads it; step 7 freezes the same rule on the same data (the authors
   2026-10-12). The pod uses it for the smoke and for the 203-state check's alternative criterion
   (no flip at tau).
 * ``x1 --smoke``: ``MathPipeline._initial_cohort(smoke=True)`` (30 pool E-INCORRECT states,
   ``dry_run``), in that order; ``x1`` without ``--smoke`` is the formal Exp 2's D_Exp1.
-* ``stability-prepare``: the II.4.2 stability sample (D_fit, 150 / 150 by E label; the authors
+* ``stability-prepare``: the stability sample (D_fit, 150 / 150 by E label; the authors
   2026-10-13), one paraphrase each by the controller's model and E on it, as
   ``math_verifier_diagnostics`` does it; then the texts the pod scores (each sampled state with
   its prefix, each valid paraphrase), keyed by the diagnostics' own digest ids.
@@ -74,11 +74,11 @@ ROUND2_CONFIG = ROOT / "configs" / "math" / "step02_round2.json"
 STEP06 = paths.DATA / "math" / "step06"
 VPROBE2 = paths.DATA / "math" / "vprobe2"
 FORMAL_POD = paths.DATA / "math" / "formal_pod"
-#: Pod stages of step 6: the scored splits and the II.4.2 stability texts.
+# Pod stages of step 6: the scored splits and the stability texts.
 SPLIT_STAGES = ("d_gate", "d_exp1", "pool_rest")
 STAGES = (*SPLIT_STAGES, "stability")
 POOL = Split.UNLABELED_POOL.value
-#: II.10 math alternative criterion (2026-10-12): >= 95% of the 203 bitwise identical.
+# math alternative criterion (2026-10-12): >= 95% of the 203 bitwise identical.
 ALT_IDENTICAL_SHARE = 0.95
 #: Measured step 2 throughput on the formal pod (states per hour, full stage; plan 10.13).
 THROUGHPUT = {"glmz1_9b": 2424 / 4.3, "r1_llama_8b": 2424 / 7.4}
@@ -242,7 +242,7 @@ class Paths:
 
 def selected_verifiers(paths: Paths) -> list[dict[str, Any]]:
     """V1, V2 as step 2 selected them (``stop_point_b``), with their round-2 entries; each
-    ``formal.json`` spec must equal the round-2 spec exactly (handoff 5.1: nothing changed)."""
+    ``formal.json`` spec must equal the round-2 spec exactly (nothing changed)."""
     formal = json.loads(paths.formal_config.read_text(encoding="utf-8"))
     round2 = json.loads(paths.round2_config.read_text(encoding="utf-8"))
     by_id = {c["candidate_id"]: c for c in round2["candidates"]}
@@ -484,7 +484,7 @@ def step2_scores(pipeline, paths: Paths, selected: Sequence[dict[str, Any]]) -> 
 
 
 # ---------------------------------------------------------------------------------------
-# tau at the session start (M.10: from the reused D_fit scores, II.4.1, as step 7)
+# tau at the session start (from the reused D_fit scores, paper Sec. 5, as step 7)
 # ---------------------------------------------------------------------------------------
 
 
@@ -561,7 +561,7 @@ def make_x1(pipeline, paths: Paths, *, smoke: bool) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------------------
-# the stability texts (II.4.2; M.4, 2026-10-12 / 10-13)
+# the stability texts (paper Sec. 5, 2026-10-12 / 10-13)
 # ---------------------------------------------------------------------------------------
 
 
@@ -1037,7 +1037,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def check(paths: Paths, selected: Sequence[dict[str, Any]]) -> int:
-    """Everything the pod needs is on the laptop, final and checked (runbook step 0)."""
+    """Everything the pod needs is on the laptop, final and checked."""
     from rafr.domains.math.config import MathRunConfig
     from rafr.formatter.math_feedback import assert_anonymous_descriptions, load_prompts
 

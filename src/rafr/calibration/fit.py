@@ -15,7 +15,7 @@ There is no quality threshold: a converged, finite fit without leakage is used a
 is. What does stop the run is a clipped share above ``max_clip_share`` (1%) in any verifier x
 split cell (:class:`ClipShareError`, which carries the whole count table).
 
-Prior correction (2026-10-31, reply to stop point C). The pool is what was left after
+Prior correction (2026-10-31). The pool is what was left after
 D_Exp1 took its failures from the states the three random splits left, so the pool's failure
 rate is below the population's while, D_Exp1 being a uniform draw among those failures, neither
 class's score distribution changed. The intercept is therefore moved by

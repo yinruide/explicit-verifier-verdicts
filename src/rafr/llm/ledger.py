@@ -8,7 +8,7 @@ had been typed in, all for a multiplication that can be done afterwards.
 Two kinds of "cached" meet here and must not be confused:
 
 * ``cached`` (the column) — the response came from **our** on-disk cache in
-  ``data/cache/llm`` (II.10). No request left the machine, so nothing was bought; the row
+  ``data/cache/llm``. No request left the machine, so nothing was bought; the row
   replays the token counts of the original call so that the ledger still says what the call
   would cost to reproduce.
 * ``cache_creation_input_tokens`` / ``cache_read_input_tokens`` — **provider-side** prompt

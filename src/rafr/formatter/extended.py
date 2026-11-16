@@ -1,6 +1,6 @@
 """Extension representations (post-pilot, 2026-10-31): shared and domain-agnostic.
 
-Four arms join A1 / B / permuted-B. They are never part of the preregistered runs; their own
+Four arms join A1 / B / permuted-B. They are never part of the primary runs; their own
 runners are ``rafr.experiments.exp1_ext`` and ``exp2_ext``. Each is assembled from blocks the
 domain already renders, so nothing in the shared functions knows a domain's wording:
 
@@ -10,7 +10,7 @@ domain already renders, so nothing in the shared functions knows a domain's word
 * ``verdict_only``: A1 + separator + the domain's verdict block -- B's derived block with the
   two distances (m1, m2) removed; y1, y2, agreement and the conflict direction stay.
 * ``B_pihat``: B's text, unchanged byte for byte, + separator + the domain's pi-hat block
-  (pi-hat_1, pi-hat_2 written with :func:`fixed_significant`'s 5 significant digits, C.23).
+  (pi-hat_1, pi-hat_2 written with :func:`fixed_significant`'s 5 significant digits).
 * ``B_pihat_mismatched``: the same, with ONLY pi-hat_1 and pi-hat_2 taken from the donor state
   (its pi-hat at the current lambda); B's six fields and scores stay this state's.
 

@@ -1,11 +1,11 @@
-"""Parse one controller attempt (II.8.2).
+"""Parse one controller attempt (paper Sec. 4.6).
 
-Failure categories (preregistered): refusal; action not in {accept, rewrite}; action ==
+Failure categories (fixed before the runs): refusal; action not in {accept, rewrite}; action ==
 rewrite with empty revised_text. ``action == rewrite`` with ``revised_text == x_t`` (under
 the whitespace-normalized equality rule) is a VALID empty rewrite. ``MALFORMED_JSON`` is the
 guard category for truncated output (see ``ParseFailReason``).
 
-``refusal_like`` (decision 1c) is a flag only: a phrase-list match on ``revised_text`` never
+``refusal_like`` is a flag only: a phrase-list match on ``revised_text`` never
 changes the parse outcome.
 """
 

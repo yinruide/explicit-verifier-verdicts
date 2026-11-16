@@ -1,4 +1,4 @@
-"""Step 12 — Exp 2 main experiment (0.5 step 12; 0.2, II.8.3, II.9.3; task 2026-09-24 s. 5).
+"""Step 12 — Exp 2 main experiment (step 12; 0.2, paper Sec. 4.4, 3).
 
     python pipelines/step12_exp2.py x1                      # laptop: the x1 file for the pod
     python pipelines/step12_exp2.py loop --run-dir D --x1-file F --x1-sha256 H \\
@@ -9,20 +9,20 @@
     python pipelines/step12_exp2.py report --run-id ID [--exp1-run-dir DIR]
     python pipelines/step12_exp2.py cutpoint   # laptop, before step 12: semantic cutpoint on D_fit
 
-The loop runs on the rented pod and only there is anything scored (II.8.3): the controller calls
-(OpenAI; the pod's OPENAI_API_KEY, checked for presence only) and V1 / V2 in process through the
-one scoring factory (``models.verifiers.factory``, the probe's own code, checked against the
+The loop runs on the rented pod and only there is anything scored (paper Sec. 4.4): the controller
+calls (OpenAI; the pod's OPENAI_API_KEY, checked for presence only) and V1 / V2 in process through
+the one scoring factory (``models.verifiers.factory``, the probe's own code, checked against the
 probe's records; cuda records and a CUDA run only). Before loading, the loop checks that it runs
 on the fixed formal pod (``models.verifiers.formal_pod``), and after loading it re-scores the 203
 D_fit states of the numeric reference and compares them with the probe's scores bit for bit; a
-difference stops it before the first controller call (2026-09-24, D-2026-09-24c point 6).
+difference stops it before the first controller call (2026-09-24, point 6).
 Round-synchronous batching, K = 4, identity channel; every round is written to
 its own directory and marked COMPLETE only when it is whole (``rafr.experiments.exp2.run_loop``),
-and ``env/exp2_gpu.py`` pulls each round back as soon as it is complete. A resume starts from the
-laptop's latest complete round. Each round prints the controller's running cost (ledger x list
-price). The run is three segments, formal and smoke alike: ``x1`` on the laptop (the only one
-that reads y*, and it writes none into the x1 file) -> ``loop`` on the pod -> ``judge`` / ``panel``
-/ ``report`` on the laptop. The loop reads the x1 file, the probe's records, the numeric
+and the RunPod driver (not released) pulls each round back as soon as it is complete. A resume
+starts from the laptop's latest complete round. Each round prints the controller's running cost
+(ledger x list price). The run is three segments, formal and smoke alike: ``x1`` on the laptop (the
+only one that reads y*, and it writes none into the x1 file) -> ``loop`` on the pod -> ``judge`` /
+``panel`` / ``report`` on the laptop. The loop reads the x1 file, the probe's records, the numeric
 reference, the tau file and the shipped code's configs and prompts -- no y*, nothing under data/
 -- and refuses to run without ``--key-from-env``, so it reads no .env and builds no Anthropic
 client (tests/test_exp2_runtime.py). E takes no part in the loop, and the pod holds no
@@ -30,40 +30,41 @@ Anthropic, xAI or Qwen key:
 
 * ``judge`` (laptop): E judges every round text of every trajectory in both arms, deduplicated
   by text (``round_judgments.jsonl``); the t = 1 texts ARE D_Exp1's states, so their judgments
-  are step 5's y*, read through the label gate (purpose EXP2_T1) and never re-bought (II.8.3);
-  every final also gets quality(x0, x_T) = TextDetox SIM (LaBSE on the CPU,
-  ``rafr.domains.detox.semantic``; 2026-09-28), whose preregistered cutpoint ``cutpoint``
+  are step 5's y*, read through the label gate (purpose EXP2_T1) and never re-bought (paper Sec.
+  4.4); every final also gets quality(x0, x_T) = TextDetox SIM (LaBSE on the CPU,
+  ``rafr.domains.detox.semantic``; 2026-09-28), whose cutpoint fixed before Exp 2 ``cutpoint``
   computed beforehand on D_fit's (x0, x1) pairs;
 * ``panel`` (laptop): each panel member re-judges both arms' x_T with E's prompt, on its own
-  (II.3, III.1.2); ``models.panel`` values are the authors' (App. D, filled 2026-09-24);
+  (paper Sec. 3, 4.6); ``models.panel`` values are the authors' (filled 2026-09-24);
 * ``report``: TFR contrast (arm-stratified bootstrap), sensitivities, c_t / R_t^(a), decision
   accuracy, rewrite improvement, error boundary alignment, the panel sensitivity when the
   panel files exist, and with ``--exp1-run-dir`` the transport diagnostic.
 
-**Smoke mode** (``--smoke``; protocol II.4.4 as revised 2026-09-25, 0.5 step 10a): one short pod
+**Smoke mode** (``--smoke``; revised 2026-09-25, step 10a): one short pod
 session after step 10 and before step 11 that only shows the chain runs on the real components.
 Its shape is ``configs/exp2_smoke.yaml``: A1 arm only; x1 = the G_fixed states of N = 30 E-UNSAFE
 states of the UNLABELED POOL drawn by a fixed seed (their y* read under label purpose DRY_RUN;
-``x1 --smoke``), never D_Exp1 / D_fit / D_gate / D_gate_reserve; the loop exactly as II.8.3 (K = 4,
-accept allowed from t = 1, V1 / V2 in process through the factory, the formal pod and the 203-state
-numeric check as for a formal run); the controller prompt byte for byte the formal one, its hashes
-in ``loop_setup.json``; the controller seed namespace and cache key an experiment id of its own
-(``exp2_smoke``); every request the controller actually received written to ``prompts_sent.jsonl``
-for the report's prompt spot-check. Every output goes under ``runs/exp2_smoke/`` with a SMOKE
-marker; the formal commands refuse a smoke run and a smoke run refuses the formal x1 file.
+``x1 --smoke``), never D_Exp1 / D_fit / D_gate / D_gate_reserve; the loop exactly as paper Sec. 4.4
+(K = 4, accept allowed from t = 1, V1 / V2 in process through the factory, the formal pod and the
+203-state numeric check as for a formal run); the controller prompt byte for byte the formal one,
+its hashes in ``loop_setup.json``; the controller seed namespace and cache key an experiment id of
+its own (``exp2_smoke``); every request the controller actually received written to
+``prompts_sent.jsonl`` for the report's prompt spot-check. Every output goes under
+``runs/exp2_smoke/`` with a SMOKE marker; the formal commands refuse a smoke run and a smoke run
+refuses the formal x1 file.
 ``judge --smoke`` reuses the pool's y* for t = 1 (UNSAFE by construction) and buys E's judgment of
-every later round text and x_T; ``report --smoke`` writes ``smoke_report.json`` with the II.4.4
+every later round text and x_T; ``report --smoke`` writes ``smoke_report.json`` with the
 items -- T distribution and non-converged count, per-round E judgments and x_T failures, the
 accept rate by observed (y1, y2) at t = 1 and t = 2, parse_fail / refusal_like counts, the prompt
 spot-check (O_t injected, budget slot = 4, five significant digits) -- and a list of
 ``engineering_defects``. No behaviour of the controller is a release condition; the formal Exp 2
-(``x1``, ``env/exp2_gpu.py up / start``) requires only that a smoke report with no engineering
-defect is on disk (:func:`require_smoke_report`; App. B.1: the smoke never changes the controller
-prompt, the formatter, K, the starting population or the controller's inputs).
+(``x1``, the RunPod driver's ``up`` / ``start``, not released) requires only that a smoke report
+with no engineering defect is on disk (func:`require_smoke_report`;: the smoke never changes the
+controller prompt, the formatter, K, the starting population or the controller's inputs).
 
 The earlier smoke-only flags stay usable for engineering pushes but make a run invalid as the
 step 10a smoke (``valid_for_release: false`` in the report): ``--v1 / --v2`` (other probe
-config_ids), ``--tau-placeholder`` (one tau for both verifiers or two, V1 then V2, D-2026-09-25e)
+config_ids), ``--tau-placeholder`` (one tau for both verifiers or two, V1 then V2)
 and ``--always-toxic-stubs`` (V1 / V2 = stubs scoring every text 1.0, 2026-09-24; no factory
 verifier is loaded, so no numeric check, recorded as not applicable). Reaching round 4 is no
 condition of anything: rounds 3 and 4 and the resume path are covered by the always-rewrite stub
@@ -175,9 +176,9 @@ JUDGE_SECTIONS: tuple[str, ...] = ("models.evaluator", "exp2.design", "exp2.x0")
 SMOKE_DIR_NAME = "exp2_smoke"
 SMOKE_MARKER = "SMOKE"
 SMOKE_CONFIG = "exp2_smoke"
-"""``configs/exp2_smoke.yaml``: the shape of the step 10a smoke (II.4.4, 2026-09-25)."""
+"""``configs/exp2_smoke.yaml``: the shape of the step 10a smoke (2026-09-25)."""
 SMOKE_REPORT = "smoke_report.json"
-"""The II.4.4 smoke report; the formal Exp 2 needs one with no engineering defect on disk."""
+"""The smoke report; the formal Exp 2 needs one with no engineering defect on disk."""
 PROMPTS_SENT = "prompts_sent.jsonl"
 """Smoke only: every controller request as actually sent, for the prompt spot-check."""
 X1_DIR_NAME = "exp2"
@@ -197,7 +198,7 @@ def _sha256(path: Path) -> str:
 
 
 def bootstrap_settings(configs) -> tuple[int, int]:
-    """(n_boot, seed) for the TFR contrast CI (III.1.2).
+    """(n_boot, seed) for the TFR contrast CI (paper Sec. 4.6).
 
     B = 10000 is locked. The seed is this run's seed, derived from the one master seed
     (component ``exp2_run``), and is written into the analysis output and the run snapshot.
@@ -207,8 +208,8 @@ def bootstrap_settings(configs) -> tuple[int, int]:
 
 
 def load_verifier(models_cfg, key: str, *, config_id: str | None = None, records=None):
-    """V1 / V2 through the one factory (task 2026-09-24 section 3), formal: a cuda record and a
-    CUDA run only (D-2026-09-24c point 6), smoke runs included -- they test that path. Stubs and
+    """V1 / V2 through the one factory, formal: a cuda record and a
+    CUDA run only (point 6), smoke runs included -- they test that path. Stubs and
     the registry guard backend are refused. ``config_id`` overrides the configured id (smoke
     mode only); ``records`` are the probe records' directories (on the pod: ``--records``)."""
     if config_id is None:
@@ -227,7 +228,7 @@ def load_verifier(models_cfg, key: str, *, config_id: str | None = None, records
 
 
 def check_pod(models_cfg: Mapping[str, Any], echo: Echo) -> dict[str, Any]:
-    """The fixed formal pod (image fingerprint, GPU; D-2026-09-24c point 6), before loading."""
+    """The fixed formal pod (image fingerprint, GPU; point 6), before loading."""
     try:
         return formal_pod.check_here(models_cfg, echo)
     except formal_pod.FormalPodError as exc:
@@ -238,7 +239,7 @@ def check_numbers(
     verifiers: Sequence[Any], reference: Path, reference_sha256: str, echo: Echo
 ) -> dict[str, Any]:
     """The 203 D_fit states re-scored by each loaded verifier and compared with the probe's
-    scores bit for bit (D-2026-09-24c point 6); a difference stops the loop before any call."""
+    scores bit for bit (point 6); a difference stops the loop before any call."""
     ref = numeric_check.read_reference(Path(reference), reference_sha256)
     out: dict[str, Any] = {}
     for v in verifiers:
@@ -258,10 +259,10 @@ def prior_from_y_star(
     purpose: L.LabelPurpose = L.LabelPurpose.EXP2_T1,
 ) -> dict[str, EvalRecord]:
     """``text_hash -> EvalRecord``: step 5's judgments of the x1 states, which ARE the t = 1 texts
-    (II.8.3, v0.9: t = 1 reuses step 5's E judgment). Formal run: D_Exp1 through the label gate
-    under purpose EXP2_T1. Step 10a smoke: the unlabeled pool under purpose DRY_RUN (II.4.4:
-    t = 1 is UNSAFE by construction, so a SAFE record means the x1 file is not the smoke's).
-    Every record must come from the configured E (II.9.1) and every x1 must be covered --
+    (paper Sec. 4.4,: t = 1 reuses step 5's E judgment). Formal run: D_Exp1 through the label gate
+    under purpose EXP2_T1. Step 10a smoke: the unlabeled pool under purpose DRY_RUN
+    (t = 1 is UNSAFE by construction, so a SAFE record means the x1 file is not the smoke's).
+    Every record must come from the configured E (paper Sec. 3) and every x1 must be covered --
     re-buying one could label the same text differently in the two experiments."""
     ys = L.read_labels(split, purpose)
     by_state = {y.state_id: y.record for y in ys}
@@ -284,7 +285,7 @@ def prior_from_y_star(
 
 
 def refuse_stub_controller(models_cfg: Mapping[str, Any]) -> None:
-    """A controller whose model id starts with ``stub-`` is for tests only (II.4.4): every
+    """A controller whose model id starts with ``stub-`` is for tests only: every
     formal step and the step 10a smoke refuse it, as they refuse a stub verifier."""
     model = str((models_cfg.get("controller") or {}).get("model", ""))
     if is_stub_controller(model):
@@ -296,9 +297,9 @@ def refuse_stub_controller(models_cfg: Mapping[str, Any]) -> None:
 
 def controller_prompt_hashes(models_cfg: Mapping[str, Any], k: int) -> dict[str, str]:
     """sha256 of the controller's three prompt files and of the system prompt as rendered with
-    the decision budget ``k`` (II.4.4: the smoke's prompt is the formal one, byte for byte).
+    the decision budget ``k`` (the smoke's prompt is the formal one, byte for byte).
 
-    The file hashes are taken over the LF-normalized bytes (decisions.md D-2026-09-27), like E's,
+    The file hashes are taken over the LF-normalized bytes, like E's,
     the verifiers' and the perturbation prompts': a Windows checkout may hold CRLF where the pod
     holds LF, and the check must not depend on which machine made it."""
     c = models_cfg["controller"]
@@ -314,7 +315,7 @@ def controller_prompt_hashes(models_cfg: Mapping[str, Any], k: int) -> dict[str,
 
 
 class PromptRecorder:
-    """Smoke only (II.4.4): wraps the LLM client and appends every controller request as the
+    """Smoke only: wraps the LLM client and appends every controller request as the
     provider received it -- system prompt, user turn, attempt index, prompt hash -- to
     ``prompts_sent.jsonl``, so the report can check what was actually sent. Nothing about the
     request or the answer is changed; the ledger is the inner client's."""
@@ -354,7 +355,7 @@ def smoke_cfg(cfgs: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def smoke_x1(cfgs: Mapping[str, Any], limit: int | None = None) -> tuple[list[State], dict]:
-    """The smoke's starting states (II.4.4, 2026-09-25): N E-UNSAFE states of the unlabeled pool
+    """The smoke's starting states (2026-09-25): N E-UNSAFE states of the unlabeled pool
     by a seeded shuffle, their y* read through the label gate under purpose DRY_RUN. No other
     split is touched. ``limit`` overrides N for an engineering pass (recorded; such a run is not
     valid for release)."""
@@ -399,7 +400,7 @@ def smoke_reports_on_disk() -> list[tuple[Path, dict[str, Any]]]:
 
 
 def require_smoke_report() -> Path:
-    """The one release condition of the formal Exp 2 (II.4.4, 2026-09-25): a step 10a smoke
+    """The one release condition of the formal Exp 2 (2026-09-25): a step 10a smoke
     report is on disk and its engineering-defect row was not triggered (or the smoke was rerun
     after the fix and passes). No behaviour of the controller enters this check."""
     reports = smoke_reports_on_disk()
@@ -517,7 +518,7 @@ def cumulative_cost(rd: Path, model: str, k: int = K_MAX_ROUNDS) -> dict[str, An
 
 
 def snapshot(rd: Path, *, step: str, cfgs: Mapping[str, Any], extra: dict[str, Any]) -> None:
-    """II.10 run snapshot. On the pod the code is a `git archive` without .git: the commit is
+    """run snapshot. On the pod the code is a `git archive` without .git: the commit is
     then the RAFR_GIT_HEAD the setup script exports, recorded as such."""
     try:
         write_snapshot(rd, step=step, configs=dict(cfgs), extra=extra)
@@ -528,7 +529,7 @@ def snapshot(rd: Path, *, step: str, cfgs: Mapping[str, Any], extra: dict[str, A
         dst = Path(rd) / "configs"
         if dst.exists():
             shutil.rmtree(dst)
-        copy_tree_lf(paths.CONFIGS, dst)  # LF whatever the checkout holds (D-2026-09-27)
+        copy_tree_lf(paths.CONFIGS, dst)  # LF whatever the checkout holds
         (Path(rd) / "snapshot.json").write_text(
             json.dumps(
                 {
@@ -579,7 +580,7 @@ def cmd_x1(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> int
             raise SystemExit("--limit is for smoke tests only: Exp 2 runs on all of D_Exp1")
         if get(cfgs["exp2"], "x0.source") != "d_exp1":
             raise SystemExit("exp2.x0.source must be d_exp1 (group 6d decision)")
-        # II.4.4 (2026-09-25): the formal Exp 2 starts only after a valid step 10a smoke report
+        # (2026-09-25): the formal Exp 2 starts only after a valid step 10a smoke report
         echo(f"[step12] step 10a smoke report: {require_smoke_report()}")
         states = io.load_states(Split.D_EXP1)
     path = x1_path(smoke=args.smoke)
@@ -604,7 +605,7 @@ def build_setup(
 ) -> exp2.Exp2Setup:
     """The formal setup reads ``configs/exp2.yaml``; the step 10a smoke reads
     ``configs/exp2_smoke.yaml`` (A1 only, its own seed components and controller seed
-    namespace, II.4.4). Everything else -- K, the identity channel, the scorer, E's role -- is
+    namespace). Everything else -- K, the identity channel, the scorer, E's role -- is
     the same code path. ``quality_fn`` is quality(x0, x_T) for the finals: only ``judge`` (the
     laptop) passes one (:func:`make_quality_fn`); the pod's loop never builds it."""
     if smoke:
@@ -641,7 +642,7 @@ def build_setup(
 def placeholder_taus(values: float | Sequence[float]) -> tuple[float, float]:
     """``--tau-placeholder``: one value for both verifiers (the always-toxic smoke: 0.5), or
     one per verifier, V1 then V2 (the real V1 / V2 smoke: the probe's D_fit F1 taus, the authors
-    2026-09-25, D-2026-09-25e). Placeholders either way: smoke runs only."""
+    2026-09-25). Placeholders either way: smoke runs only."""
     vals = [float(v) for v in (values if isinstance(values, list | tuple) else [values])]
     if len(vals) == 1:
         return vals[0], vals[0]
@@ -669,14 +670,14 @@ def cmd_loop(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> i
             "score 1.0, above any tau)"
         )
     else:
-        # II.4.4 (2026-09-25): the smoke's controller prompt and formatter templates are the
+        # (2026-09-25): the smoke's controller prompt and formatter templates are the
         # formal ones, byte for byte -- no placeholder may be left in either
         assert_frozen(
             cfgs,
             extra_files=[TEMPLATES_PATH],
             only_sections=["models.controller", "models.verifiers"],
         )
-    refuse_stub_controller(models)  # a stub- controller is for tests only (II.4.4)
+    refuse_stub_controller(models)  # a stub- controller is for tests only
     if not args.confirm:
         raise SystemExit("the loop spends money on controller calls: add --confirm")
     if get(cfgs["exp2"], "design.channel") != "identity":
@@ -730,7 +731,7 @@ def cmd_loop(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> i
             raise
     client = build_pod_client(models, run_dir=rd, cache_dir=Path(args.cache_dir or rd / "cache"))
     if args.smoke:
-        # II.4.4: every request the controller actually received, for the prompt spot-check
+        # every request the controller actually received, for the prompt spot-check
         client = PromptRecorder(client, rd / PROMPTS_SENT)
     ccfg = ctrl.build_config(
         models,
@@ -751,7 +752,7 @@ def cmd_loop(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> i
             "seed_namespace": setup.seed_namespace,
             "configured_n": int(get(sc, "x0.n", 30)),
             "verifier_override": bool(args.v1 or args.v2),
-            # II.4.4: the controller prompt is the formal one, byte for byte
+            # the controller prompt is the formal one, byte for byte
             "controller_prompt": controller_prompt_hashes(models, setup.k),
             "prompts_sent_file": PROMPTS_SENT,
         }
@@ -806,7 +807,7 @@ def cmd_loop(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> i
         v2.close()
     echo(f"[step12] loop complete: {rd}")
     if args.smoke:
-        # information only (II.4.4, 2026-09-25): how far the trajectories went is a result to
+        # information only (2026-09-25): how far the trajectories went is a result to
         # report, never a condition -- no round has to be reached for the smoke to count
         echo(f"[step12] SMOKE decisions per round (this run): {dict(sorted(per_round.items()))}")
     return 0
@@ -841,8 +842,8 @@ def cmd_judge(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> 
     quality = make_quality_fn(cfgs)
     ecfg = judge.build_config(cfgs["models"])
     client = build_client(cfgs["models"], run_dir=rd)
-    # t = 1 reuses step 5's y* (II.8.3): D_Exp1 under EXP2_T1 for the formal run; for the
-    # step 10a smoke the pool's y* under DRY_RUN, UNSAFE by construction (II.4.4)
+    # t = 1 reuses step 5's y* (paper Sec. 4.4): D_Exp1 under EXP2_T1 for the formal run; for the
+    # step 10a smoke the pool's y* under DRY_RUN, UNSAFE by construction
     if args.smoke:
         prior = prior_from_y_star(
             states, ecfg, split=Split.UNLABELED_POOL, purpose=L.LabelPurpose.DRY_RUN
@@ -906,7 +907,7 @@ def panel_labels(rd: Path) -> dict[str, dict[str, str | None]]:
 
 def _observation_shown(row: Mapping[str, Any]) -> str:
     """The O_t the formatter rendered for this decision row, rebuilt from the row's own
-    post-channel scores and thresholds (the same pure function, II.1.4)."""
+    post-channel scores and thresholds (the same pure function, paper App. E)."""
     obs = Observation(
         state_id=row["state_id"],
         s1_obs=float(row["s1_tilde"]),
@@ -928,11 +929,11 @@ def prompt_spot_check(
     k: int,
     min_trajectories: int,
 ) -> dict[str, Any]:
-    """II.4.4: for at least ``min_trajectories`` trajectories (the ones with the most rounds,
+    """for at least ``min_trajectories`` trajectories (the ones with the most rounds,
     then by x0_id), every round's request as actually sent: O_t injected (the formatter's string
     is in the user turn), the decision budget slot rendered with ``k`` (the system prompt is the
     template rendered with k, byte for byte), and every score / threshold shown with five
-    significant digits (II.7.1). Each failure is an engineering defect."""
+    significant digits (paper Sec. 3). Each failure is an engineering defect."""
     by_x0: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     for r in rows:
         by_x0[r["x0_id"]].append(r)
@@ -990,14 +991,14 @@ def smoke_report(
     finals: Sequence[Mapping[str, Any]],
     rows: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    """The II.4.4 (2026-09-25) smoke report. Everything in it is reported, nothing decides
+    """The (2026-09-25) smoke report. Everything in it is reported, nothing decides
     anything about the chain except the ``engineering_defects`` list; ``valid_for_release`` is
     the one release condition of the formal Exp 2 (:func:`require_smoke_report`)."""
     sc = smoke_cfg(cfgs)
     setup = json.loads((rd / "loop_setup.json").read_text(encoding="utf-8"))
     k = int(setup.get("k", K_MAX_ROUNDS))
     profile = setup.get("smoke_profile") or {}
-    # T: the round of the terminal text -- accepted_at, or K + 1 for x_{K+1} (II.8.3)
+    # T: the round of the terminal text -- accepted_at, or K + 1 for x_{K+1} (paper Sec. 4.4)
     t_of = [int(f["accepted_at"]) if f["accepted"] else k + 1 for f in finals]
     t_distribution = {str(t): t_of.count(t) for t in sorted(set(t_of))}
     rj = list(read_jsonl(rd / exp2.ROUND_JUDGMENTS)) if (rd / exp2.ROUND_JUDGMENTS).exists() else []
@@ -1039,7 +1040,7 @@ def smoke_report(
         defects.append("the loop did not complete all rounds (resume / round writing)")
     if not rj:
         defects.append(f"{exp2.ROUND_JUDGMENTS} missing: E's round judgments were not made")
-    # what makes this run the step 10a smoke of II.4.4, and what would not
+    # what makes this run the step 10a smoke of, and what would not
     not_valid: list[str] = []
     if setup.get("arms") != ["A1"]:
         not_valid.append(f"arms {setup.get('arms')} (II.4.4: A1 only)")
@@ -1099,7 +1100,7 @@ def cmd_report(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) ->
     if not args.smoke:
         assert_frozen(cfgs, extra_files=[TEMPLATES_PATH], only_sections=GUARD_SECTIONS)
     rd = existing_run_dir(args.run_id, smoke=args.smoke)
-    try:  # II.9.1: no report over a missing or unfinished judge pass
+    try:  # paper Sec. 3: no report over a missing or unfinished judge pass
         exp2.require_judge_complete(rd)
     except exp2.JudgeNotCompleteError as exc:
         smoke = " --smoke" if args.smoke else ""
@@ -1132,7 +1133,7 @@ def cmd_report(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) ->
         },
         "mechanism": exp2_tfr.mechanism(rows, truth),
         "error_boundary_alignment": error_boundary.exp2(rows, truth),
-        # III.1.2 (v1.0): accept rate by arm x round x observed (y1, y2), descriptive
+        # paper Sec. 4.6: accept rate by arm x round x observed (y1, y2), descriptive
         "evidence_sensitivity": evidence_sensitivity.exp2(rows),
         "controller_cost": cumulative_cost(rd, get(cfgs["models"], "controller.model")),
     }
@@ -1218,7 +1219,7 @@ def write_cutpoint(path: Path, value: float) -> None:
 
 
 def cmd_cutpoint(args: argparse.Namespace, cfgs: Mapping[str, Any], echo: Echo) -> int:
-    """The preregistered cutpoint of the "low preservation among SAFE" report (the authors
+    """The cutpoint fixed before Exp 2 of the "low preservation among SAFE" report (the authors
     2026-09-28): the 10% quantile of quality(x0, x1) over the D_fit pairs, x1 = the G_fixed
     state. Reads only D_fit's state file (x0 and x1 text, no label) -- never y*, never D_Exp1
     or an Exp 2 text -- writes the value into configs/exp2.yaml and the report and the

@@ -1,4 +1,4 @@
-"""M.2 / M.8 integration through the unchanged Core controller and LLM client."""
+"""paper App. D.1, E integration through the unchanged Core controller and LLM client."""
 
 from __future__ import annotations
 
@@ -56,7 +56,7 @@ def test_fixed_backbone_and_equal_task_information_for_generation_controller():
     assert req.model == cfg.model == "gpt-5.6-terra"
     assert req.decoding == cfg.decoding
     assert req.decoding["reasoning_effort"] == "medium"
-    assert req.decoding["max_output_tokens"] == 16384  # M.8 in-place revision 2026-10-04
+    assert req.decoding["max_output_tokens"] == 16384  # paper App. E in-place revision 2026-10-04
     assert "temperature" not in req.decoding
     task = (PROMPT_DIR / "task.txt").read_text(encoding="utf-8").strip()
     assert task in req.messages[0]["content"]
@@ -72,7 +72,7 @@ def test_math_output_cap_does_not_touch_the_core_controller_configuration():
     from rafr.domains.math.generation import frozen_models
 
     assert frozen_models()["controller"]["decoding"]["max_output_tokens"] == 16384
-    # Core (detox, II.8.2) keeps its own cap, also within this process.
+    # Core (detox, paper Sec. 4.6) keeps its own cap, also within this process.
     assert load_config("models")["controller"]["decoding"]["max_output_tokens"] == 8192
 
 

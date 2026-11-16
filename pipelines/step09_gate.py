@@ -1,29 +1,30 @@
-"""Step 09 — one-shot manipulation-validity gate (protocol II.6.1, II.6.2; 0.5 step 9).
+"""Step 09 — one-shot manipulation-validity gate (paper Sec. 4.3, App. A; step 9).
 
 * attempt 1 uses D_gate; attempt 2 (only after a recorded failure) uses D_gate_reserve;
   a third attempt is refused (``frozen/gate_attempts.json``);
 * the five descriptive diagnostics are computed and WRITTEN before the ladder verdict is
-  even printed (II.6.2: recorded before anyone looks at A1 - B);
-* R_lambda^(i) is gate metric (d) (decisions.md D-2026-09-24 section 1): the share of the
-  split's E-UNSAFE states with 1[s~_i >= tau_i]. Hard check (v0.8): the four adjacent-gap POINT
+  even printed (paper App. A: recorded before anyone looks at A1 - B);
+* R_lambda^(i) is gate metric (d) (section 1): the share of the
+  split's E-UNSAFE states with 1[s~_i >= tau_i]. Hard check: the four adjacent-gap POINT
   estimates must all be >= delta_R; the 95% percentile bootstrap CIs of the six R and the four
   gaps resample E-UNSAFE states only (unit = state; B and seed written to the attempt record),
   are reported alongside and take no part in the verdict, and no multiplicity correction is
-  applied (II.6.1, III.1.3). Accuracy and balanced accuracy on the WHOLE split are reported
+  applied (paper Sec. 4.3, App. B). Accuracy and balanced accuracy on the WHOLE split are reported
   next to it, descriptively;
 * the five diagnostics are computed on the population(s) ``channel.diagnostics.
   diagnostics_population`` names (``all`` / ``unsafe`` / ``both``; TBD refuses);
-* on pass, the candidate channel becomes ``frozen/channel.json``; the authors tag
-  ``channel-frozen``;
+* on pass, the candidate channel becomes ``frozen/channel.json``; the authors freeze it (commit and
+git tag
+  ``channel-frozen``) before Exp 1;
 * before any label is read the attempt prints what it reads (2026-09-27): the split and its
   size, the score tables (file, raw-byte sha256, rows, one identity), the label purpose (GATE,
   one read), the reserve's lock, tau, the channel file and seed, delta_R; afterwards the paired
-  correctness correlation across levels (III.1.3, descriptive) and one report,
+  correctness correlation across levels (paper App. B, descriptive) and one report,
   ``data/diagnostics/step09_report.json``, pass or fail.
 
-v0.9: the labels are E's own judgments (y* = E, II.3), so the old ``--e-judgments`` check of E
-against y* is gone, and so is the module that computed E's agreement with human labels (C.13
-retired that use; deleted 2026-09-24).
+the labels are E's own judgments (y* = E, paper Sec. 3), so the old ``--e-judgments`` check of E
+against y* is gone, and so is the module that computed E's agreement with human labels
+(retired that use; deleted 2026-09-24).
 """
 
 from __future__ import annotations
@@ -173,7 +174,7 @@ def main(argv: list[str] | None = None) -> int:
         populations=populations,
     )  # fmt: skip
 
-    # 1) diagnostics on disk FIRST (II.6.2)
+    # 1) diagnostics on disk FIRST (paper App. A)
     out_dir = io.diagnostics_dir(ch_cfg)
     out_dir.mkdir(parents=True, exist_ok=True)
     diag_path = out_dir / "gate_diagnostics.json"
@@ -185,12 +186,12 @@ def main(argv: list[str] | None = None) -> int:
         "cue_diagnostics": {
             pop: {k: asdict(v) for k, v in by_lam.items()} for pop, by_lam in ev.diagnostics.items()
         },
-        # r_ref (II.1.1): the offline reference reliability - R of each verifier on this
+        # r_ref (paper Sec. 3): the offline reference reliability - R of each verifier on this
         # labelled split with NO perturbation, identical for every arm, in the gate's own units
         # (gate metric (d): the share of E-UNSAFE states detected). It is recorded here because
         # this is the step that may read these labels; it is not an input to the ladder verdict
         # or to any cue diagnostic, and step11 only copies it into the Exp 1 report next to the
-        # H2 strata (III.1.2: reported alongside, never a stratifier).
+        # H2 strata (paper Sec. 4.6: reported alongside, never a stratifier).
         "r_ref": {
             "split": split.value,
             "lambda": Lambda.NONE.value,
@@ -210,9 +211,9 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     # 2) hard check + attempt record
-    # v0.8: the interval is formed first and only carried; the verdict below reads the point
-    # estimates alone (II.6.1). No multiplicity correction (III.1.3). The CI resamples the
-    # E-UNSAFE states only: they are the population R is defined on (gate metric (d)).
+    # the interval is formed first and only carried; the verdict below reads the point
+    # estimates alone (paper Sec. 4.3). No multiplicity correction (paper App. B). The CI resamples
+    # the E-UNSAFE states only: they are the population R is defined on (gate metric (d)).
     ci = G.ladder_ci(ev.vectors, n_boot=ci_n_boot(ch_cfg), seed=ci_seed(cfgs))
     ladder = G.ladder_check(
         ev.r,

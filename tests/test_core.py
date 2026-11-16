@@ -39,7 +39,7 @@ def test_repo_configs_load_and_every_tbd_has_a_comment_owner():
     cfgs = C.load_config()
     assert set(C.CONFIG_FILES) <= set(cfgs)
     # every value is decided since 2026-09-28: the last TBD, the Exp 2 semantic cutpoint, was
-    # computed on D_fit by step12_exp2.py cutpoint (D-2026-09-28)
+    # computed on D_fit by step12_exp2.py cutpoint
     assert C.find_tbd(cfgs) == []
     # the locked constants are present as literals in configs and agree with contracts
     assert cfgs["exp2"]["design"]["k"] == 4
@@ -191,7 +191,7 @@ def test_current_repo_state_is_frozen():
     Exp 2 semantic cutpoint, computed by step12_exp2.py cutpoint). The seven prompt / phrase
     files of PROMPT_FILES were filled by the authors on 2026-09-18; the formatter templates (checked
     via ``extra_files`` by step03/11/12) since the authors filled in the two checker descriptions on
-    2026-09-25 (D-2026-09-25e)."""
+    2026-09-25 ."""
     from rafr.formatter import TEMPLATES_PATH
 
     cfgs = C.load_config()

@@ -1,17 +1,18 @@
-"""Math's preregistered analysis tables in detox's format: one JSON per table, ``tables.md``,
+"""Math's primary analysis tables in detox's format: one JSON per table, ``tables.md``,
 ``sections.json`` and ``analysis_full.json`` (the files ``python -m analysis.prereg_tables``
-writes for detox, docs/exp2_pod_runbook.md step 13).
+writes for detox, step 13).
 
     python pipelines/math_tables.py [--run-dir runs/math_formal_n9000] [--out-dir DIR]
 
-detox computes its tables from its Exp 1 / Exp 2 logs. Math's preregistered analyses are
+detox computes its tables from its Exp 1 / Exp 2 logs. Math's primary analyses are
 computed once, by ``MathPipeline.report`` (``pipelines/math_analysis.py``,
-``pipelines/math_diagnostics.py``; docs/math/step10_prereg.md section 3), into the run's
+``pipelines/math_diagnostics.py``; section 3), into the run's
 ``report.json``. This module only lays that report out as detox's tables: it computes no
-estimate, interval or diagnostic of its own. The section map follows ``prereg/analysis_plan.md``
-(the Core plan, which Appendix M instantiates), so a math table carries the detox table's id
-where the analysis is the same; math-only tables (M.8, M.9) are added, and a detox table math has
-no counterpart for says why (no panel, M.3; no semantic preservation, M.9).
+estimate, interval or diagnostic of its own. The section map follows the
+analysis plan (the Core plan, which paper Sec. 5, App. D instantiates), so a math table carries the
+detox table's id where the analysis is the same; math-only tables (paper App. E, D.1) are added, and
+a detox table math has no counterpart for says why (no panel, paper Sec. 5; no semantic
+preservation, paper App. D.1).
 
 Before laying out the report, the run's frozen markers are checked (Exp 1's ``COMPLETE.json``,
 Exp 2's ``judge_complete.json``) and the report's counts are compared with the files they came

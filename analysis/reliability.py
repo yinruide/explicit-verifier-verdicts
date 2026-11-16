@@ -1,4 +1,4 @@
-"""Reliability quantities (II.1.1), computed post hoc from logs and never fed back.
+"""Reliability quantities (paper Sec. 3), computed post hoc from logs and never fed back.
 
 * ``fill_c_t``: backfills c_t = (1[y1 == y*], 1[y2 == y*]) into decision rows from a
   text -> truth map. In Exp 1 the map comes from the E judgments of the shared states
@@ -7,11 +7,11 @@
   ``truth_from_round_judgments``. Human labels are used only where they exist (D_fit /
   D_gate diagnostics).
 * ``r_t_by_arm``: R_t^(a), the realized per-round, per-arm verifier reliability. Reported
-  as an OUTCOME only; using it to stratify or as a design factor is forbidden (App. B.1) and
+  as an OUTCOME only; using it to stratify or as a design factor is forbidden and
   nothing here offers such a function.
 * ``r_ref``: offline reference reliability on a fixed labelled set (e.g. D_gate at
   lambda = none), identical for all arms; serves H2 only, never a prompt, never the gate. Since
-  v1.0 (II.1.1) it is in the gate's units -- the detection rate on the E-UNSAFE states -- with
+   (paper Sec. 3) it is in the gate's units -- the detection rate on the E-UNSAFE states -- with
   the accuracy over all states reported alongside.
 """
 
@@ -79,9 +79,9 @@ def r_t_by_arm(rows: list[dict[str, Any]]) -> dict[str, dict[int, dict[str, floa
 
 
 def r_ref(scores: list[float], labels: list[int], tau: float) -> dict[str, float | int]:
-    """r_hat_ref of one verifier on a fixed labelled set (II.1.1, v1.0).
+    """r_hat_ref of one verifier on a fixed labelled set (paper Sec. 3).
 
-    ``detection_rate`` is the gate's unit (C.20): the share of the E-UNSAFE states
+    ``detection_rate`` is the gate's unit: the share of the E-UNSAFE states
     (``labels == 1``) with ``s >= tau``. ``accuracy`` over all states is reported alongside.
     step09 records the same two numbers from the gate split; this helper is for any other
     fixed labelled set.

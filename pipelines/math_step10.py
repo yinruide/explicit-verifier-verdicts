@@ -1,5 +1,5 @@
-"""Math step 10 (protocol 0.5 step 10; appendix M): Exp 1's inputs and the controller calls they
-make, and the preregistered analysis run end to end on FAKE data whose arm labels are shuffled.
+"""Math step 10 (step 10): Exp 1's inputs and the controller calls they
+make, and the primary analysis run end to end on FAKE data whose arm labels are shuffled.
 No API call, no GPU, nothing written into the run (``runs/math_formal_n9000`` is read only).
 
     python pipelines/math_step10.py inputs   # D_Exp1 x {A1, B, permuted-B} x {low, mid, high}
@@ -13,8 +13,9 @@ donors (seed component ``permuted_b``), the observation each arm shows and the c
 (``build_controller_config``, K = 1). The controller is answered by a recording fake provider,
 so the prompts and their hashes are the formal ones and nothing leaves the laptop; byte-identical
 requests (same per-state seed, same prompt) hit the local cache as they will in the formal run
-(C.24), so the uncached requests are exactly the live controller calls Exp 1 makes at its first
-attempts (a parse retry adds one, II.8.2). The cells go to ``data/math/step10/exp1_inputs.jsonl``.
+so the uncached requests are exactly the live controller calls Exp 1 makes at its first
+attempts (a parse retry adds one, paper Sec. 4.6). The cells go to
+``data/math/step10/exp1_inputs.jsonl``.
 
 ``fake`` takes those cells, gives each a FAKE decision, shuffles the three decisions of every
 (state, lambda) over the arms A1 / B / permuted-B, and builds FAKE Exp 2 trajectories (D_Exp1's 300
@@ -23,7 +24,7 @@ runs what ``MathPipeline.report`` runs -- ``summarize_exp1`` (primary, sensitivi
 ``summarize_exp2`` (primary, (a), (b), (c), overlength, unresolved rates), ``exp1_diagnostics``,
 ``exp2_reliability_diagnostics`` and ``protocol_outcome_diagnostics`` against the real gate's R --
 and writes ``data/math/step10/fake_report.json`` marked FAKE. With shuffled arms every arm
-contrast is null by construction; the run shows that each preregistered analysis runs on data of
+contrast is null by construction; the run shows that each primary analysis runs on data of
 the formal shape, not any result.
 """
 
@@ -314,7 +315,7 @@ def cost(paths: Step10Paths) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------------------
-# fake: the preregistered analyses on FAKE data with shuffled arm labels
+# fake: the primary analyses on FAKE data with shuffled arm labels
 # ---------------------------------------------------------------------------------------
 
 
@@ -367,7 +368,7 @@ def fake_exp1_rows(cells: list[dict[str, Any]], rng: random.Random) -> list[dict
 def fake_trajectory(
     qid: str, arm: str, taus: tuple[float, float], rng: random.Random
 ) -> dict[str, Any]:
-    """A FAKE Exp 2 trajectory satisfying the analysis's invariants (II.8.3, M.8)."""
+    """A FAKE Exp 2 trajectory satisfying the analysis's invariants (paper Sec. 4.4, App. E)."""
     status, rounds = "incorrect", []
     for t in range(1, 5):
         scores = [rng.random() * 2 * taus[0], rng.random() * 2 * taus[1]]

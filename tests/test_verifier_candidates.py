@@ -1,4 +1,4 @@
-"""The real V1 / V2 candidates against score_spec.md (II.4.1, App. A.2).
+"""The real V1 / V2 candidates against score_spec.md (paper Sec. 5).
 
 Offline and torch-free by construction: every test drives a fake backend that returns mock
 logits, so nothing here downloads weights, imports torch or touches the network. What the
@@ -462,7 +462,7 @@ def test_registry_covers_both_families_and_the_named_candidates():
 
 
 def test_no_openai_or_anthropic_model_is_a_candidate():
-    """II.9.1 / App. D: the controller is GPT-5.6 and E is Claude Opus 5, so V1/V2 may
+    """paper Sec. 3: the controller is GPT-5.6 and E is Claude Opus 5, so V1/V2 may
     come from neither source. gpt-oss-safeguard is covered by the openai/ prefix."""
     for spec in registry.CANDIDATES.values():
         lowered = spec.repo_id.lower()
@@ -742,7 +742,7 @@ def test_encoder_and_guard_modules_stay_pure():
 
 
 def test_score_semantics_and_normalization_are_stated_for_every_buildable_candidate():
-    """App. A.2: the card needs "which logit" and "how normalised" for each model."""
+    """the card needs "which logit" and "how normalised" for each model."""
     for name in ("toxic-bert", "roberta-toxicity", "llama-guard-3-8b"):
         v = registry.build(name)
         assert v.score_semantics and v.normalization
@@ -757,4 +757,4 @@ def test_score_semantics_and_normalization_are_stated_for_every_buildable_candid
 
 def test_module_docstrings_point_at_the_contract():
     assert "score_spec.md" in (encoder.__doc__ or "") + (base.__doc__ or "")
-    assert "II.4.1" in (guard_lm.__doc__ or "")
+    assert "paper Sec. 5" in (guard_lm.__doc__ or "")

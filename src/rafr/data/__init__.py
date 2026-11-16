@@ -1,1 +1,1 @@
-"""Data: ParaDetox x0 pool, disjoint splits, label access control, manifest (II.2)."""
+"""Data: ParaDetox x0 pool, disjoint splits, label access control, manifest (paper Sec. 4.2)."""

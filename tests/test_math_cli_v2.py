@@ -287,7 +287,7 @@ def test_stability_pending_prompt_blocks_before_model_loading(tmp_path, monkeypa
 
     from rafr.domains.math import generation
 
-    # The repository's rewrite instruction is final since 2026-10-13 (M.4) and passes the
+    # The repository's rewrite instruction is final since 2026-10-13 (paper Sec. 5) and passes the
     # readiness check; a pending copy must still block before any model is loaded.
     (tmp_path / "real").mkdir()
     config(tmp_path / "real", verifiers=reviewed_pair()).assert_ready("stability")

@@ -1,7 +1,7 @@
 """Read-only: math Exp 2 round-1 in-process scores vs step 6 D_Exp1 scores, bit for bit.
 
-Stop point A of the post-pilot extension (2026-10-31), kept as run for the authors, who takes math
-over; the result is in docs/progress.md. Usage: ``python pipelines/math_t1_check.py <repo>``.
+A check of the post-pilot extension (2026-10-31), kept as run for the authors, who takes math
+over; the result is in Usage: ``python pipelines/math_t1_check.py <repo>``.
 
 Also compares the per-item scoring records (input assembly hashes, generated / forced token ids,
 verdict logits) and the fixed-shape configuration of the two stages.

@@ -1,4 +1,4 @@
-"""Generative math verifiers (Appendix M.4 v1.2; II.10 generative scoring variant).
+"""Generative math verifiers (paper Sec. 5, App. D; generative scoring variant).
 
 Two adapters behind :func:`rafr.domains.math.models.build_verifier`; both write out their
 reasoning first and are scored afterwards, from the logits of two verdict tokens at a verdict
@@ -11,7 +11,7 @@ position (never from a number the model writes, never from sampling):
   verdict position is located in the generated text by the model card's pattern; the score is
   1 - min_k P(step k correct).
 
-Fixed-shape greedy generation (II.10): ``batch_size`` rows (a short last batch filled with
+Fixed-shape greedy generation: ``batch_size`` rows (a short last batch filled with
 copies of its last row, whose results are dropped), every row left padded to
 ``max_input_tokens`` (L_in), one static KV cache of ``L_in + max_new_tokens + max_forced_tokens``
 positions. Every decoding step is one forward pass over a ``[batch_size, 1]`` input against the
@@ -68,7 +68,7 @@ MODEL_CLASSES = ("AutoModelForCausalLM", "AutoModelForImageTextToText")
 #: ``count_incorrect`` -- a missing step counts as P(correct) = 0.
 MISSING_RULES = ("judged_only", "force_remaining", "count_incorrect")
 DECODING = "greedy argmax over the full vocabulary (ties to the lowest id); nothing sampled"
-#: The decoding attention (2026-10-11, round 2 stop point A): transformers' sdpa, except
+#: The decoding attention (2026-10-11, round 2): transformers' sdpa, except
 #: that a one-token query of grouped-query attention reads its own key / value head directly
 #: instead of through ``repeat_kv`` copies of the whole static cache
 #: (:func:`grouped_decode_attention`).
@@ -907,7 +907,7 @@ class _GenerativeVerifier:
         raise NotImplementedError
 
     def verifier_card(self) -> dict[str, Any]:
-        """What was loaded and how it generates and scores (M.4, II.10 generative variant)."""
+        """What was loaded and how it generates and scores (paper Sec. 5, generative variant)."""
         self.load()
         c = self.config
         return {

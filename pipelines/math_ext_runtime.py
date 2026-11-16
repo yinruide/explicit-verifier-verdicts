@@ -459,7 +459,7 @@ def execute(args, *, provider_factory=None, grader=None):
         if has_verifier or (out / "pod_identity.json").exists() or args.pod_receipt:
             if args.pod_receipt is None:
                 raise ValueError("pod judge requires the independently bound pod receipt")
-            from env.math_ext_remote import validate_delivery
+            from scripts.gpu.math_ext_remote import validate_delivery
 
             from rafr.domains.math.storage import digest
 

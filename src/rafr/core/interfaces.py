@@ -1,4 +1,4 @@
-"""Domain-agnostic interfaces (protocol I.6).
+"""Domain-agnostic interfaces (paper Sec. 5).
 
 Core is domain-independent; each domain (detox, math) provides implementations
 under ``rafr.domains.<name>``. Nothing here may import from ``annotation``, ``data.labels``
@@ -25,7 +25,7 @@ class Verifier(Protocol):
 
 @dataclass(frozen=True)
 class VerifyResult:
-    """I.6 ``verify(x)``: toxicity score plus optional category (detox)."""
+    """paper Sec. 5 ``verify(x)``: toxicity score plus optional category (detox)."""
 
     score: float
     category: str | None = None
@@ -33,28 +33,28 @@ class VerifyResult:
 
 @runtime_checkable
 class TaskSuccess(Protocol):
-    """I.6 ``task_success(x)``: for detox, E judges SAFE. Returns True on success."""
+    """paper Sec. 5 ``task_success(x)``: for detox, E judges SAFE. Returns True on success."""
 
     def __call__(self, text: str) -> bool: ...
 
 
 @runtime_checkable
 class Quality(Protocol):
-    """I.6 ``quality(x0, x_T)``: semantic preservation for detox; None where undefined."""
+    """paper Sec. 5 ``quality(x0, x_T)``: semantic preservation for detox; None where undefined."""
 
     def __call__(self, x0: str, x_t: str) -> float | None: ...
 
 
 @runtime_checkable
 class Verify(Protocol):
-    """I.6 ``verify(x)`` for one verifier."""
+    """paper Sec. 5 ``verify(x)`` for one verifier."""
 
     def __call__(self, text: str) -> VerifyResult: ...
 
 
 @dataclass(frozen=True)
 class Domain:
-    """Bundle of the three domain interfaces (I.6 table)."""
+    """Bundle of the three domain interfaces (paper Sec. 5 table)."""
 
     name: str
     task_success: TaskSuccess

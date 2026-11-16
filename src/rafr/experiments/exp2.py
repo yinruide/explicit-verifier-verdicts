@@ -1,4 +1,4 @@
-"""Exp 2 — naturalistic sequential validation (0.2, II.8.3, II.9.3; decisions 4c, 9).
+"""Exp 2 — naturalistic sequential validation (0.2, paper Sec. 4.4, 3).
 
 * x1 for every x0 is produced beforehand by G_fixed (same function as the state pool) —
   the runner receives the x1 states and never generates them;
@@ -9,20 +9,20 @@
   ``rounds/round_<t>/`` -- the trajectory checkpoint, that round's decision and score rows, its
   ledger rows and cost -- and only then marked complete (``COMPLETE.json``, the sha256 of every
   file). A run resumes from its latest COMPLETE round; a round that was cut off is discarded and
-  redone whole, so no decision is ever logged twice (II.8.3). ``decisions.jsonl`` and
+  redone whole, so no decision is ever logged twice (paper Sec. 4.4). ``decisions.jsonl`` and
   ``scores.jsonl`` at the top of the run are assembled from the round directories;
 * :func:`run_loop` is the part that runs on the rented pod (controller + in-process V1/V2,
-  II.8.3); :func:`finish` -- E's round judgments and the finals -- runs on the laptop after the
-  loop, from the round directories pulled back (E never takes part in the loop);
-* parse_fail: x_{t+1} = x_t and the round is consumed (II.8.2);
+  paper Sec. 4.4); :func:`finish` -- E's round judgments and the finals -- runs on the laptop after
+  the loop, from the round directories pulled back (E never takes part in the loop);
+* parse_fail: x_{t+1} = x_t and the round is consumed (paper Sec. 4.6);
 * E never takes part in the loop. After the loop (decision, group 6d, 2026-09-16) E judges
   EVERY round text of EVERY trajectory in both arms — x_1..x_T plus the terminal text — and
   the judgments are written to ``round_judgments.jsonl`` (one row per (x0, arm, t)) and
   ``evaluations.jsonl``. The t = 1 texts are the D_Exp1 G_fixed states, so their judgments
-  are step 5's y* (``prior_judgments``, II.8.3 v0.9) instead of being re-bought. These judgments
-  feed c_t / R_t^(a) (II.10, II.1.1), decision accuracy, rewrite improvement rate and the
+  are step 5's y* (``prior_judgments``, paper Sec. 4.4) instead of being re-bought. These judgments
+  feed c_t / R_t^(a) (paper Sec. 3), decision accuracy, rewrite improvement rate and the
   "parse_fail as accept" sensitivity (analysis/);
-* TFR = P(task_success(x_T) = False) over ALL randomized trajectories (II.9.3, C.10);
+* TFR = P(task_success(x_T) = False) over ALL randomized trajectories (paper Sec. 3);
   non-convergence rate is reported separately.
 """
 
@@ -59,7 +59,7 @@ from rafr.logging.schema import RecordKind, stream_filename
 from rafr.logging.writer import JsonlWriter, read_jsonl
 
 SEED_NAMESPACE = "exp2"
-"""Controller seed namespace (decision, group 3); see ``exp1.SEED_NAMESPACE``."""
+"""Controller seed namespace (design decision); see ``exp1.SEED_NAMESPACE``."""
 
 
 class Exp2Error(RuntimeError):
@@ -81,7 +81,7 @@ class Trajectory:
     # does the CURRENT text carry the refusal_like flag? It travels with x_t: set by the
     # rewrite that produced it, unchanged by accept or parse_fail (x_1 comes from G_fixed,
     # whose refusals are invalid outputs, so it is False there). At the end of the loop this
-    # is the flag of x_T, which is what the II.8.2 sensitivity analysis conditions on.
+    # is the flag of x_T, which is what the paper Sec. 4.6 sensitivity analysis conditions on.
     x_t_refusal_like: bool = False
     history: list[dict[str, Any]] = field(default_factory=list)
 
@@ -94,24 +94,24 @@ class Trajectory:
 class Exp2Setup:
     run_id: str
     run_dir: Path
-    x1_states: Sequence[State]  # one per x0, from G_fixed (decision 4c)
+    x1_states: Sequence[State]  # one per x0, from G_fixed
     scorer: PairScorer
     tau1: float
     tau2: float
-    channel: Channel  # must be identity (II.1.3)
+    channel: Channel  # must be identity (paper Sec. 4.3)
     arms: Sequence[Arm]
     k: int
     assignment_seed: int
     run_seed: int | None
     judge_fn: Callable[[str], EvalRecord]  # E, text only; called after the loop
     experiment_name: str = "exp2"
-    # The controller's seed namespace (and so its cache key), II.8.2. The formal run keeps
-    # ``SEED_NAMESPACE``; the step 10a smoke passes its own id (II.4.4, 2026-09-25) so that no
+    # The controller's seed namespace (and so its cache key), paper Sec. 4.6. The formal run keeps
+    # ``SEED_NAMESPACE``; the step 10a smoke passes its own id (2026-09-25) so that no
     # smoke request can share a seed or a cached answer with Exp 1 or Exp 2.
     seed_namespace: str = SEED_NAMESPACE
     # text_id -> EvalRecord already bought elsewhere (step 5's y* of D_Exp1 covers t = 1)
     prior_judgments: Mapping[str, EvalRecord] | None = None
-    # quality(x0, x_T) (I.6): semantic preservation of the terminal text, recorded on the
+    # quality(x0, x_T) (paper Sec. 5): semantic preservation of the terminal text, recorded on the
     # finals as ``semantic_score`` for the descriptive "low preservation among SAFE" report
     # (2026-09-18). None -> not measured (semantic.py is a later round); the finals
     # then carry ``semantic_score: null`` and the report shows counts only.
@@ -119,7 +119,7 @@ class Exp2Setup:
 
 
 def balanced_assignment(x0_ids: Sequence[str], arms: Sequence[Arm], seed: int) -> dict[str, Arm]:
-    """Balanced permutation (decision 9): arm sizes differ by at most one."""
+    """Balanced permutation: arm sizes differ by at most one."""
     ids = list(x0_ids)
     rng = py_rng(seed, "exp2_assignment")
     rng.shuffle(ids)
@@ -133,7 +133,7 @@ LOOP_COMPLETE = "loop_complete.json"
 
 
 class LoopNotFinishedError(Exp2Error):
-    """The loop has not written its last round yet; E's judgments wait for it (II.8.3)."""
+    """The loop has not written its last round yet; E's judgments wait for it (paper Sec. 4.4)."""
 
 
 def round_dir(rd: Path, t: int) -> Path:
@@ -273,7 +273,8 @@ def run_loop(
     *,
     on_round: RoundHook | None = None,
 ) -> list[Trajectory]:
-    """The loop alone (II.8.3): controller + in-process V1/V2, one COMPLETE directory per round.
+    """The loop alone (paper Sec. 4.4): controller + in-process V1/V2, one COMPLETE directory per
+    round.
 
     Resumes from the latest COMPLETE round; anything after it is discarded and redone. After
     round K the run's decision / score streams are assembled and ``loop_complete.json`` written.
@@ -324,9 +325,9 @@ def run_loop(
                     x0=tr.x0,
                     x_t=tr.x_t,
                     observation=observation,
-                    # II.8.2: the seed is keyed by (experiment, state, t, attempt) with no arm
-                    # and no lambda; the state key is the x0 id, not the round id
-                    # {x0_id}-{arm}-t{t}, which carries the arm (D-2026-09-25g). The log keeps
+                    # paper Sec. 4.6: the seed is keyed by (experiment, state, t, attempt) with no
+                    # arm and no lambda; the state key is the x0 id, not the round id
+                    # {x0_id}-{arm}-t{t}, which carries the arm. The log keeps
                     # the round id (make_log_record below).
                     labels=ctrl.DecisionLabels(
                         state_id=tr.x0_id, arm=arm, lam=Lambda.NONE, t=t,
@@ -361,7 +362,7 @@ def run_loop(
                 )
                 if decision.parse_fail:
                     tr.n_parse_fail += 1
-                    tr.t = t + 1  # x_{t+1} = x_t; the round is consumed (II.8.2)
+                    tr.t = t + 1  # x_{t+1} = x_t; the round is consumed (paper Sec. 4.6)
                 elif decision.action is Action.ACCEPT:
                     tr.accepted = True
                     tr.accepted_at = t
@@ -405,7 +406,7 @@ class JudgeNotCompleteError(Exp2Error):
 def finish(setup: Exp2Setup, trajs: Sequence[Trajectory] | None = None) -> dict[str, Any]:
     """After the loop (laptop): E judges every round text, the finals and the summary.
 
-    II.9.1: if E gives no verdict on a text after its retries (:class:`rafr.evaluator.judge.
+    paper Sec. 3: if E gives no verdict on a text after its retries (class:`rafr.evaluator.judge.
     EvaluatorError`), the whole pass stops and no round or terminal judgment is written:
     ``round_judgments.jsonl`` and ``trajectories.jsonl`` are written as ``*.partial`` and
     renamed only once every text is judged. ``judge_complete.json`` is removed when a pass
@@ -493,7 +494,7 @@ def judge_rounds(setup: Exp2Setup, trajs: Sequence[Trajectory], rd: Path) -> lis
     """Judge every round text once (deduplicated by text), reusing prior judgments, and write
     ``evaluations.jsonl`` (every EvalRecord used, appended as it is obtained) +
     ``round_judgments.jsonl`` (written as ``.partial``, renamed once every text is judged; on
-    any failure the partial file is removed and the error passes through, II.9.1)."""
+    any failure the partial file is removed and the error passes through, paper Sec. 3)."""
     eval_path = rd / stream_filename(RecordKind.EVALUATION)
     # judgments bought elsewhere (step 5's y* of the D_Exp1 states covers t = 1) ...
     external = dict(setup.prior_judgments or {})
@@ -583,7 +584,7 @@ def _judge_into(
                     "n_parse_fail": tr.n_parse_fail,
                     "first_parse_fail_t": first_pf,
                     "refusal_like_rewrites": tr.refusal_like_rewrites,  # descriptive count
-                    # II.8.2's sensitivity analysis conditions on this one, not on the count
+                    # The design's sensitivity analysis conditions on this one, not on the count
                     "x_T_refusal_like": tr.x_t_refusal_like,
                     "e_label": terminal.label.value,
                     "e_score": terminal.score,
@@ -597,7 +598,7 @@ def _judge_into(
 def summarize_exp2(
     finals: list[dict[str, Any]], decision_rows: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    """Quick run report (preregistered analysis: analysis/exp2_tfr.py)."""
+    """Quick run report (primary analysis: analysis/exp2_tfr.py)."""
     per_arm: dict[str, dict[str, Any]] = {}
     for f in finals:
         a = per_arm.setdefault(
@@ -608,8 +609,8 @@ def summarize_exp2(
         a["failures"] += int(not f["task_success"])
         a["non_converged"] += int(not f["accepted"])
         a["rewrites"].append(f["n_rewrites"])
-        # sensitivity (II.8.2): a trajectory whose x_T carries the refusal_like flag counts as
-        # a terminal failure. A refusal-looking rewrite in the middle of a trajectory whose
+        # sensitivity (paper Sec. 4.6): a trajectory whose x_T carries the refusal_like flag counts
+        # as a terminal failure. A refusal-looking rewrite in the middle of a trajectory whose
         # final output is fine does NOT count.
         a["refusal_like_failures"] += int(
             (not f["task_success"]) or bool(f.get("x_T_refusal_like"))
@@ -624,7 +625,7 @@ def summarize_exp2(
             "non_convergence_rate": a["non_converged"] / a["n"] if a["n"] else None,
             "rewrite_rounds_median": rw[len(rw) // 2] if rw else None,
         }
-    # II.8.2 (v0.8): Exp 2 reports parse_fail by arm x ROUND, not by arm x lambda
+    # paper Sec. 4.6: Exp 2 reports parse_fail by arm x ROUND, not by arm x lambda
     out["parse_fail"] = parse_fail_cells(decision_rows, PARSE_FAIL_ALERT_THRESHOLD, by="t")
     out["n_trajectories"] = len(finals)
     return out

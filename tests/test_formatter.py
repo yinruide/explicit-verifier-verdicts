@@ -1,7 +1,7 @@
 """formatter: pure function of s^obs; A1 has taus; B = A1 + derived block; permuted-B;
-derangement keyed by the seed only (D-2026-09-25b); every number with 5 significant digits
-(D-2026-09-25b). Template wording is final (2026-09-18); the two checker
-descriptions and the scale sentence's numbers are the authors' of 2026-09-25 (D-2026-09-25e)."""
+derangement keyed by the seed only; every number with 5 significant digits.
+Template wording is final (2026-09-18); the two checker
+descriptions and the scale sentence's numbers are the authors' of 2026-09-25 ."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from rafr.formatter import (
 from rafr.formatter import permute as P
 from rafr.formatter import templates as tpl
 
-# Words that must not appear in anything the controller reads about the evidence (C.3, C.4).
+# Words that must not appear in anything the controller reads about the evidence.
 FORBIDDEN_WORDS = ("confidence", "reliability", "certain", "probability", "uncertainty")
 
 FIELD_LABELS = (
@@ -43,7 +43,7 @@ NUMBER_RE = r"(?:0\.0*[1-9]\d{4}|[1-9]\.\d{4}|0\.0000)"
 SIGNED_RE = rf"[+-]{NUMBER_RE}"
 
 # V1 (enc_paradetox) as the step 2 probe measured it on the pod GPU: tau fitted on D_fit
-# (progress group 33), its lowest score over D_fit + pool, and the pool score closest to tau
+# its lowest score over D_fit + pool, and the pool score closest to tau
 # (4 significant digits showed that one equal to tau).
 V1_TAU = 0.003151302991566165
 V1_MIN_SCORE = 3.3283459953388764e-05
@@ -108,7 +108,7 @@ def test_b_minus_appended_block_is_a1_verbatim():
 
 def test_numeric_rendering_rules():
     """Scores / thresholds and signed distances: 5 significant digits, plain decimals with
-    their trailing zeros, one rule for every number (D-2026-09-25b)."""
+    their trailing zeros, one rule for every number ."""
     a1_part, block = _split_b(_obs(0.834, 0.538, 0.5, 0.6))
     a1_lines = _value_lines(a1_part)
     assert a1_lines["Checker A"] == "score 0.83400 (threshold 0.50000)"
@@ -222,7 +222,7 @@ def test_conflict_direction_is_na_on_agreement_and_never_blank():
 
 def test_templates_avoid_forbidden_vocabulary():
     """Rule 4: neither the template constants nor any rendered text mention confidence,
-    reliability, certain(ty), probability or uncertainty (C.3, C.4)."""
+    reliability, certain(ty), probability or uncertainty ."""
     constants = [
         v for k, v in vars(tpl).items() if not k.startswith("_") and isinstance(v, str)
     ] + [
@@ -316,7 +316,7 @@ def test_permuted_b_moves_the_whole_donor_block_and_keeps_own_a1():
 
 
 def test_derangement_has_no_fixed_points_and_is_keyed_by_the_seed_only():
-    """D-2026-09-25b: one table per seed, used at every lambda (there is no lambda argument)."""
+    """one table per seed, used at every lambda (there is no lambda argument)."""
     ids = [f"s{i}" for i in range(25)]
     m1 = P.derangement(ids, seed=3)
     m2 = P.derangement(ids, seed=3)
@@ -348,7 +348,7 @@ def test_permutation_roundtrip_and_per_lambda_tables_refused(tmp_path: Path):
 
 def test_templates_final_and_free_of_the_placeholder_marker():
     """The wording is final (no DRAFT marker) and, since the authors filled in the two checker
-    descriptions (2026-09-25, D-2026-09-25e), the placeholder word appears nowhere: the
+    descriptions (2026-09-25), the placeholder word appears nowhere: the
     formal-run guard, which still scans this file, no longer trips on it. The file imports
     nothing (the guard looks for the literal word)."""
     assert find_placeholders([TEMPLATES_PATH]) == []
@@ -360,8 +360,8 @@ def test_templates_final_and_free_of_the_placeholder_marker():
 
 
 def test_ruides_wording_of_the_descriptions_and_the_scale_sentence():
-    """D-2026-09-25e, verbatim: the two checker descriptions (with "output" where the authors'
-    draft said "estimated probability", C.3 / C.4) and the scale sentence's numbers."""
+    """verbatim: the two checker descriptions (with "output" where the authors'
+    draft said "estimated probability") and the scale sentence's numbers."""
     assert tpl.V1_DESCRIPTION == (
         "Checker A is a text classifier trained on human-labelled online comments to recognize "
         "toxic language; its score is the classifier's output for the toxic class."

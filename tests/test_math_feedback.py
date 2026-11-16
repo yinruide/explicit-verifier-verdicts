@@ -128,7 +128,7 @@ M71_DIRECTION = (
 
 
 def test_repo_descriptions_are_ruides_final_m71_sentences():
-    """M.7.1 (2026-10-12): two identical sentences, Checker A = V1, B = V2."""
+    """paper Sec. 3 (2026-10-12): two identical sentences, Checker A = V1, B = V2."""
     import json
 
     real = Path(math_feedback.__file__).with_name("prompts") / "math"

@@ -1,4 +1,4 @@
-"""B's six fields (II.7.2): deterministic transforms of (s1_obs, s2_obs, tau1, tau2)."""
+"""B's six fields (paper Sec. 3): deterministic transforms of (s1_obs, s2_obs, tau1, tau2)."""
 
 from __future__ import annotations
 

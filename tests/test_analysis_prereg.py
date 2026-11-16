@@ -1,7 +1,7 @@
-"""Step 10 (0.5): the preregistered analysis, section by section.
+"""Step 10: the primary analysis, section by section.
 
 Known-answer cases small enough to check by hand for every analysis function added or reworked
-for step 10; bootstrap seeds fixed; the three parse_fail accountings of II.8.2 checked for
+for step 10; bootstrap seeds fixed; the three parse_fail accountings of paper Sec. 4.6 checked for
 direction on a small case; the fake generator, the FAKE guards and the step 10 run end to end.
 (The mechanism, reliability and evidence-sensitivity functions have their known-answer cases in
 tests/test_analysis.py.)
@@ -126,7 +126,8 @@ def test_stratified_bootstrap_keeps_arm_sizes_and_is_seeded():
 
 
 def test_exp1_parse_fail_three_accountings_move_in_the_expected_directions():
-    """II.8.2 on a small case: B's decision at (s1, high) fails to parse. Main counts it as not
+    """paper Sec. 4.6 on a small case: B's decision at (s1, high) fails to parse. Main counts it as
+    not
     accepted (D_s1 = 1, as if B had rewritten), (a) as an accept (D_s1 = 0), (b) drops s1."""
     rows = exp1_rows(pf={("s1", "B", "high")})
     main = exp1_did.did(rows, accounting="main", n_boot=50)
@@ -177,7 +178,7 @@ def test_exp1_result_shape_reads_the_point_estimates_only():
 
 
 def test_exp1_prompt_identity_ratio_c24():
-    """C.24: per arm and pair of levels, the share of (state, arm) whose first prompt is the
+    """per arm and pair of levels, the share of (state, arm) whose first prompt is the
     same; here two of four states have the same prompt hash at mid as at low."""
     from rafr.experiments.exp1 import identity_to_low_by_lambda
 
@@ -240,7 +241,8 @@ def test_exp2_tfr_contrast_and_the_ii82_sensitivities_known_answer():
     rl = exp2_tfr.contrast(f, "refusal_like_as_failure", n_boot=50)
     assert rl["estimate"] == pytest.approx(-0.25)
     res = exp2_tfr.analyze(f, n_boot=50)
-    # II.8.2: robust = main, (a), (b) agree; refusal_like has the other sign and does not count
+    # paper Sec. 4.6: robust = main, (a), (b) agree; refusal_like has the other sign and does not
+    # count
     assert res["robust_across_accountings"] is True
 
 
@@ -362,7 +364,7 @@ def test_drift_ladder_on_d_exp1_known_answer():
     v1_low = next(x for x in cmp if x["verifier"] == "v1" and x["lambda"] == "low")
     assert v1_low["exp1_minus_gate"] == pytest.approx(0.05) and v1_low["R_gate"] == 0.7
     assert next(x for x in cmp if x["verifier"] == "v2")["R_gate"] is None
-    rows[0]["s1_tilde"] = 0.99  # one arm sees different evidence: II.5.1 broken, refused
+    rows[0]["s1_tilde"] = 0.99  # one arm sees different evidence: paper Sec. 4.3 broken, refused
     with pytest.raises(ValueError, match="different evidence"):
         drift.per_state(rows)
 

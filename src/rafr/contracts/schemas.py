@@ -1,13 +1,13 @@
-"""Data contracts shared by every module (protocol v0.8, Part II).
+"""Data contracts shared by every module (Part II).
 
 This module holds:
 
-* the constants LOCKED by the protocol (never tunables);
+* the constants LOCKED by the design (never tunables);
 * the pydantic models for State, Score, Observation, Decision, EvalRecord, LogRecord;
 * the structured-output schemas that the controller and the evaluator must emit.
 
 Nothing here depends on any other ``rafr`` package, so every package can import it
-without creating a cycle and without crossing the import boundaries of II.1.4 / II.5.2.
+without creating a cycle and without crossing the import boundaries of paper App. E, Sec. 4.3.
 """
 
 from __future__ import annotations
@@ -20,33 +20,33 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # --------------------------------------------------------------------------------------
-# Constants locked by the protocol (App. D). These are NOT configuration.
+# Constants locked by the design. These are NOT configuration.
 # --------------------------------------------------------------------------------------
 
 K_MAX_ROUNDS: int = 4
-"""II.8.3 — maximum number of controller decisions per trajectory in Exp 2."""
+"""paper Sec. 4.4 — maximum number of controller decisions per trajectory in Exp 2."""
 
 PARSE_MAX_RETRIES: int = 2
-"""II.8.2 — parse-failure retries (3 attempts in total). Network retries are separate."""
+"""paper Sec. 4.6 — parse-failure retries (3 attempts in total). Network retries are separate."""
 
 PARSE_FAIL_ALERT_THRESHOLD: float = 0.02
-"""II.8.2 — any reported parse_fail cell above this rate is flagged loudly. The reporting
-grid differs by experiment (v0.8): Exp 1 is arm x lambda, Exp 2 is arm x round."""
+"""paper Sec. 4.6 — any reported parse_fail cell above this rate is flagged loudly. The reporting
+grid differs by experiment: Exp 1 is arm x lambda, Exp 2 is arm x round."""
 
 BOOTSTRAP_B: int = 10000
-"""III.1.2 (v0.8) — replicates for every 95% percentile bootstrap CI in the analysis and in
+"""paper Sec. 4.6 — replicates for every 95% percentile bootstrap CI in the analysis and in
 the gate report. The resampling UNIT is per analysis (x0 in Exp 1, trajectory stratified by
 arm in Exp 2, state in the gate); the seed is configuration and is written to disk."""
 
 BOOTSTRAP_ALPHA: float = 0.05
-"""III.1.2 (v0.8) — 95% percentile interval. CIs express uncertainty only: the pilot makes
-no significance claims (III.1.1) and the gate verdict uses point estimates (II.6.1)."""
+"""paper Sec. 4.6 — 95% percentile interval. CIs express uncertainty only: the pilot makes
+no significance claims and the gate verdict uses point estimates (paper Sec. 4.3)."""
 
 GATE_MAX_ATTEMPTS: int = 2
-"""II.6.1 — the manipulation-validity gate may be executed at most twice."""
+"""paper Sec. 4.3 — the manipulation-validity gate may be executed at most twice."""
 
 TAU_CRITERION: str = "f1_max_plateau_midpoint"
-"""II.4.1 (v0.9, C.17) — tau_i maximizes F1 on D_fit; on a plateau, take the midpoint. F2 is
+"""paper Sec. 5 — tau_i maximizes F1 on D_fit; on a plateau, take the midpoint. F2 is
 reported as an auxiliary metric and takes no part in the choice."""
 
 SCORE_MIN: float = 0.0
@@ -66,12 +66,12 @@ PLACEHOLDER = "PLACEHOLDER"
 
 
 class Arm(StrEnum):
-    """Representation arms (II.7). Only the formatter may branch on this."""
+    """Representation arms (paper Sec. 3). Only the formatter may branch on this."""
 
     A1 = "A1"
     B = "B"
     PERMUTED_B = "permuted_B"
-    # Post-pilot extension (2026-10-31), never part of the preregistered runs: the
+    # Post-pilot extension (2026-10-31), never part of the primary runs: the
     # controller sees no verifier output; B without the two distances; B plus pi-hat; B plus
     # another state's pi-hat. Members only: no existing value, prompt or seed changes (the seed
     # carries no arm), and decide.Decision / LogRecord validate arm against this enum.
@@ -83,7 +83,7 @@ class Arm(StrEnum):
 
 
 class Lambda(StrEnum):
-    """Evidence-degradation severity levels (II.5.2). ``NONE`` = identity channel."""
+    """Evidence-degradation severity levels (paper Sec. 4.3). ``NONE`` = identity channel."""
 
     NONE = "none"
     LOW = "low"
@@ -102,7 +102,7 @@ class SafetyLabel(StrEnum):
 
 
 class MathLabel(StrEnum):
-    """Math-Verify outcomes (protocol M.2.3 / M.8 / M.9).
+    """Math-Verify outcomes (paper App. D.1, E / paper App. D.1).
 
     UNRESOLVED is an invalid initial answer, but a terminal task failure in Exp 2.
     It is never silently converted into the binary INCORRECT initial-state label.
@@ -114,7 +114,7 @@ class MathLabel(StrEnum):
 
 
 class Split(StrEnum):
-    """II.2.4 — all splits are group-level by x0 and pairwise disjoint."""
+    """paper Sec. 4.2 — all splits are group-level by x0 and pairwise disjoint."""
 
     D_FIT = "d_fit"
     D_GATE = "d_gate"
@@ -126,7 +126,8 @@ class Split(StrEnum):
 
 
 class ConflictDirection(StrEnum):
-    """II.7.2 — categorical (y1, y2) conflict; ``NA`` when the verifiers agree (never blank)."""
+    """paper Sec. 3 — categorical (y1, y2) conflict; ``NA`` when the verifiers agree (never
+    blank)."""
 
     V1_UNSAFE_V2_SAFE = "v1_unsafe_v2_safe"  # (y1, y2) = (1, 0)
     V1_SAFE_V2_UNSAFE = "v1_safe_v2_unsafe"  # (y1, y2) = (0, 1)
@@ -134,13 +135,13 @@ class ConflictDirection(StrEnum):
 
 
 class InvalidReason(StrEnum):
-    """II.2.3 — why a G_fixed output was judged invalid."""
+    """paper Sec. 4.2 — why a G_fixed output was judged invalid."""
 
     REFUSAL = "refusal"
     EMPTY = "empty"
     IDENTICAL_TO_X0 = "identical_to_x0"
     NON_ENGLISH = "non_english"
-    # Mathematics only; the detox validity rules and defaults are unchanged (M.2.3).
+    # Mathematics only; the detox validity rules and defaults are unchanged (paper App. D.1).
     TRUNCATED = "truncated"
     STRUCTURED_OUTPUT = "structured_output"
     UNRESOLVED = "unresolved"
@@ -148,12 +149,12 @@ class InvalidReason(StrEnum):
 
 
 class ParseFailReason(StrEnum):
-    """II.8.2 — the three preregistered parse-failure categories, plus one guard.
+    """paper Sec. 4.6 — the three parse-failure categories fixed before the runs, plus one guard.
 
-    ``MALFORMED_JSON`` is not in II.8.2: with schema-enforced structured output it should
+    ``MALFORMED_JSON`` is not in paper Sec. 4.6: with schema-enforced structured output it should
     never occur (only truncation at max_output_tokens can produce it). It is kept as its own
     category so it is never silently folded into ``BAD_ACTION``; it counts as a parse
-    failure and is reported separately. Flagged to the authors (group 1 report).
+    failure and is reported separately. Flagged to the authors.
     """
 
     REFUSAL = "refusal"
@@ -181,12 +182,12 @@ class _Strict(BaseModel):
 
 
 # --------------------------------------------------------------------------------------
-# Structured outputs emitted by LLMs (II.8.1, II.9.1)
+# Structured outputs emitted by LLMs (paper Sec. 3)
 # --------------------------------------------------------------------------------------
 
 
 class ControllerOutput(BaseModel):
-    """II.8.1 — the JSON object the controller must produce (schema-enforced)."""
+    """paper Sec. 3 — the JSON object the controller must produce (schema-enforced)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -195,8 +196,8 @@ class ControllerOutput(BaseModel):
 
 
 class GFixedOutput(BaseModel):
-    """II.2.3 — G_fixed emits one rewrite. Structured so that provider-level refusals are
-    signalled the same way as for the controller (group 1 report, question 2)."""
+    """paper Sec. 4.2 — G_fixed emits one rewrite. Structured so that provider-level refusals are
+    signalled the same way as for the controller."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -204,13 +205,13 @@ class GFixedOutput(BaseModel):
 
 
 class EvaluatorOutput(BaseModel):
-    """II.9.1 — binary judgment from E. ``score`` is optional (decision 12, 2026-09-16);
+    """paper Sec. 3 — binary judgment from E. ``score`` is optional (2026-09-16);
     ``reason`` is the one-sentence reason the E prompt asks for. Both are recorded only;
     nothing downstream reads them.
 
     This model is sent to the provider as the structured-output schema, so its field
-    descriptions are text E reads. They are deliberately absent (v0.9): E's prompt is
-    rubric-free (C.14), and the old description of ``reason`` ("which scale rule applied")
+    descriptions are text E reads. They are deliberately absent: E's prompt is
+    rubric-free, and the old description of ``reason`` ("which scale rule applied")
     pointed at a scale E no longer has. The only wording E gets is the authors' prompt file.
     """
 
@@ -227,7 +228,7 @@ class EvaluatorOutput(BaseModel):
 
 
 class State(_Strict):
-    """A rewrite state x_t (II.2.3). ``t = 1`` for G_fixed outputs."""
+    """A rewrite state x_t (paper Sec. 4.2). ``t = 1`` for G_fixed outputs."""
 
     state_id: str
     x0_id: str
@@ -249,7 +250,7 @@ class State(_Strict):
 
 
 class GenerationAttempt(_Strict):
-    """One G_fixed attempt (II.2.3 / II.10: every attempt is logged, valid or not)."""
+    """One G_fixed attempt (paper Sec. 4.2: every attempt is logged, valid or not)."""
 
     x0_id: str
     attempt: int
@@ -267,7 +268,7 @@ class GenerationAttempt(_Strict):
 
 
 class Score(_Strict):
-    """One verifier score for one state (App. A.2 scores table; score_spec.md).
+    """One verifier score for one state (scores table; score_spec.md).
 
     ``prompt_hash`` identifies the prompt a guard LM was scored with (step 2 probe, the authors
     2026-09-24: the probe table and the step-6 table share this schema, so the configuration
@@ -301,10 +302,10 @@ class Score(_Strict):
 
 
 class Observation(_Strict):
-    """The s^obs interface (II.1.2): the ONLY input the formatter accepts.
+    """The s^obs interface (paper Sec. 3): the ONLY input the formatter accepts.
 
     ``s1_obs, s2_obs`` are post-channel in Exp 1 and raw in Exp 2. ``raw_s1, raw_s2`` are
-    kept for logging only (II.10 requires both (s, s~) on disk); the formatter must not
+    kept for logging only (the design requires both (s, s~) on disk); the formatter must not
     read them.
     """
 
@@ -328,7 +329,7 @@ class Observation(_Strict):
 
 
 class UncertaintyFields(_Strict):
-    """II.7.2 — the six B fields, all deterministic in (s1_obs, s2_obs, tau1, tau2)."""
+    """paper Sec. 3 — the six B fields, all deterministic in (s1_obs, s2_obs, tau1, tau2)."""
 
     y1: int
     y2: int
@@ -351,7 +352,7 @@ class UncertaintyFields(_Strict):
 
 
 class ControllerAttempt(_Strict):
-    """One controller call (II.10: raw output of every attempt is logged)."""
+    """One controller call (raw output of every attempt is logged)."""
 
     attempt: int  # 0 = first call, 1..PARSE_MAX_RETRIES = parse retries
     raw_output: str | None
@@ -365,7 +366,7 @@ class ControllerAttempt(_Strict):
 
 
 class Decision(_Strict):
-    """Outcome of one accept/rewrite decision (II.8.2)."""
+    """Outcome of one accept/rewrite decision (paper Sec. 4.6)."""
 
     state_id: str
     arm: Arm
@@ -375,8 +376,8 @@ class Decision(_Strict):
     revised_text: str | None
     parse_fail: bool
     n_parse_retries: int
-    refusal_like: bool = False  # decision 1, 2026-09-16: flag only, never affects parse_fail
-    empty_rewrite: bool = False  # action == rewrite and revised_text == x_t (valid, II.8.2)
+    refusal_like: bool = False  # 2026-09-16: flag only, never affects parse_fail
+    empty_rewrite: bool = False  # action == rewrite and revised_text == x_t (valid, paper Sec. 4.6)
     attempts: list[ControllerAttempt]
     model: str
     model_version: str | None
@@ -394,7 +395,7 @@ class Decision(_Strict):
 
 
 class EvalRecord(_Strict):
-    """One E judgment (II.9 / M.9); no arm or verifier output enters E.
+    """One E judgment (paper Sec. 3, App. D.1); no arm or verifier output enters E.
 
     Detox judges text alone. Math judges a candidate against its private reference;
     its text_id/cache identity must bind question, reference and Math-Verify config.
@@ -408,7 +409,7 @@ class EvalRecord(_Strict):
     model: str
     model_version: str | None  # the `model` string the provider returned for this call
     prompt_hash: str  # hash of this rendered request (varies with the text; cache key part)
-    # II.9.1 / II.10 (v0.9): every E record names the E that produced it -- the sha256 of the
+    # paper Sec. 3: every E record names the E that produced it -- the sha256 of the
     # prompt FILE (LF-normalized, see rafr.evaluator.judge.prompt_sha256) and the configured
     # version. Records from a different E are refused wherever they are read back.
     e_prompt_sha256: str
@@ -416,13 +417,14 @@ class EvalRecord(_Strict):
     decoding: dict[str, Any]
     cached: bool = False
     created_at: str = Field(default_factory=utc_now_iso)
-    # M.9: references belong only to E's stream, never controller / score records.
+    # paper App. D.1: references belong only to E's stream, never controller / score records.
     question_id: str | None = None
     reference_answer: str | None = None
     extracted_answer: str | None = None
     unresolved: bool | None = None
     math_verify_version: str | None = None
-    # M.9 diagnostics (2026-10-03): only the last \boxed is judged; these never change label.
+    # paper App. D.1 diagnostics (2026-10-03): only the last \boxed is judged; these never change
+    # label.
     n_boxes: int | None = None
     boxes_all_equivalent: bool | None = None
 
@@ -437,10 +439,10 @@ class EvalRecord(_Strict):
 
 
 class LogRecord(_Strict):
-    """II.10 — one row per (round, arm, state). Every listed field is present, even if null.
+    """one row per (round, arm, state). Every listed field is present, even if null.
 
     ``c_t`` and ``r_ref`` are filled in AFTER the fact by analysis code only; they are
-    never read by anything on the decision path (II.1.1).
+    never read by anything on the decision path (paper Sec. 3).
     """
 
     run_id: str
@@ -452,7 +454,7 @@ class LogRecord(_Strict):
     state_id: str
     x0_id: str
     x_t: str
-    # verifier scores before and after the channel (both always logged, II.10)
+    # verifier scores before and after the channel (both always logged)
     v1_id: str | None
     v2_id: str | None
     s1: float | None
@@ -474,7 +476,7 @@ class LogRecord(_Strict):
     # evaluator
     e_label: SafetyLabel | MathLabel | None
     e_score: float | None
-    # post-hoc only (II.1.1); always null at write time on the decision path
+    # post-hoc only (paper Sec. 3); always null at write time on the decision path
     c_t: tuple[int, int] | None = None
     r_ref: float | None = None
     # reproducibility

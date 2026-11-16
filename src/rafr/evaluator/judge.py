@@ -1,15 +1,15 @@
-"""E, the independent evaluator (II.9.1).
+"""E, the independent evaluator (paper Sec. 3).
 
 * ONE E (model, version, prompt file, decoding) for all four uses -- x0 prefilter, y* of every
-  state, the Exp 1 outcome, the Exp 2 round judgments (v0.9). There is one config block,
+  state, the Exp 1 outcome, the Exp 2 round judgments. There is one config block,
   ``models.evaluator``, and one builder, :func:`build_config`; no step can configure its own E;
-* the prompt is the authors' rubric-free ``src/rafr/evaluator/prompts/annotator_arm_b.txt``
-  (C.14). Its sha256 is pinned in
+* the prompt is the authors' rubric-free ``src/rafr/evaluator/prompts/annotator_arm_b.txt``.
+  Its sha256 is pinned in
   ``models.evaluator.prompt_sha256``; :func:`build_config` recomputes it from the file and
   refuses to build E on a mismatch, and a prompt with a ``{scale}`` slot is refused outright;
 * every :class:`EvalRecord` carries the prompt-file hash and the configured version, and
   :func:`check_same_e` refuses records produced by a different E (E changed -> the whole chain
-  is rebuilt, II.9.1; nothing is reused across an E change);
+  is rebuilt, paper Sec. 3; nothing is reused across an E change);
 * **called exactly as the retest called it** (2026-09-23): plain prompt, no system
   prompt, one user message, no structured output; the answer text is parsed here by
   :func:`parse_response`, a copy of the retest's parser (kappa = .945 and the arm A / B
@@ -28,7 +28,7 @@ model's minimum cacheable prefix, so the provider ignores the marker and every c
 uncached (2026-09-23: run it like that; the prompt is not changed to make caching
 work).
 
-Failure handling (II.9.1): a refusal (provider signal) or an answer the parser cannot read is
+Failure handling (paper Sec. 3): a refusal (provider signal) or an answer the parser cannot read is
 retried up to
 ``PARSE_MAX_RETRIES`` more times with the attempt index bumped (fresh cache key); if every
 attempt fails, :class:`EvaluatorError` is raised so that a run stops loudly instead of
@@ -58,7 +58,7 @@ from rafr.llm.client import LLMClient, LLMRequest, canonical_json, fill_slots, s
 from rafr.logging.writer import JsonlWriter
 
 PURPOSE = "evaluator"
-SCALE_SLOT = "{scale}"  # only to refuse it: E is rubric-free since v0.9 (C.14)
+SCALE_SLOT = "{scale}"  # only to refuse it: E is rubric-free since
 TEXT_SLOT = "{text}"
 
 PROMPT_CACHE_CONTROL: dict[str, str] = {"type": "ephemeral"}
@@ -73,7 +73,7 @@ CHARS_PER_TOKEN_UPPER = 4
 to be cached: fewer than 512 * 4 characters cannot reach 512 tokens."""
 
 E_IDENTITY_KEYS: tuple[str, ...] = ("model", "version", "decoding", "prompt_sha256")
-"""What makes two E the same E (II.9.1). The provider name is implied by the model."""
+"""What makes two E the same E (paper Sec. 3). The provider name is implied by the model."""
 
 LABELS: tuple[str, ...] = ("SAFE", "UNSAFE")
 
@@ -90,7 +90,7 @@ def parse_response(text: str | None) -> tuple[str | None, str | None]:
     The first JSON object carrying a string ``label`` that is SAFE or UNSAFE after strip +
     upper-case wins, fenced or surrounded by other text; ``reason`` is kept when it is a string
     and never required. Anything else -- a bare ``SAFE`` with no JSON around it included -- is
-    a parse failure, retried like a refusal (II.9.1).
+    a parse failure, retried like a refusal (paper Sec. 3).
     """
     if not text:
         return None, None
@@ -168,7 +168,7 @@ class EvaluatorConfig:
             "provider": self.provider,
             **self.identity(),
             # how the prompt is sent, not what it says: one block, or a cacheable prefix
-            # block plus the text (2026-09-20). Recorded because II.9.1 pins E's calling
+            # block plus the text (2026-09-20). Recorded because paper Sec. 3 pins E's calling
             # convention; not part of the identity because E reads the same bytes either way.
             "prompt_cache": PROMPT_CACHE_CONTROL if self.prompt_cache else None,
         }
@@ -183,8 +183,8 @@ class EvaluatorConfig:
 # E's decoding is taken from the config verbatim (2026-09-20). This model generation
 # rejects temperature outright, so `configs/models.yaml` sets `temperature: null` (= not sent,
 # recorded as null); the provider refuses a non-null temperature rather than dropping it
-# silently (decision 14). `effort: null` (not sent) and `max_output_tokens: 4096` are the
-# retest's values (2026-09-23; II.9.1 v0.9).
+# silently. `effort: null` (not sent) and `max_output_tokens: 4096` are the
+# retest's values (2026-09-23; paper Sec. 3).
 
 
 def build_config(
@@ -198,8 +198,8 @@ def build_config(
     Reading the prompt from ``models.evaluator.prompt_file`` (the normal path) also checks its
     sha256 against ``models.evaluator.prompt_sha256``: a mismatch -- the file was edited, or
     the pin is stale -- refuses to build E at all, dry run included, because every E output is
-    keyed on that hash. A ``{scale}`` slot or a configured ``scale_file`` is refused too (v0.9,
-    C.14: E has no rubric). ``prompt_text`` injects a template directly (tests only); its hash
+    keyed on that hash. A ``{scale}`` slot or a configured ``scale_file`` is refused too
+    (E has no rubric). ``prompt_text`` injects a template directly (tests only); its hash
     is then computed, not checked.
     """
     e = models_cfg["evaluator"]
@@ -265,7 +265,7 @@ def record_identity(rec: EvalRecord | Mapping[str, Any]) -> dict[str, Any]:
 
 
 def check_same_e(recorded: Mapping[str, Any], cfg: EvaluatorConfig, *, where: str) -> None:
-    """Refuse E output that a different E produced (II.9.1, v0.9).
+    """Refuse E output that a different E produced (paper Sec. 3).
 
     ``recorded`` is an identity as :meth:`EvaluatorConfig.identity` or :func:`record_identity`
     gives it. Model, version, decoding and prompt hash must all match.
@@ -346,7 +346,7 @@ def request_body(cfg: EvaluatorConfig, text: str, attempt: int = 0) -> dict[str,
 
 
 def judge_text(client: LLMClient, cfg: EvaluatorConfig, text: str) -> EvalRecord:
-    """Judge one text. Takes the text and nothing else (II.9.1)."""
+    """Judge one text. Takes the text and nothing else (paper Sec. 3)."""
     return judge_with_failures(client, cfg, text)[0]
 
 
@@ -358,7 +358,7 @@ def judge_with_failures(
 
     A transient provider failure (429, network, 5xx) is not an attempt: the client retries it
     below this level, and if it gives up, its :class:`TransientRetriesExhaustedError` passes
-    through untouched -- it is neither a parse retry nor an E failure (II.8.2, 2026-09-23).
+    through untouched -- it is neither a parse retry nor an E failure (paper Sec. 4.6, 2026-09-23).
     """
     failures: list[str] = []
     for attempt in range(PARSE_MAX_RETRIES + 1):

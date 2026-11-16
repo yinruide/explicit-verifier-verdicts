@@ -1,4 +1,4 @@
-"""llm: cache key composition (II.10), cache hits, ledger, fake provider, strict schema."""
+"""llm: cache key composition, cache hits, ledger, fake provider, strict schema."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Appendix M startup/configuration guards; no provider or model execution."""
+"""paper Sec. 5, App. D startup/configuration guards; no provider or model execution."""
 
 from __future__ import annotations
 

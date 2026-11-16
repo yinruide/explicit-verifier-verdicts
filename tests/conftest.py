@@ -23,7 +23,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 WATCHED = ("data", "frozen", "archive")
 IGNORED = ("data/cache", "data/raw", "archive/round1/data/cache")
 """Everything a run writes and cannot cheaply reproduce, plus the round-1 archive, which
-nothing may write at all (protocol v0.9, II.10). The caches are skipped: walking 8K cache
+nothing may write at all. The caches are skipped: walking 8K cache
 files per test would be slow, and the archived one is checked against its sha256 list in
 archive/round1/README.md instead. Watching the whole of data/ rather than a list of
 subdirectories is deliberate -- the escape this guard was written for landed in data/_fake/, a

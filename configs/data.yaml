@@ -1,4 +1,4 @@
-# Data configuration — protocol II.2 (data & state construction), II.2.4 (splits), 0.1.
+# Data configuration — paper Sec. 4.2 (data & state construction), paper Sec. 4.2 (splits), 0.1.
 # TBD convention: see configs/models.yaml header.
 
 # One master seed for the whole pipeline (decision, 2026-09-17). Every random
@@ -16,60 +16,60 @@ source:
   # download, pins it in data/manifest.json, and reuses that pin on every later run (it never
   # silently follows the upstream head). Copying a hash by hand only invited a typo.
   text_field: en_toxic_comment      # column holding the toxic source sentence x0
-  # Only x0 is used; gold neutral references are NOT used as states (II.2.2).
+  # Only x0 is used; gold neutral references are NOT used as states (paper Sec. 4.2).
 
 cleaning:
   # Deduplication is exact match after the same normalization used everywhere else
-  # (strip + collapse internal whitespace; decision 2, 2026-09-16). Case is preserved.
+  # (strip + collapse internal whitespace; 2026-09-16). Case is preserved.
   dedupe: normalized_exact
   min_chars: 1
   drop_empty: true
 
 prefilter:
-  # II.2.3 (v0.9): EVERY deduplicated x0 is judged by E; only x0 judged UNSAFE (toxic) is kept.
-  # Runs BEFORE any split and BEFORE any randomization. Uses E only, never V1/V2 (App. B.1).
-  # step00 no longer splits and has no "enough" / "cannot fill the splits" stop (v0.9): it
+  # paper Sec. 4.2: EVERY deduplicated x0 is judged by E; only x0 judged UNSAFE (toxic) is kept.
+  # Runs BEFORE any split and BEFORE any randomization. Uses E only, never V1/V2.
+  # step00 no longer splits and has no "enough" / "cannot fill the splits" stop: it
   # judges the whole pool, in batches if asked (--limit), under a --budget ceiling.
   # Results go to data/pools/prefilter.jsonl, every row naming the E that made it.
   enabled: true
   keep_label: UNSAFE
-  # II.9.1 (v0.9, C.15 withdraws v0.8's "never redone"): a re-run reuses only judgments made by
+  # paper Sec. 3 (replaces an earlier "never redone" rule): a re-run reuses only judgments made by
   # the SAME E (model, version, decoding, prompt sha256). A prefilter file written by any other
   # E makes step00 refuse to run -- the old chain is archived and rebuilt, never mixed.
   # An x0 whose E call still fails after its 2 retries is dropped with the reason recorded; a
   # later run of step00 retries it (a failure is not a judgment).
 
 splits:
-  # II.2.4 (v0.9). Built by step05 AFTER E has judged every state, all group-level by x0 and
+  # paper Sec. 4.2. Built by step05 AFTER E has judged every state, all group-level by x0 and
   # strictly disjoint. The procedure (rafr.data.splits.PROCEDURE, the name below):
   #   1. D_fit, D_gate, D_gate_reserve: drawn at random from ALL states, labels never looked at;
-  #   2. D_Exp1: drawn at random from the REMAINING states that E judged UNSAFE (C.16);
+  # 2. D_Exp1: drawn at random from the REMAINING states that E judged UNSAFE;
   #   3. unlabeled pool: every state left.
   # Fewer than d_exp1 E-UNSAFE states left after step 1 -> step05 stops and reports; no other
   # split is shrunk. Seed and procedure are fixed here and in the manifest (splits.plan) before
   # step 5 judges any state, and step05 refuses to split if either has changed since.
   procedure: random_then_e_unsafe_v09
-  # The split seed derives from seeds.master by this component name (a NEW name for v0.9, so the
+  # The split seed derives from seeds.master by this component name (a new name, so the
   # round-1 split stream is not reused): component_seed(18042406, "splits_v09")
   # = 3704724060242909420, recorded in data/manifest.json splits.plan.
   seed_component: splits_v09
   sizes:
-    d_fit: 600                      # v0.9 (II.2.4, C.18), random
-    d_gate: 600                     # v0.9 (II.2.4, C.18), random
-    d_gate_reserve: 600             # v0.9 (II.2.4, C.18), random; same size as d_gate
-    d_exp1: 300                     # v0.9 (II.2.4, C.16), E-UNSAFE states only
-    unlabeled_pool: rest            # v0.9 (II.2.4): every remaining state
-  # Exp 2 x0 = D_Exp1 (II.8.3; configs/exp2.yaml x0.source).
+    d_fit: 600                      # (paper Sec. 4.2), random
+    d_gate: 600                     # (paper Sec. 4.2), random
+    d_gate_reserve: 600             # (paper Sec. 4.2), random; same size as d_gate
+    d_exp1: 300                     # (paper Sec. 4.2), E-UNSAFE states only
+    unlabeled_pool: rest            # (paper Sec. 4.2): every remaining state
+  # Exp 2 x0 = D_Exp1 (paper Sec. 4.4; configs/exp2.yaml x0.source).
 
 labels:
-  # II.3 (v0.9): y* is E's judgment of each state; there is no human annotation. step05 writes
+  # paper Sec. 3: y* is E's judgment of each state; there is no human annotation. step05 writes
   # every judgment to data/labels/state_judgments.jsonl (hash recorded before the split).
-  # Reads go through rafr.data.labels only, gated by split and purpose (II.2.4, II.6.1).
+  # Reads go through rafr.data.labels only, gated by split and purpose (paper Sec. 4.2, 4.3).
   dir: data/labels
 
 dry_run:
-  # II.4.4: the dry run only touches the unlabeled pool (decision, 2026-09-17; enforced
+  # the dry run only touches the unlabeled pool (decision, 2026-09-17; enforced
   # unconditionally, step03 refuses any other source). The original reason -- annotation
-  # blinding -- is gone with the human labels in v0.9, but the rule still keeps every labelled
-  # split (above all D_gate_reserve, II.6.1) out of an engineering run.
+  # blinding -- is gone with the human labels, but the rule still keeps every labelled
+  # split (above all D_gate_reserve, paper Sec. 4.3) out of an engineering run.
   state_source: unlabeled_pool

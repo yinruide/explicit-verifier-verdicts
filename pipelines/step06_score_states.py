@@ -1,4 +1,4 @@
-"""Step 06 — the formal scores table of V1 and V2 (0.5 step 6; App. A.2; task 2026-09-24 s. 4).
+"""Step 06 — the formal scores table of V1 and V2 (step 6).
 
     python pipelines/step06_score_states.py reuse      # laptop: D_fit + pool from the probe
     python pipelines/step06_score_states.py inputs     # laptop: D_gate + D_Exp1 -> to_score
@@ -9,7 +9,7 @@
     python pipelines/step06_score_states.py install --pulled DIR [--pod-sha256 FILE]  # laptop
     python pipelines/step06_score_states.py verify     # laptop: every table complete, one scale
 
-II.4.2's diagnostics (decisions.md D-2026-09-25c; the perturbations are built on the laptop
+The design's diagnostics (the perturbations are built on the laptop
 before the pod, the pod only scores them):
 
     python pipelines/step06_score_states.py perturb-sample     # 150 E-UNSAFE + 150 E-SAFE
@@ -34,10 +34,11 @@ own scoring code, so the table is on the probe's scale:
   size, text budget and revision are the factory's; one difference stops the step. The probe
   file itself is only read.
 * **D_gate and D_Exp1** are scored by the factory in formal mode through batch_score (the
-  D_gate_reserve lock, II.6.1, is checked on the input and needs the split file on the machine;
-  the reserve is scored only once a gate attempt has failed, with ``inputs --include-reserve``).
+  D_gate_reserve lock, paper Sec. 4.3, is checked on the input and needs the split file on the
+  machine; the reserve is scored only once a gate attempt has failed, with ``inputs
+  --include-reserve``).
 
-**GPU only** (2026-09-24, decisions.md D-2026-09-24c point 6): every formal score comes
+**GPU only** (2026-09-24, point 6): every formal score comes
 from the fixed pod (``models.verifiers.formal_pod``: image and GPU, checked before anything is
 loaded), from a cuda probe record, on CUDA -- the encoder included. A configuration the probe ran
 on the laptop CPU only has no cuda record and is refused until the probe has run it on the GPU.
@@ -105,7 +106,7 @@ REUSED_SPLITS: tuple[Split, ...] = (Split.D_FIT, Split.UNLABELED_POOL)
 SCORED_SPLITS: tuple[Split, ...] = (Split.D_GATE, Split.D_EXP1)
 STEP_DIR_NAME = "step06"
 INPUT_NAME = "to_score.jsonl"
-FORMAL_KIND = "cuda"  # formal scores come from the GPU only (D-2026-09-24c point 6)
+FORMAL_KIND = "cuda"  # formal scores come from the GPU only (point 6)
 
 Echo = Callable[[str], None]
 
@@ -124,7 +125,7 @@ def formal_table(config_id: str) -> Path:
 
 def reserve_table(config_id: str) -> Path:
     """D_gate_reserve's scores, if it is ever scored (after a failed first gate): a table of its
-    own, never merged into :func:`formal_table` (decisions.md D-2026-09-27)."""
+    own, never merged into :func:`formal_table` ."""
     return reserve_scores_table_path(config_id, paths.DATA_SCORES)
 
 
@@ -410,7 +411,7 @@ def cmd_score(
     (cuda record, CUDA run), one model at a time: the 203-state numeric check first, then the
     table, resumable and written as it goes, and its meta when it is done.
 
-    ``perturbed``: the input is the II.4.2 perturbation items (``<state_id>#prefix`` /
+    ``perturbed``: the input is the perturbation items (``<state_id>#prefix`` /
     ``<state_id>#paraphrase``); the reserve lock is checked on their states (``perturb-inputs``
     has already checked on the laptop that every one is a D_fit or pool state)."""
     from rafr.verifiers import probe_run
@@ -473,8 +474,8 @@ def cmd_numeric_check(
     out_dir: Path,
     echo: Echo,
 ) -> dict[str, Any]:
-    """Pod: the 203-state check alone, for every configured configuration (runbook step 3:
-    nothing is scored until it has passed). ``score`` repeats it before it scores anything."""
+    """Pod: the 203-state check alone, for every configured configuration (nothing is scored
+    until it has passed). ``score`` repeats it before it scores anything."""
     from rafr.verifiers import probe_run
 
     pod_env = check_pod(models_cfg, echo)
@@ -525,7 +526,7 @@ def cmd_install(
 ) -> dict[str, Any]:
     """Check pulled tables against the input and the probe identity, then merge them.
 
-    ``perturbed``: the tables of the II.4.2 perturbation items. They are checked the same way
+    ``perturbed``: the tables of the perturbation items. They are checked the same way
     and written whole to ``data/step06/perturb/scores/<config_id>.jsonl``, never into the formal
     tables (they are not states)."""
     want = {str(r["state_id"]) for r in read_jsonl(input_path)}
@@ -593,11 +594,11 @@ def cmd_verify(models_cfg: Mapping[str, Any], echo: Echo) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------------------
-# II.4.2: the wording perturbations (laptop, before the pod; D-2026-09-25c)
+# the wording perturbations (laptop, before the pod)
 # ---------------------------------------------------------------------------------------
 
 PARAPHRASE_BUDGET_USD = 2.0  # OpenAI, all paraphrase runs together (2026-09-25)
-JUDGE_BUDGET_USD = 2.0  # Anthropic, all E runs on the paraphrases together (D-2026-09-25d)
+JUDGE_BUDGET_USD = 2.0  # Anthropic, all E runs on the paraphrases together
 PARAPHRASE_RUN_PREFIX = "step06_paraphrase_"
 JUDGE_RUN_PREFIX = "step06_judge_paraphrases_"
 _END = object()
@@ -929,7 +930,7 @@ def fit_or_load_tau(
 
 
 def cmd_diagnostics(cfgs: Mapping[str, Any], run_dir: Path, echo: Echo) -> dict[str, Any]:
-    """II.4.2's full table on D_fit + pool (runs/step06_diagnostics/<run_id>/)."""
+    """The design's full table on D_fit + pool (runs/step06_diagnostics/<run_id>)."""
     models = cfgs["models"]
     ids = dict(zip(diagnostics.VERIFIERS, configured(models), strict=True))
     idents = {

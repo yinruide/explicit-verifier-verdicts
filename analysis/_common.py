@@ -1,6 +1,6 @@
-"""Shared helpers for the analysis scripts: accounting rules (II.8.2) and bootstrap CIs.
+"""Shared helpers for the analysis scripts: accounting rules (paper Sec. 4.6) and bootstrap CIs.
 
-Interval algorithm (III.1.2, locked in v0.8): every CI in the analysis is a 95% PERCENTILE
+Interval algorithm (paper Sec. 4.6, locked): every CI in the analysis is a 95% PERCENTILE
 bootstrap with B = ``BOOTSTRAP_B`` = 10000 replicates and a seed that is recorded and written
 to disk. What differs between analyses is only the resampling unit:
 
@@ -8,8 +8,8 @@ to disk. What differs between analyses is only the resampling unit:
 * Exp 2  -> trajectories resampled WITHIN arm (stratified), via :func:`stratified_bootstrap_ci`;
 * gate   -> the state, in ``rafr.validity.gate.ladder_ci``.
 
-The pilot makes no significance claims (III.1.1): intervals express uncertainty, they never
-decide anything — not the gate verdict (II.6.1) and not a claim's direction.
+The pilot makes no significance claims: intervals express uncertainty, they never
+decide anything — not the gate verdict (paper Sec. 4.3) and not a claim's direction.
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from rafr.core.seeding import rng as seeded_rng
 Accounting = str  # "main" | "parse_fail_as_accept" | "complete_case"
 ACCOUNTINGS: tuple[Accounting, ...] = ("main", "parse_fail_as_accept", "complete_case")
 
-# ---- fake data (0.5 step 10) ------------------------------------------------------------
+# fake data (step 10) ------------------------------------------------------------
 # Step 10 runs every analysis on fake logs before any real Exp 1 / Exp 2 row exists. The fake
 # logs have the real row schemas, so nothing in a row could tell them apart -- except these
 # marks, which the fake generator always writes and every reader checks:
@@ -90,7 +90,7 @@ def accepted(row: dict[str, Any], accounting: Accounting = "main") -> bool | Non
     """Accept indicator under an accounting rule; ``None`` = excluded (complete-case)."""
     if row["parse_fail"]:
         if accounting == "main":
-            return False  # II.8.2: parse_fail counts as NOT accepted
+            return False  # paper Sec. 4.6: parse_fail counts as NOT accepted
         if accounting == "parse_fail_as_accept":
             return True
         return None
@@ -129,7 +129,7 @@ def stratified_bootstrap_ci(
 ) -> tuple[float, float]:
     """Percentile bootstrap that resamples WITHIN each stratum, keeping stratum sizes fixed.
 
-    Exp 2 (III.1.2): the strata are the arms, so each replicate holds the randomized arm
+    Exp 2 (paper Sec. 4.6): the strata are the arms, so each replicate holds the randomized arm
     sizes constant instead of letting the pooled draw move them around.
     """
     strata = {k: list(v) for k, v in strata.items()}
@@ -148,7 +148,7 @@ def stratified_bootstrap_ci(
 
 
 def bootstrap_spec(unit: str, *, seed: int, n_boot: int = BOOTSTRAP_B) -> dict[str, Any]:
-    """The block every analysis output carries so the interval is reproducible (III.1.2)."""
+    """The block every analysis output carries so the interval is reproducible (paper Sec. 4.6)."""
     return {
         "method": "percentile_bootstrap",
         "level": 1 - BOOTSTRAP_ALPHA,

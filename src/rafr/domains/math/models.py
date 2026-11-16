@@ -1,4 +1,4 @@
-"""Math learned-verifier boundaries (Appendix M.4).
+"""Math learned-verifier boundaries (paper Sec. 5, App. D).
 
 Three forms, one entry point (:func:`build_verifier`), one direction: every adapter
 returns an ``error_score`` in [0, 1], higher = more likely wrong.
@@ -40,7 +40,7 @@ from rafr.llm.client import canonical_json, fill_slots, sha256_hex
 
 ADAPTER_VERSION = "math-models-v2"
 STEP_RULE = "blank_line_runs_lf_v1"
-#: M.4: the PRM step segmentation, frozen at selection and written into the verifier_card.
+# paper Sec. 5: the PRM step segmentation, frozen at selection and written into the verifier_card.
 STEP_RULE_TEXT = (
     "CRLF and CR line endings become LF and the solution is stripped of outer whitespace; it "
     "is cut at every run of one or more blank lines (a line holding only spaces or tabs is "
@@ -579,7 +579,7 @@ class PRMVerifier:
         }
 
     def verifier_card(self) -> dict[str, Any]:
-        """What was loaded and how it scores. M.4: the step segmentation rule and the
+        """What was loaded and how it scores. paper Sec. 5: the step segmentation rule and the
         aggregation are frozen at selection and written into the verifier_card."""
         self.load()
         qwen = self.config.kind == "qwen_prm"
@@ -649,7 +649,7 @@ class PRMVerifier:
 
 
 # ---------------------------------------------------------------------------------------
-# Hugging Face backends (M.4). Nothing below names a model: every model-specific choice
+# Hugging Face backends (paper Sec. 5). Nothing below names a model: every model-specific choice
 # is a configuration value.
 # ---------------------------------------------------------------------------------------
 
@@ -1167,7 +1167,7 @@ class _HFVerifier:
         raise NotImplementedError
 
     def verifier_card(self) -> dict[str, Any]:
-        """What was loaded and how it scores (M.4: written into the verifier_card)."""
+        """What was loaded and how it scores (paper Sec. 5: written into the verifier_card)."""
         self.load()
         return {
             "form": self.form,
@@ -1211,7 +1211,7 @@ class _HFVerifier:
 
 
 class LLMJudgeVerifier(_HFVerifier):
-    """P(No) at the verdict position of an instruct model (M.4 LLM judge)."""
+    """P(No) at the verdict position of an instruct model (paper Sec. 5 LLM judge)."""
 
     form = "llm_judge"
     implementation = JUDGE_IMPLEMENTATION
@@ -1351,7 +1351,7 @@ class LLMJudgeVerifier(_HFVerifier):
 
 
 class ORMVerifier(_HFVerifier):
-    """1 - sigmoid(scalar logit) of a sequence-regression / reward model (M.4 ORM)."""
+    """1 - sigmoid(scalar logit) of a sequence-regression / reward model (paper Sec. 5 ORM)."""
 
     form = "orm"
     implementation = ORM_IMPLEMENTATION
@@ -1436,10 +1436,10 @@ class ORMVerifier(_HFVerifier):
 #: The installed Hugging Face adapter per form; build_verifier and VerifierSpec read it.
 HF_ADAPTERS = {"llm_judge": LLMJudgeVerifier, "orm": ORMVerifier}
 HF_IMPLEMENTATIONS = {form: adapter.implementation for form, adapter in HF_ADAPTERS.items()}
-#: M.4 v1.2: the generative adapters (``generative.py``), by implementation, with the form each
+# paper Sec. 5: the generative adapters (``generative.py``), by implementation, with the form each
 #: one is: a step-level generative PRM is ``prm``, a whole-solution reasoning judge ``llm_judge``.
 GENERATIVE_IMPLEMENTATIONS = {"hf_generative_step": "prm", "hf_generative_judge": "llm_judge"}
-#: M.4 v1.2: the sources no math verifier may come from (the controller and G_fixed are OpenAI;
+# paper Sec. 5: the sources no math verifier may come from (the controller and G_fixed are OpenAI;
 #: E is Anthropic). Matched case-insensitively against every identity and lineage entry.
 EXCLUDED_SOURCES = ("openai", "anthropic")
 LINEAGE_KEYS = ("vendors", "bases", "reasoning_data")
@@ -1456,7 +1456,8 @@ def _check_lineage(lineage: Any) -> None:
     """``vendors``: every organisation that trained a model in the weight lineage (the base's
     pretraining, any distillation or fine-tune in between, the final fine-tune); ``bases``: the
     pretrained base family; ``reasoning_data``: the models documented as having generated the
-    reasoning training data (the OpenAI rule of M.4 reads it; it is not a pair criterion)."""
+    reasoning training data (the OpenAI rule of paper Sec. 5 reads it; it is not a pair
+    criterion)."""
     if not isinstance(lineage, dict) or set(lineage) != set(LINEAGE_KEYS):
         raise MathModelError(f"lineage must map exactly {LINEAGE_KEYS} to lists of names")
     for key in LINEAGE_KEYS:
@@ -1479,7 +1480,7 @@ class VerifierSpec:
 
     vendor identifies the model's training source; an OpenAI-compatible HTTP server
     does not by itself make the model OpenAI-sourced. base_model is the canonical
-    underlying backbone identity, not a checkpoint alias. ``lineage`` (v1.2) writes the
+    underlying backbone identity, not a checkpoint alias. ``lineage`` writes the
     sources as sets, for models trained from several (a fine-tune of a distillation of
     another vendor's base): see :func:`_check_lineage`.
     """
@@ -1533,9 +1534,9 @@ class VerifierSpec:
 
 
 def pair_ineligibility(first: VerifierSpec, second: VerifierSpec) -> list[str]:
-    """Why two reviewed verifiers cannot be a pair under M.4 v1.2 (empty: they can).
+    """Why two reviewed verifiers cannot be a pair under paper Sec. 5 (empty: they can).
 
-    Vendors and bases must be disjoint as sets; forms may be the same (C.28). The OpenAI and
+    Vendors and bases must be disjoint as sets; forms may be the same. The OpenAI and
     Anthropic exclusions are checked on each spec when it is built.
     """
     reasons = []
@@ -1547,7 +1548,7 @@ def pair_ineligibility(first: VerifierSpec, second: VerifierSpec) -> list[str]:
 
 
 def validate_verifier_pair(specs: Sequence[VerifierSpec | Mapping[str, Any]]) -> tuple:
-    """M.4 v1.2: disjoint training sources and underlying backbones (forms may coincide)."""
+    """paper Sec. 5: disjoint training sources and underlying backbones (forms may coincide)."""
     if len(specs) != 2:
         raise MathModelError("exactly two reviewed verifier specifications required")
     first, second = tuple(

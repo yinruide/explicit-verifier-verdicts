@@ -1,5 +1,5 @@
 """Math step 10 (pipelines/math_step10.py) on the offline stub run of tests/math_v2_helpers.py:
-the Exp 1 inputs are exactly the cells MathPipeline.exp1 runs, and the preregistered analyses run
+the Exp 1 inputs are exactly the cells MathPipeline.exp1 runs, and the primary analyses run
 on FAKE decisions and trajectories with shuffled arms."""
 
 from __future__ import annotations

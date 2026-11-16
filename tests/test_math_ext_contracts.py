@@ -1,4 +1,4 @@
-"""2026-11-01 handoff contracts, separate from real-artifact regression evidence.
+"""2026-11-01 contracts, separate from real-artifact regression evidence.
 
 No provider is initialized. Missing original runs/bindings are explicit skips, never
 replaced by synthetic data. Repository-root capture avoids mutable paths fixture leakage.
@@ -27,8 +27,8 @@ from rafr.formatter.math_extended import build_no_verifier_config, math_wording,
 ROOT = Path(__file__).resolve().parents[1]
 BASELINE = "5fca69dab5de98f32b186d75aed8646ad2f631e0"
 # Files the math extension may not change. analysis/ext_analysis.py and
-# analysis/ext_decision_quality.py are not listed: the authors' side maintains them (handoff
-# 7.2) and changes them after the merge (2026-11-05: math's original Exp 2 finals mapping).
+# analysis/ext_decision_quality.py are not listed: the authors' side maintains them and
+#  changes them after the merge (2026-11-05: math's original Exp 2 finals mapping).
 PROTECTED = (
     "configs/ext.yaml",
     "frozen",
@@ -74,7 +74,7 @@ def _blob(name: str, ref: str = BASELINE) -> bytes:
 
 
 def _checkout_text(raw: bytes) -> bytes:
-    # Existing Windows prompts may have CRLF; preserve every other byte (handoff 5.3/6.1).
+    # Existing Windows prompts may have CRLF; preserve every other byte.
     return raw.replace(b"\r\n", b"\n")
 
 

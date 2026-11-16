@@ -1,6 +1,6 @@
-"""The always-rewrite stub controller: for tests only (II.4.4, 2026-09-25).
+"""The always-rewrite stub controller: for tests only (2026-09-25).
 
-Protocol II.4.4 (in-place revision of 2026-09-25) moves the coverage of rounds 3 and 4 and of the
+The 2026-09-25 revision moves the coverage of rounds 3 and 4 and of the
 resume path out of any smoke run and into the tests: a controller that never accepts pushes every
 trajectory through all K rounds without a single API call. It is a scripted responder for
 :class:`rafr.llm.providers.fake.FakeProvider` plus a matching :class:`ControllerConfig` whose model
@@ -11,7 +11,7 @@ The rewrite appends :data:`REWRITE_MARK` to the current text, so the number of m
 the number of rewrites so far, i.e. ``t - 1`` for the text decided at round ``t``. That is what
 lets the responder fail to parse at one chosen round (``parse_fail_at_round``) without any state
 of its own: all three attempts of that decision return invalid JSON and the runner records a
-parse_fail, x_{t+1} = x_t (II.8.2).
+parse_fail, x_{t+1} = x_t (paper Sec. 4.6).
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ def always_rewrite_responder(
 
     ``parse_fail_at_round = t`` makes every attempt of the decision at round ``t`` return text
     that is not the JSON schema, so that decision is a parse_fail (all three attempts fail) and
-    the trajectory keeps x_t for the next round (II.8.2).
+    the trajectory keeps x_t for the next round (paper Sec. 4.6).
     """
 
     def responder(req: LLMRequest) -> str:

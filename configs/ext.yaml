@@ -1,11 +1,11 @@
-# Post-pilot extension experiments (2026-10-31). NOT part of the preregistered runs:
+# Post-pilot extension experiments (2026-10-31). NOT part of the primary runs:
 # their code paths, run directories and result files are never changed or overwritten, and every
 # extension run writes a run directory of its own (runs/<run_id_prefix>_<cohort>_<timestamp>).
 # Read by pipelines/ext_*.py only. The formal-run guard (rafr.experiments.ext_config) refuses an
 # extension run while any value here is TBD or an extension prompt file still carries the
 # placeholder marker. This session wires detox only; math is the authors'.
 #
-# The preregistered files the extension reads are named with their sha256 and checked on every
+# The primary files the extension reads are named with their sha256 and checked on every
 # read: a changed file is refused, never silently used.
 
 domain: detox
@@ -26,11 +26,11 @@ calibration:
   fit_split: unlabeled_pool         # y* read with purpose calibration_fit
   diagnostics_split: d_gate         # y* read with purpose calibration_diag
   frozen_file: frozen/calibration_detox.json
-  # the prior-corrected refit (2026-10-31, reply to stop point C), 2026-10-31; diagnostics
+  # the prior-corrected refit (2026-10-31), 2026-10-31; diagnostics
   # on D_gate: runs/ext_calibration_detox_20261031T084115Z
   frozen_sha256: 81a94c63143bec3f41f66496ab1569469361fdbf445c6f23d4562d20c063ca90
   prior_correction:
-    # 2026-10-31 (reply to stop point C): the pool is what D_Exp1 left after taking its
+    # 2026-10-31 (): the pool is what D_Exp1 left after taking its
     # 300 states from the remaining E-UNSAFE, so its failure rate is below the population's; D_Exp1
     # being a uniform draw among those, only the class prior moved. a stays; b += delta,
     # delta = logit(p_R) - logit(p_pool), p_pool = the pool's failure rate,
@@ -39,7 +39,7 @@ calibration:
     # premises are asserted first (rafr.calibration.fit.check_prior_premises).
     added_failures_split: d_exp1
   superseded:
-    # stop point C's first fit, without the prior correction: renamed, kept, read by no run
+    # the first fit, without the prior correction: renamed, kept, read by no run
     file: frozen/calibration_detox_v1_no_prior_correction.json
     sha256: 7228f1b94ffade4dfd6a0278113146cad96c3649f0376e3c669a2d1f93a862c9
     diagnostics: runs/ext_calibration_detox_20261031T074422Z
@@ -49,7 +49,7 @@ calibration:
   max_clip_share: 0.01              # any verifier x split cell above 1% clipped: stop and report
   targets: platt_smoothed           # (N+ + 1) / (N+ + 2) and 1 / (N- + 2); no other regularization
   ece_bins: 10                      # equal-frequency
-  bootstrap:                        # III.1.2: 95% percentile, B = 10000; unit = state
+  bootstrap:                        # paper Sec. 4.6: 95% percentile, B = 10000; unit = state
     n_boot: 10000
     alpha: 0.05
     seed_component: ext_calibration_boot
@@ -67,23 +67,23 @@ cohorts:
     n: 300
     seed_component: ext_ecorrect_cohort
     file: data/ext/ecorrect_cohort_detox.jsonl
-    # stop point C, 2026-10-31: 479 of D_gate's 600 states E-SAFE, 300 drawn; the file is under
+    # 2026-10-31: 479 of D_gate's 600 states E-SAFE, 300 drawn; the file is under
     # data/ (not in git) and is pinned by this sha256; its header records the seed and the id hash
     file_sha256: 3636f13bdbf8cef12f5c1cf93eae8a891e141212897453686aae403ab48fa149
 
 smoke:
-  # Stop point D's engineering smokes (2026-10-31; pipelines/_ext_smoke.py): states
+  # The engineering smokes (2026-10-31; pipelines/_ext_smoke.py): states
   # outside every formal set, as step 10a. E-incorrect: the pool's E-UNSAFE states (y* under
   # dry_run, as steps 3 and 10a); E-correct: D_gate's SAFE states the cohort did not draw (y* under
   # ext_smoke). Drawn with this seed component; seed namespace <namespace>_smoke; a cache of the
   # run's own; run directories <run_id_prefix>_smoke_<cohort>_<ts>, refused by the analysis. No
-  # channel check against the original run (stop point B's regression covers all 2,700 cells).
+  # channel check against the original run (the regression check against the primary runs covers all 2,700 cells).
   seed_component: ext_smoke
 
 exp1:
   lambdas: [low, mid, high]
   run_id_prefix: exp1ext
-  permuted_b_seed_component: permuted_b          # the original II.7.3 / C.22 table rule
+  permuted_b_seed_component: permuted_b          # the original paper Sec. 3 / table rule
   pihat_mismatch_seed_component: ext_pihat_mismatch  # independent of permuted-B's table
   e_incorrect:
     seed_namespace: exp1            # the original Exp 1 seeds: same per-state seed per state
@@ -117,13 +117,13 @@ exp2:
       assignment.jsonl: 7346e694d2674f918a05bfb6e276eed961ba0c1bd354bb1e5079528a4e3d1d0c
       trajectories.jsonl: 01325d6408728e282cf5b63cfa061c3adc7bd611ac1bb948cbf9136160739d29
       round_judgments.jsonl: c9dc23b90152e45b72a3aac1ee6edada56237f2cc435ec1b905eaf19113759db
-      # the original x_T re-judged by Grok 4.6 (II.3): the panel sensitivity's original rows
+      # the original x_T re-judged by Grok 4.6 (paper Sec. 3): the panel sensitivity's original rows
       panel_grok.jsonl: 0515f5b0bf7693f7dad16adc62e672a3877ab2980d8fe3900bb1386c0b1305c2
     x1_file: data/exp2/x1_states.jsonl
     x1_sha256: 3533e159a746751e23025b92f6c1fa759a41bffd7f266f604e5f10efa234525f
     t1_scores:
       # 2026-10-31: reuse on. The source is the original Exp 2's round-1 in-process
-      # scores (300 x 2, bit for bit step 6's; stop point A), NOT step 6's table; its path and
+      # scores (300 x 2, bit for bit step 6's), NOT step 6's table; its path and
       # sha256 go into every extension run's metadata.
       reuse: true
       source: runs/exp2_20260928T033025Z/rounds/round_1/scores.jsonl
@@ -138,7 +138,7 @@ exp2:
       compare_with_step06: true
 
 analysis:
-  # 2026-10-31 (reply to stop point B). Every contrast is "less information - more
+  # 2026-10-31 (). Every contrast is "less information - more
   # information", the direction of the original D-bar = A1 - B: a positive value means the added
   # information reduced errors. Every extension result is exploratory: the intervals are not
   # corrected for multiple comparisons and every cell is reported. Exp 1's main accounting counts
@@ -161,14 +161,14 @@ analysis:
   cited_not_recomputed:
     exp1:
       e_incorrect:
-        # the preregistered results (step 13's formal tables), cited, not recomputed
+        # the primary results (step 13's formal tables), cited, not recomputed
         contrasts: [[A1, B], [permuted_B, B]]
         tables_dir: runs/analysis_20260928T124804Z
         sha256:
           T06_exp1_did.json: 2c03bb11ad9d371bba186a46bc7d30a458eca2be0f2a8bcb4a8fadb7e0002253
           T06_exp1_delta_by_lambda.json: 5222cea99f562aca520b5443280c26c75b616814b8467d796d6ce6766ff4d03a
   contrasts_confirmed: 2026-10-31 Michael (reply to stop point B)
-  bootstrap:                        # III.1.2: 95% percentile, B = 10000; unit = x0 (paired)
+  bootstrap:                        # paper Sec. 4.6: 95% percentile, B = 10000; unit = x0 (paired)
     n_boot: 10000
     alpha: 0.05
     seed_component: ext_analysis_boot

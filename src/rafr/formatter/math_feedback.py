@@ -2,7 +2,7 @@
 
 No question, candidate solution, reference answer or evaluator label is accepted here.
 The shared numerical field calculation is reused, while its internal label names are
-rendered by the unchanged detox six-field renderer (Appendix M.7).
+rendered by the unchanged detox six-field renderer (paper Sec. 5, App. D).
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ FORBIDDEN_WORDS = ("confidence", "reliability", "certain", "probability", "uncer
 
 
 def load_prompts(prompt_dir: Path | None = None) -> dict[str, str]:
-    """Only the authors' finalized, file-backed descriptions may be used (M.7)."""
+    """Only the authors' finalized, file-backed descriptions may be used (paper Sec. 3)."""
     prompt_dir = PROMPT_DIR if prompt_dir is None else Path(prompt_dir)
     files = [prompt_dir / name for name in PROMPT_FILES]
     assert_frozen({}, extra_files=files, only_sections=[])
@@ -136,7 +136,7 @@ def format_observation(
     The caller owns the frozen permutation. This function never samples or shuffles.
     Supplying the donor observation additionally verifies that the fields are exactly its
     derived fields, at the same severity and thresholds, and from a different state.
-    The file-backed descriptions must be frozen across arms and states (M.7).
+    The file-backed descriptions must be frozen across arms and states (paper Sec. 3).
     """
     arm = Arm(arm)
     if arm is not Arm.PERMUTED_B and (permuted_fields is not None or donor_observation is not None):

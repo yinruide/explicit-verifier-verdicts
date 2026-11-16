@@ -1,4 +1,4 @@
-"""pipelines/math_tables.py: math's report.json laid out as detox's preregistered tables. On step
+"""pipelines/math_tables.py: math's report.json laid out as detox's primary tables. On step
 10's FAKE report from the offline stub run: every table of the section map is built, the files are
 detox's (FAKE_ prefixed, FAKE inside), every number is the report's, and the formal path refuses
 a FAKE report and a run whose files changed since judge."""
@@ -35,7 +35,7 @@ def test_the_section_map_covers_the_core_plan_and_every_builder():
         assert s.tables or s.not_implemented, s.section
     # detox's table ids are kept where the analysis is the same
     detox_ids = {t for s in prereg_tables.SECTIONS for t in s.tables}
-    assert detox_ids - set(listed) == {"T081_panel", "T082_semantic"}  # M.3, M.9
+    assert detox_ids - set(listed) == {"T081_panel", "T082_semantic"}  # paper Sec. 5, App. D.1
 
 
 def test_fake_report_tables_are_the_reports_numbers(fake_report, tmp_path):

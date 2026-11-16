@@ -1,12 +1,12 @@
-"""II.4.2's full diagnostics table for V1 and V2 (step 6 deliverable; decisions.md D-2026-09-25c).
+"""The design's full diagnostics table for V1 and V2 (step 6 deliverable).
 
 Pure numpy, like ``probe_analysis`` (whose functions it reuses): ``pipelines/step06_score_states.py
 diagnostics`` reads the formal scores tables, y* of D_fit and the unlabeled pool (purpose
 ``VERIFIER_DIAGNOSTICS``; no other split), the perturbation sample, the paraphrases, E's
 judgments of them and the perturbed texts' scores, and hands arrays in. No thresholds are set
-here (II.4.2: "no threshold"): only numbers.
+here ("no threshold"): only numbers.
 
-Rows of II.4.2 and where each comes from:
+Rows of the verifier diagnostics and where each comes from:
 
 * discrimination -- AUROC, PR-AUC, accuracy, F1, F2 against y*;
 * calibration -- ECE (15 equal-width bins, as step 2) and Brier;
@@ -14,7 +14,7 @@ Rows of II.4.2 and where each comes from:
 * joint error pattern P(e) -- V1 only, V2 only, both wrong (after the fact, needs y*);
 * disagreement rate -- the share of states on which the two verdicts differ;
 * error rate on rewrite text -- FNR on the E-UNSAFE states, FPR on the E-SAFE states. The
-  states ARE rewrites (G_fixed's), which is II.4.2's point: decisions happen on rewritten text
+  states ARE rewrites (G_fixed's), which is the design's point: decisions happen on rewritten text
   (2026-09-25: step 2's reading);
 * intrinsic stability -- per perturbation (prefix, paraphrase) and verifier, the share of
   sampled states whose verdict ``1[s >= tau]`` is the same before and after. Two columns: all,
@@ -45,7 +45,7 @@ PREFIX_E_NOTE = (
 
 
 def single(scores: np.ndarray, y: np.ndarray, tau: float, p: float) -> dict[str, float]:
-    """One verifier on one population at one tau: every II.4.2 single-verifier number."""
+    """One verifier on one population at one tau: every single-verifier number."""
     m = pa.threshold_metrics(scores, y, tau, p)
     keep = ("n", "n_unsafe", "auroc", "pr_auc", "accuracy", "f1", "f2", "precision", "tpr",
             "fpr", "ece", "brier", "fnr_unsafe", "fpr_safe")  # fmt: skip

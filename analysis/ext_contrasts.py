@@ -1,4 +1,4 @@
-"""Extension contrasts (post-pilot; the list the authors set on 2026-10-31, reply to stop point B).
+"""Extension contrasts (post-pilot; the list the authors set on 2026-10-31).
 
 EXPLORATORY: every extension result is exploratory, the intervals are not corrected for multiple
 comparisons, and every cell is reported (cohort x lambda x accounting x contrast, and every arm's
@@ -11,8 +11,8 @@ reduced errors.
     every experiment and cohort:  No Verifier - A1,  A1 - Verdict-only,  Verdict-only - B,
                                   B - (B + pi-hat),  (B + pi-hat mismatched) - (B + pi-hat)
     Exp 1, E-correct, also:       A1 - B,  permuted-B - B  (on the false reject rate)
-    Exp 1, E-incorrect:           A1 - B and permuted-B - B are the preregistered results; they
-                                  are cited from the preregistered tables (sha256-checked), not
+    Exp 1, E-incorrect:           A1 - B and permuted-B - B are the primary results; they
+                                  are cited from the primary tables (sha256-checked), not
                                   recomputed
     Exp 2, both cohorts, also:    A1 - B over the full pairing (data once P2's fill has run)
 
@@ -23,9 +23,10 @@ reduced errors.
   1[not accepted].
 
 Each contrast is the paired mean over states of error_X - error_Y. In ``e_incorrect`` the original
-run's A1 / B decisions (sha256-checked) stand next to the extension's. Accountings (II.8.2): the
-main one counts a parse_fail as not accepted (in ``e_correct``: a false reject); the sensitivities
-are ``parse_fail_as_accept`` and ``complete_case`` (states where either arm parse-failed dropped).
+run's A1 / B decisions (sha256-checked) stand next to the extension's. Accountings (paper Sec. 4.6):
+the main one counts a parse_fail as not accepted (in ``e_correct``: a false reject); the
+sensitivities are ``parse_fail_as_accept`` and ``complete_case`` (states where either arm
+parse-failed dropped).
 
 **Exp 2**, per cohort, paired over the starts (x0) on which both arms of a contrast ran; every
 contrast and every arm reports its n:
@@ -37,7 +38,7 @@ contrast and every arm reports its n:
 
 The mismatch arm does not exist in Exp 2: its contrast is reported as not run.
 
-**Exp 2 panel sensitivity** (2026-10-31; III.1.2 as the original Exp 2's T081): each
+**Exp 2 panel sensitivity** (2026-10-31; paper Sec. 4.6 as the original Exp 2's T081): each
 panel member (detox: Grok 4.6, ``panel_<member>.jsonl`` in every run directory, the original
 run's sha256-checked) re-judges x_T and is read on its own as the judge of the same metric, with
 the same contrasts and pairing; a trajectory the member gave no verdict on leaves that member's
@@ -46,12 +47,12 @@ yet. Each contrast says whether its direction matches E's.
 
 Inputs: extension run directories only, i.e. ``runs/<run_id_prefix>_*`` (the experiment's prefix
 in configs/ext.yaml) carrying an ``ext_meta.json`` of the cohort and not a smoke run; any other
-directory is refused. Besides them the analysis reads only the preregistered files configs/ext.yaml
+directory is refused. Besides them the analysis reads only the primary files configs/ext.yaml
 names with their sha256 (the original A1 / B decisions and trajectories, the cited tables).
 
-Intervals follow III.1.2: a 95% percentile bootstrap, B = 10000, seed from the master seed with
-the component ``ext_analysis_boot``; the resampling unit is the x0 (one state per x0 in Exp 1, one
-start per x0 in Exp 2), resampled jointly for the two arms of a pair because they share the x0.
+Intervals follow paper Sec. 4.6: a 95% percentile bootstrap, B = 10000, seed from the master seed
+with the component ``ext_analysis_boot``; the resampling unit is the x0 (one state per x0 in Exp 1,
+one start per x0 in Exp 2), resampled jointly for the two arms of a pair because they share the x0.
 
 The analysis is invariant to row order (states are sorted before resampling); ``--fake`` runs it
 end to end on shuffled fake data (FAKE marker, FAKE- run ids, FAKE_ file names) and never reads a
@@ -176,7 +177,7 @@ def _name(c: Contrast) -> str:
 def assert_extension_run(rd: Path, *, prefix: str, cohort: str, base: Path | None = None) -> Path:
     """``rd`` is an extension run directory of ``cohort``: directly under ``base`` (runs/),
     named ``<prefix>_*``, with an ``ext_meta.json`` of that cohort, and not a smoke run. The
-    preregistered run directories (``exp1_*``, ``exp2_*``, ``analysis_*``) never pass."""
+    primary run directories (``exp1_*``, ``exp2_*``, ``analysis_*``) never pass."""
     base = Path(paths.RUNS if base is None else base).resolve()
     rd = paths.resolve(rd).resolve()
     if rd.parent != base:
@@ -280,7 +281,7 @@ def cite_prereg(
     *,
     fake: bool = False,
 ) -> dict[str, Any]:
-    """The preregistered tables' rows of ``contrasts``, copied, not recomputed. Each table is
+    """The primary tables' rows of ``contrasts``, copied, not recomputed. Each table is
     sha256-checked (formal) and must be real (formal) or FAKE (``fake``)."""
     names = {_name(c) for c in contrasts}
     tables = []
@@ -533,7 +534,7 @@ def analyze(
     n_boot: int = BOOTSTRAP_B,
     seed: int,
 ) -> dict[str, Any]:
-    """``cited[exp][cohort]``: the preregistered rows (``cite_prereg``) shown with that cell."""
+    """``cited[exp][cohort]``: the primary rows (``cite_prereg``) shown with that cell."""
     cited = cited or {}
     report: dict[str, Any] = {
         "status": STATUS,
@@ -713,7 +714,7 @@ def _fake_decision(rnd: random.Random, run: str, sid: str, arm: str, lam: str, p
 
 
 def _fake_tables(d: Path) -> None:
-    """Fake stand-ins of the cited preregistered tables, same layout, FAKE true."""
+    """Fake stand-ins of the cited primary tables, same layout, FAKE true."""
     d.mkdir(parents=True, exist_ok=True)
     did = {"FAKE": True, "id": "T06_exp1_did", "title": "fake D-bar",
            "columns": ["role", "contrast", "accounting", "D_bar", "ci95_lo", "ci95_hi"],

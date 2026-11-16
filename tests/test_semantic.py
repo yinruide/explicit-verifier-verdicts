@@ -1,5 +1,5 @@
 """Semantic preservation (rafr.domains.detox.semantic): the TextDetox 2024 official evaluation,
-pinned in configs/exp2.yaml, and the preregistered cutpoint computed on D_fit (the authors
+pinned in configs/exp2.yaml, and the cutpoint fixed before Exp 2 computed on D_fit (the authors
 2026-09-28). Offline: fake encoders / models only; torch and sacrebleu tests skip when absent."""
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ def test_the_protocol_is_pinned_in_exp2_yaml():
     cfg = semantic.build_config(load_config("exp2"))
     assert cfg.quality == "similarity" and cfg.device == "cpu"
     assert cfg.sim_model == "sentence-transformers/LaBSE"
-    assert cfg.sta_model == "textdetox/xlmr-large-toxicity-classifier"  # never V1 (II.2.1)
+    assert cfg.sta_model == "textdetox/xlmr-large-toxicity-classifier"  # never V1 (paper Sec. 4.2)
     assert cfg.sta_model != get(load_config("models"), "verifiers.v1.id")
     assert len(cfg.sim_revision) == len(cfg.sta_revision) == 40
     assert cfg.sta_target_label == 0 and cfg.sta_batch_size == 32 and cfg.sta_max_length == 512

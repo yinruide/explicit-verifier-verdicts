@@ -135,7 +135,7 @@ def test_exp1_full_cross_shares_perturbation_and_logs_everything(tmp_path: Path)
 def test_exp1_permuted_b_keeps_one_donor_across_lambdas_and_shows_its_current_block(
     tmp_path: Path, monkeypatch
 ):
-    """D-2026-09-25b: the permuted-B table is keyed by the seed only -- a state has the same
+    """the permuted-B table is keyed by the seed only -- a state has the same
     donor at all three levels, never itself, and at each level it shows the donor's six fields
     OF THAT LEVEL. The table is written once and read back on resume."""
     states = _states(5)
@@ -248,7 +248,7 @@ def test_exp2_balanced_assignment_is_seeded():
 def test_exp2_seed_and_cache_key_carry_no_arm_and_no_lambda(
     tmp_path: Path, monkeypatch, namespace: str, arms: list[Arm]
 ):
-    """II.8.2 / C.24 (D-2026-09-25g): in Exp 2 and in its step 10a smoke the controller seed is
+    """paper Sec. 4.6: in Exp 2 and in its step 10a smoke the controller seed is
     derived from (experiment, x0, t, attempt) alone -- the state key is the x0 id, not the round
     id {x0_id}-{arm}-t{t} -- and the cache key from provider, api, model, version, decoding,
     seed, prompt hash and attempt. Neither holds an arm or a lambda: relabelling a decision's
@@ -535,7 +535,8 @@ def test_exp2_interrupted_in_round_2_resumes_from_round_2_to_the_same_result(tmp
 
 
 def test_exp2_judgments_wait_for_the_whole_loop(tmp_path: Path):
-    """E never runs before round K is on disk (II.8.3): finish() refuses an unfinished loop."""
+    """E never runs before round K is on disk (paper Sec. 4.4): finish refuses an unfinished
+    loop."""
     states = _states(2)
     setup = _setup2(tmp_path, states, lambda t: _eval(t))
     with pytest.raises(exp2.LoopNotFinishedError):
@@ -551,7 +552,7 @@ def test_exp2_judgments_wait_for_the_whole_loop(tmp_path: Path):
 
 
 def test_exp2_terminal_output_is_the_last_rewrite_and_is_never_scored(tmp_path: Path):
-    """II.8.3: with no accept in 4 decisions, x_T is the OUTPUT of the 4th decision (x_5),
+    """paper Sec. 4.4: with no accept in 4 decisions, x_T is the OUTPUT of the 4th decision (x_5),
     not the text the controller last looked at, and x_5 never goes to the verifiers."""
     states = _states(3)
 
@@ -581,7 +582,7 @@ def test_exp2_terminal_output_is_the_last_rewrite_and_is_never_scored(tmp_path: 
 
 
 def test_exp2_terminal_output_when_the_last_decision_is_a_parse_fail(tmp_path: Path):
-    """II.8.3: a parse_fail at t = 4 produces no new text, so x_5 = x_4."""
+    """paper Sec. 4.4: a parse_fail at t = 4 produces no new text, so x_5 = x_4."""
     states = _states(2)
 
     def responder(r):
@@ -603,7 +604,7 @@ def test_exp2_terminal_output_when_the_last_decision_is_a_parse_fail(tmp_path: P
 
 
 def test_exp2_refusal_like_flag_travels_with_the_text(tmp_path: Path):
-    """II.8.2 sensitivity: the flag recorded on the trajectory is x_T's own, so a refusal-
+    """paper Sec. 4.6 sensitivity: the flag recorded on the trajectory is x_T's own, so a refusal-
     looking rewrite that is later replaced does not make the trajectory a failure."""
     states = _states(2)
     ccfg = _ccfg()
@@ -629,7 +630,7 @@ def test_exp2_refusal_like_flag_travels_with_the_text(tmp_path: Path):
 
 
 def test_exp1_channel_log_records_the_perturbation_assignment(tmp_path: Path):
-    """II.10: the channel log carries the assignment itself — per-verifier flags, derived z
+    """the channel log carries the assignment itself — per-verifier flags, derived z
     mode, replacement scores — not only the resulting (s, s~)."""
     from rafr.channel.degrade import DegradeChannel, LevelParams
     from rafr.channel.margin_fit import MarginModel
@@ -665,8 +666,8 @@ def test_exp1_channel_log_records_the_perturbation_assignment(tmp_path: Path):
 
 
 def test_each_experiment_tells_the_controller_its_own_decision_budget(tmp_path: Path):
-    """(2026-09-18): the system prompt's ``{k}`` is 1 in Exp 1 (single-shot, II.8.2)
-    and K_MAX_ROUNDS in Exp 2 (II.8.3); every controller call carries the rendered value."""
+    """(2026-09-18): the system prompt's ``{k}`` is 1 in Exp 1 (single-shot, paper Sec. 4.6)
+    and K_MAX_ROUNDS in Exp 2 (paper Sec. 4.4); every controller call carries the rendered value."""
     from rafr.contracts.schemas import K_MAX_ROUNDS
 
     ccfg = _ccfg()
@@ -695,7 +696,7 @@ def _row(sid, arm, lam, s1, s2, prompt, donor=None):
 
 
 def test_exp1_reports_the_share_of_cells_whose_prompt_is_lambda_lows_byte_for_byte():
-    """D-2026-09-24d / D-2026-09-25b: the main number is how often each level sent exactly
+    """the main number is how often each level sent exactly
     lambda_low's prompt (same prompt + the per-state seed = the same controller answer); next to
     it, as an auxiliary, how often the s_obs was lambda_low's bit for bit (permuted-B counts the
     donor's s~ at that level too). The prompt can be identical while the s_obs differ below the
@@ -733,7 +734,7 @@ def test_exp1_reports_the_share_of_cells_whose_prompt_is_lambda_lows_byte_for_by
     assert high["by_arm"]["permuted_B"]["s_obs_identical"] == 0 and high["s_obs_identical"] == 0
     assert out["pairwise"]["mid|high"]["n"] == 4
     assert out["pairwise"]["low|mid"]["s_obs_identical"] == 4
-    # II.8.2 (v1.0): per arm AND per pair of levels; the per-arm counts add up to the total
+    # paper Sec. 4.6: per arm AND per pair of levels; the per-arm counts add up to the total
     mh = out["pairwise"]["mid|high"]
     assert set(mh["by_arm"]) == {"A1", "B", "permuted_B"}
     assert sum(c["n"] for c in mh["by_arm"].values()) == mh["n"] == 4

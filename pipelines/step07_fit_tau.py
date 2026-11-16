@@ -1,12 +1,13 @@
-"""Step 07 — fit tau_1, tau_2 on D_fit (protocol II.4.1; 0.5 step 7).
+"""Step 07 — fit tau_1, tau_2 on D_fit (paper Sec. 5; step 7).
 
-Criterion (locked, v0.9 C.17): maximize F1 on D_fit; on a plateau take the midpoint. F2,
+Criterion (locked): maximize F1 on D_fit; on a plateau take the midpoint. F2,
 PR-AUC, precision, recall, balanced accuracy are reported alongside and never take part in the
 selection.
 
 Inputs: states_d_fit.jsonl, D_fit's y* (E's judgments, purpose TAU_FIT), the two formal
-verifiers' score tables. Output: ``frozen/tau.json``. The authors then tag ``tau-frozen``
-(App. A.1).
+verifiers' score tables. Output: ``frozen/tau.json``. The authors then freeze it (commit and git
+tag) before the channel is checked.
+
 """
 
 from __future__ import annotations

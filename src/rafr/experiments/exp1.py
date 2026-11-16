@@ -1,23 +1,23 @@
-"""Exp 1 — fixed-state controlled identification (0.2, II.1.3, II.5, II.7, II.8.2, II.9.3).
+"""Exp 1 — fixed-state controlled identification (0.2, paper Sec. 4.3, 3, 4.6, paper Sec. 3).
 
 For every shared state, for every lambda level, for every arm: one accept / rewrite decision.
 
 * the channel is applied ONCE per (state, lambda) and the same (s1~, s2~) feeds all three
-  arms (ObservationBuilder memo; II.5.1); ``channel.jsonl`` records (s, s~) together with the
-  perturbation assignment — per-verifier flags, derived z mode, replacement scores (II.10);
+  arms (ObservationBuilder memo; paper Sec. 4.3); ``channel.jsonl`` records (s, s~) together with
+  the perturbation assignment — per-verifier flags, derived z mode, replacement scores;
 * permuted-B takes the donor state's six-field block from a derangement keyed by the seed
   only, written once to ``permutation.jsonl``: a state has the same donor at every lambda and
-  shows that donor's block of the current lambda (II.7.3 as revised by D-2026-09-25b);
+  shows that donor's block of the current lambda (paper Sec. 3 as revised);
 * E's judgment of every state must be available BEFORE the first controller call
-  (decision 10); it is passed in as ``e_labels`` and attached to each log row;
+  it is passed in as ``e_labels`` and attached to each log row;
 * every decision becomes one ``LogRecord`` in ``decisions.jsonl``; resume skips
   (state, arm, lambda) cells already on disk;
-* main-analysis accounting: parse_fail = not accepted (II.8.2).
-* the per-state controller seed is shared by all arms and lambdas (decision, group 3), so a cell
+* main-analysis accounting: parse_fail = not accepted (paper Sec. 4.6).
+* the per-state controller seed is shared by all arms and lambdas (design decision), so a cell
   whose evidence is identical to another cell's gets the same controller answer (the request, and
   hence its cache key, is the same). lambda reaches the decision only through s_obs: a deliberate
-  coupling (common random numbers) that introduces no bias (2026-09-24, decisions.md
-  D-2026-09-24d). :func:`identity_to_low_by_lambda` reports how often it happens.
+  coupling (common random numbers) that introduces no bias (2026-09-24,
+  ). :func:`identity_to_low_by_lambda` reports how often it happens.
 
 This module and ``exp2`` are, with the formatter, the only places allowed to branch on arm
 (coding instructions section 4).
@@ -57,7 +57,7 @@ from rafr.logging.schema import RecordKind, stream_filename
 from rafr.logging.writer import JsonlWriter, read_jsonl
 
 SEED_NAMESPACE = "exp1"
-"""Controller seed namespace (decision, group 3): fixed per runner, independent of the log
+"""Controller seed namespace (design decision): fixed per runner, independent of the log
 label, so Exp 1 and Exp 2 never share a per-state seed or a cache key."""
 
 
@@ -93,8 +93,8 @@ def check_e_coverage(states: Sequence[State], e_labels: Mapping[str, EvalRecord]
 
 
 EXP1_DECISIONS: int = 1
-"""Exp 1 is single-shot: one accept / rewrite decision per (state, arm, lambda) (II.8.2). The
-controller is told exactly that through the system prompt's ``{k}`` slot (2026-09-18):
+"""Exp 1 is single-shot: one accept / rewrite decision per (state, arm, lambda) (paper Sec. 4.6).
+The controller is told exactly that through the system prompt's ``{k}`` slot (2026-09-18):
 announcing the Exp 2 budget here would bias it towards ``rewrite``."""
 
 
@@ -142,7 +142,7 @@ def run_exp1(client: LLMClient, ccfg: ctrl.ControllerConfig, setup: Exp1Setup) -
                         "s2": s2,
                         "s1_tilde": obs.s1_obs,
                         "s2_tilde": obs.s2_obs,
-                        # II.10: the perturbation assignment itself, not just its effect
+                        # the perturbation assignment itself, not just its effect
                         **builder.assignment(s.state_id, lam),
                     }
                 )
@@ -213,10 +213,10 @@ def permutation_for(path: Path, state_ids: Sequence[str], seed: int) -> dict[str
 
 
 def summarize_exp1(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """Quick run report (the preregistered analysis lives in analysis/exp1_did.py).
+    """Quick run report (the primary analysis lives in analysis/exp1_did.py).
 
     FA(arm, lambda) = P(accept) over every D_Exp1 state; parse_fail counts as not accepted.
-    D_Exp1 holds E-UNSAFE states only (v0.9, II.2.4 / C.16), so the denominator is D_Exp1 in
+    D_Exp1 holds E-UNSAFE states only (paper Sec. 4.2), so the denominator is D_Exp1 in
     full and there is no unnecessary-rewrite rate; a row that is not E-UNSAFE raises.
     """
     bad = sorted({r["state_id"] for r in rows if r.get("e_label") != SafetyLabel.UNSAFE.value})
@@ -256,12 +256,12 @@ def _shares(c: Mapping[str, Any]) -> dict[str, Any]:
 
 def identity_to_low_by_lambda(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     """Per lambda: how many (state, arm) cells got exactly lambda_low's controller request
-    (decisions.md D-2026-09-24d; main metric since D-2026-09-25b).
+    (main metric since).
 
     **Main: ``prompt_share``** -- the share whose first controller request is byte for byte
     lambda_low's (same prompt hash): with the per-state seed, these cells share one controller
     answer. Identical evidence means an identical prompt, and since permuted-B's donor is the
-    same at every lambda (D-2026-09-25b) that now holds for all three arms alike.
+    same at every lambda that now holds for all three arms alike.
 
     **Auxiliary: ``s_obs_share``** -- the share whose s_obs is bit for bit lambda_low's. The s_obs
     of a (state, arm) is every post-channel score that arm is shown: the state's own (s1~, s2~)
@@ -270,7 +270,7 @@ def identity_to_low_by_lambda(rows: Sequence[Mapping[str, Any]]) -> dict[str, An
     least as large, because two s_obs that differ below the formatter's displayed precision
     render the same prompt.
 
-    ``pairwise`` gives both counts for every pair of levels, in total and per arm (II.8.2, v1.0:
+    ``pairwise`` gives both counts for every pair of levels, in total and per arm (paper Sec. 4.6,:
     "per arm, per pair of levels"): under the nested coupling a verifier perturbed at lambda_mid
     keeps its replacement at lambda_high, so mid and high can share an answer that low does not.
     lambda_low is 1 by definition.

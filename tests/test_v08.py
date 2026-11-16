@@ -1,6 +1,6 @@
-"""Protocol v0.8: the nine analysis-layer clauses, one test group each.
+"""The nine analysis-layer clauses, one test group each.
 
-v0.8 changed nothing about the experiment design; it filled in how the numbers are formed.
+ changed nothing about the experiment design; it filled in how the numbers are formed.
 Each group below names the clause it pins down.
 """
 
@@ -37,7 +37,7 @@ def _correct(n: int, rates: dict[str, tuple[float, float, float]]):
     return out
 
 
-# ---- 1. gate verdict = point estimates; CI reported, never decisive (II.6.1) ------------
+# 1. gate verdict = point estimates; CI reported, never decisive (paper Sec. 4.3) ------------
 
 
 def test_gate_verdict_is_the_point_estimate_and_ci_cannot_change_it():
@@ -96,7 +96,7 @@ def test_gate_attempt_record_carries_the_ci(tmp_path: Path):
     assert json.loads(path.read_text(encoding="utf-8"))["attempts"][0]["ci"]["unit"] == "state"
 
 
-# ---- 2. level naming; lambda_low may take p = 0 (II.5.1) -------------------------------
+# 2. level naming; lambda_low may take p = 0 (paper Sec. 4.3) -------------------------------
 
 
 def test_level_names_are_low_mid_high_everywhere():
@@ -109,11 +109,11 @@ def test_level_names_are_low_mid_high_everywhere():
         "high",
     }
     text = (ROOT / "configs" / "channel.yaml").read_text(encoding="utf-8")
-    assert "lambda1 = lambda_low" in text  # the v0.8 naming is written down for the authors
+    assert "lambda1 = lambda_low" in text  # the naming is written down for the authors
 
 
 def test_lambda_low_is_fully_unperturbed():
-    """II.5.1 (2026-09-26 revision, C.27): lambda_low takes p = 0 -- one level of entirely
+    """paper Sec. 4.3 (2026-09-26 revision): lambda_low takes p = 0 -- one level of entirely
     unperturbed evidence -- as part of the fixed 0 / 0.5 / 1; the old solve rule is gone."""
     degrade = _load_yaml(ROOT / "configs" / "channel.yaml")["degrade"]
     assert degrade["levels"]["low"] == {"v1": 0.0, "v2": 0.0}
@@ -146,7 +146,7 @@ def _load_yaml(path: Path):
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
-# ---- 3. Exp 1 primary uses lambda_high vs lambda_low only (III.1.2) --------------------
+# 3. Exp 1 primary uses lambda_high vs lambda_low only (paper Sec. 4.6) --------------------
 
 
 def _rows(n=40, seed=1, effect_high=0.4, effect_low=0.0, effect_mid=0.2):
@@ -188,7 +188,7 @@ def test_primary_did_ignores_lambda_mid_and_reports_it_as_secondary():
     )
 
 
-# ---- 4. 95% percentile bootstrap, B = 10000, seed on disk (III.1.2) --------------------
+# 4. 95% percentile bootstrap, B = 10000, seed on disk (paper Sec. 4.6) --------------------
 
 
 def test_bootstrap_defaults_are_b10000_and_the_seed_is_reported():
@@ -204,7 +204,7 @@ def test_bootstrap_defaults_are_b10000_and_the_seed_is_reported():
 
 
 def test_exp2_bootstrap_resamples_within_arm():
-    """III.1.2: arm-stratified, so every replicate keeps the randomized arm sizes."""
+    """paper Sec. 4.6: arm-stratified, so every replicate keeps the randomized arm sizes."""
     seen: list[dict[str, int]] = []
 
     def stat(draw):
@@ -264,11 +264,11 @@ def test_bootstrap_seeds_come_from_the_master_seed():
         assert block["n_boot"] == BOOTSTRAP_B and "seed" not in block
 
 
-# ---- 5. Exp 1 N = D_Exp1 in full (III.1.2, v0.9) -----------------------------------------
+# 5. Exp 1 N = D_Exp1 in full (paper Sec. 4.6) -----------------------------------------
 
 
 def test_exp1_n_is_d_exp1_in_full():
-    """v0.9 (III.1.2, II.9.3, C.16): D_Exp1 is E-UNSAFE only, so the false accept rate's
+    """(paper Sec. 4.6, 3): D_Exp1 is E-UNSAFE only, so the false accept rate's
     denominator is every D_Exp1 state; a SAFE state is a data error, not a smaller N."""
     rows = _rows()
     eff = exp1_did.analyze(rows, seed=0, n_boot=50)["effective_n"]
@@ -290,7 +290,7 @@ def test_exp1_n_is_d_exp1_in_full():
         exp1_did.analyze(bad, seed=0, n_boot=50)
 
 
-# ---- 6. H2 strata (III.1.2) ------------------------------------------------------------
+# 6. H2 strata (paper Sec. 4.6) ------------------------------------------------------------
 
 
 def test_h2_strata_are_arm_independent_and_split_delta_fa():
@@ -331,7 +331,7 @@ def test_r_ref_is_reported_beside_the_strata_and_never_inside_them():
 
     with (ROOT / "analysis" / "exp1_did.py").open("rb") as fh:
         names = {t.string for t in tokenize.tokenize(fh.readline) if t.type == tokenize.NAME}
-    assert not (names & {"r_ref", "r_hat_ref"})  # II.1.1: not an input to the stratification
+    assert not (names & {"r_ref", "r_hat_ref"})  # paper Sec. 3: not an input to the stratification
     from pipelines import step11_exp1 as step11
 
     diag = ROOT / "tests" / "_missing_diagnostics.json"
@@ -343,7 +343,7 @@ def test_step09_writes_r_ref_into_the_gate_diagnostics():
     assert '"r_ref"' in src and "ladder_ci" in src
 
 
-# ---- 7. error boundary alignment (III.3) ----------------------------------------------
+# 7. error boundary alignment (paper Sec. 6.2) ----------------------------------------------
 
 
 def _row(arm, lam, s1, s2, action, t=1, parse_fail=False):
@@ -389,7 +389,7 @@ def test_error_boundary_counts_parse_fail_as_not_accepted_and_uses_observed_scor
     rep = error_boundary.exp1([safe])
     cell = rep["cells"]["low"]["A1"]
     # both verifiers say UNSAFE, E says SAFE -> misaligned; parse_fail = not accepted on a
-    # SAFE text is a decision error under the main accounting (II.8.2)
+    # SAFE text is a decision error under the main accounting (paper Sec. 4.6)
     assert cell["n_misaligned"] == 1 and cell["decision_error_rate_on_misaligned"] == 1.0
     cc = error_boundary.exp1([safe], accounting="complete_case")["cells"]["low"]["A1"]
     assert cc["n"] == 0 and cc["n_excluded_by_accounting"] == 1
@@ -410,7 +410,7 @@ def test_error_boundary_exp2_groups_by_round():
     assert error_boundary.exp2(rows, {})["n_rows_without_judgment"] == 2
 
 
-# ---- 8. parse_fail grid: Exp 1 arm x lambda, Exp 2 arm x round (II.8.2) ----------------
+# 8. parse_fail grid: Exp 1 arm x lambda, Exp 2 arm x round (paper Sec. 4.6) ----------------
 
 
 def test_parse_fail_grid_differs_by_experiment():
@@ -444,8 +444,8 @@ def test_exp2_run_summary_reports_parse_fail_by_round():
     assert 'parse_fail_cells(decision_rows, PARSE_FAIL_ALERT_THRESHOLD, by="t")' in src
 
 
-# ---- 9. (v0.8) "the x0 prefilter is never redone because E changed" --------------------
-# Withdrawn by protocol v0.9 (C.15): prefilter, y* and outcome come from one E, and a changed E
-# means rebuilding the chain. The v0.9 rule -- same-E judgments are reused, another E's are
+# 9. "the x0 prefilter is never redone because E changed" --------------------
+# Withdrawn by: prefilter, y* and outcome come from one E, and a changed E
+# means rebuilding the chain. The rule -- same-E judgments are reused, another E's are
 # refused -- is tested in tests/test_v09.py; so are the retried E failure and the removal of
-# the candidate cap (v0.9 judges the whole deduplicated pool).
+# the candidate cap (judges the whole deduplicated pool).

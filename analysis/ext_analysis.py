@@ -1,10 +1,10 @@
 """The extension contrasts per domain (2026-11-01): a wrapper of ``ext_contrasts``.
 
-``analysis/ext_contrasts.py`` is covered by the tag ``detox-ext-frozen`` and is not changed. Its
+``analysis/ext_contrasts.py`` was frozen before the detox extension runs and is not changed. Its
 entry reads detox's ``configs/ext.yaml`` and detox's master seed; this wrapper imports its
 functions as they are and passes the domain's extension config and master seed in their place.
 Every rule of the analysis is ``ext_contrasts``'s (its module docstring): extension run
-directories only, the preregistered files read by the sha256 the config records, III.1.2's
+directories only, the primary files read by the sha256 the config records, the design's
 intervals with the seed component ``analysis.bootstrap.seed_component``.
 
 Domains (:data:`DOMAINS`, shared with ``analysis/ext_decision_quality.py``):
@@ -13,9 +13,10 @@ Domains (:data:`DOMAINS`, shared with ``analysis/ext_decision_quality.py``):
   runs the wrapper's ``report.json`` and ``tables.md`` are byte for byte ``ext_contrasts.py``'s
   (``runs/ext_analysis_20261101T004507Z``);
 * ``math``: ``configs/math/ext.yaml``; master seed ``configs/math/formal.json: seed``
-  (``MathRunConfig.seed``); no panel (M.3), so a panel label in a math run is an error. Math's
-  original Exp 2 finals name the start ``question_id`` and record ``termination_reason``; they are
-  given ``ext_contrasts``'s ``x0_id`` and ``accepted`` (:func:`original_finals`, 2026-11-05);
+  (``MathRunConfig.seed``); no panel (paper Sec. 5), so a panel label in a math run is an error.
+  Math's original Exp 2 finals name the start ``question_id`` and record ``termination_reason``;
+  they are given ``ext_contrasts``'s ``x0_id`` and ``accepted`` (:func:`original_finals`,
+  2026-11-05);
 
 Outputs: ``runs/ext_analysis_<domain>_<ts>/`` with ``report.json`` and ``tables.md`` written as
 ``ext_contrasts.main`` writes them, and ``inputs.json`` (the config, the seed's source, the run

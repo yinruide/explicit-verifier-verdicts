@@ -139,7 +139,7 @@ def test_exp2_parse_fail_as_accept_uses_the_first_parse_fail_round_text():
 
 def test_exp2_low_preservation_among_safe_is_descriptive_per_arm_and_needs_a_cutpoint():
     """(2026-09-18): among finals E judged SAFE, the share with quality(x0, x_T) below
-    the preregistered cutpoint, per arm. UNSAFE finals are not in the denominator; unscored
+    the cutpoint fixed before Exp 2, per arm. UNSAFE finals are not in the denominator; unscored
     finals are counted but excluded from the share; a TBD cutpoint gives counts only."""
     finals = [
         {"arm": "A1", "task_success": True, "semantic_score": 0.2},
@@ -230,7 +230,7 @@ def test_reliability_fill_and_r_t():
         for v in rt[arm].values():
             assert v["v1"] == 1.0  # truth was defined from v1's own judgment
             assert 0.0 <= v["v2"] <= 1.0 and v["n"] > 0
-    # II.1.1 (v1.0): r_ref is in the gate's units -- the detection rate on the E-UNSAFE states
+    # paper Sec. 3: r_ref is in the gate's units -- the detection rate on the E-UNSAFE states
     # (labels == 1) -- with the accuracy over all states alongside
     ref = reliability.r_ref([0.9, 0.1, 0.6], [1, 0, 0], 0.5)
     assert ref["detection_rate"] == 1.0 and ref["n_unsafe"] == 1
@@ -251,7 +251,7 @@ def _es_row(sid, arm, lam, s1, s2, action, *, t=1, parse_fail=False):
 
 
 def test_evidence_sensitivity_exp1_four_cells_by_arm_and_lambda():
-    """III.1.2 (v1.0): per arm x lambda, the accept rate in the four cells of the observed
+    """paper Sec. 4.6: per arm x lambda, the accept rate in the four cells of the observed
     (y1, y2) with n per cell; parse_fail = not accepted (main accounting); the observed pair is
     the same for every arm at a (state, lambda), so the arm-consistency count is 0."""
     rows = []
@@ -279,7 +279,7 @@ def test_evidence_sensitivity_exp1_four_cells_by_arm_and_lambda():
     high = rep["cells"]["high"]
     assert high["A1"]["(1,1)"] == {"n": 1, "n_excluded_by_accounting": 0, "n_accepted": 0,
                                    "accept_rate": 0.0}  # fmt: skip
-    # the two II.8.2 sensitivities run through the same function
+    # the two paper Sec. 4.6 sensitivities run through the same function
     as_accept = evidence_sensitivity.exp1(rows, accounting="parse_fail_as_accept")
     assert as_accept["cells"]["high"]["A1"]["(1,1)"]["accept_rate"] == 1.0
     cc = evidence_sensitivity.exp1(rows, accounting="complete_case")
@@ -297,7 +297,7 @@ def test_evidence_sensitivity_exp1_four_cells_by_arm_and_lambda():
 
 
 def test_evidence_sensitivity_cells_use_the_states_own_post_channel_pair_only():
-    """III.1.2 (v1.0; 2026-09-25): the cell is the CURRENT state's own observed pair after
+    """paper Sec. 4.6 (2026-09-25): the cell is the CURRENT state's own observed pair after
     C_lambda -- for permuted-B too (the donor's block is what it was shown as derived fields, the
     scores in its prompt are its own) -- never the raw pre-channel scores and never y*."""
     row = _es_row("s", "permuted_B", "high", 0.9, 0.9, "accept")
@@ -351,7 +351,7 @@ def test_evidence_sensitivity_exp2_groups_by_round():
         c["n"] for arms in rep2["cells"].values() for cells in arms.values() for c in cells.values()
     )
     assert n == len(fake_rows)
-    # III.1.2 (v1.0): both runners write the table into their report
+    # paper Sec. 4.6: both runners write the table into their report
     src11 = (ROOT / "pipelines" / "step11_exp1.py").read_text("utf-8")
     src12 = (ROOT / "pipelines" / "step12_exp2.py").read_text("utf-8")
     assert '"evidence_sensitivity": evidence_sensitivity.exp1(rows)' in src11
@@ -368,7 +368,7 @@ def test_transport_compare():
     assert set(out["by_round_exp2"]) <= {1, 2, 3, 4}
     # group 6d: t = 1 rows are the Exp 1 states; the t >= 2 comparison is reported apart
     assert "t >= 2" in out["note"]
-    assert "E-UNSAFE by construction" in out["note"]  # v0.9 (II.10, C.16)
+    assert "E-UNSAFE by construction" in out["note"]  #
     assert out["n_exp2_rows_t1"] + out["n_exp2_rows_t_ge_2"] == len(rows2)
     assert out["s1"]["exp2_t_ge_2"]["n"] == out["n_exp2_rows_t_ge_2"]
     assert 0.0 <= out["m1"]["ks_t_ge_2"] <= 1.0
@@ -377,7 +377,7 @@ def test_transport_compare():
 
 def test_step11_and_step12_refuse_while_not_frozen(tmp_path: Path, monkeypatch, sandbox):
     """They refuse today. Since the formatter's checker descriptions were filled (the authors
-    2026-09-25, D-2026-09-25e) step 11 and the pod's loop pass the config guard and stop at
+    2026-09-25) step 11 and the pod's loop pass the config guard and stop at
     their preconditions (tau not frozen; the x1 file); since the Exp 2 cutpoint was computed
     (2026-09-28) the report passes the guard too and stops at the missing run directory. The
     sandbox is there for the day this test starts doing real work (2026-09-20)."""
@@ -443,7 +443,7 @@ def test_step11_and_step12_guards_are_scoped_to_what_each_step_reads():
 
 
 def test_exp2_refusal_like_sensitivity_conditions_on_terminal_text_only():
-    """II.8.2 (v0.7): only a trajectory whose FINAL output carries the flag counts as a
+    """paper Sec. 4.6: only a trajectory whose FINAL output carries the flag counts as a
     terminal failure; a refusal-looking rewrite in the middle does not."""
     base = {
         "x0_id": "a", "arm": "A1", "x_T": "z", "accepted": True, "accepted_at": 2,
@@ -460,7 +460,7 @@ def test_exp2_refusal_like_sensitivity_conditions_on_terminal_text_only():
 
 
 def test_step12_reuses_step5_y_star_for_t1(tmp_path: Path, sandbox, monkeypatch):
-    """II.8.3 (v0.9): Exp 2's t = 1 texts ARE the D_Exp1 states, so their judgments are step
+    """paper Sec. 4.4: Exp 2's t = 1 texts ARE the D_Exp1 states, so their judgments are step
     5's y* read through the label gate (purpose EXP2_T1), from the configured E, covering every
     x1; step 12 refuses rather than re-buying one."""
     from pipelines import step12_exp2 as s12

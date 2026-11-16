@@ -1,4 +1,4 @@
-"""Anthropic provider (evaluator E; II.9).
+"""Anthropic provider (evaluator E; paper Sec. 3).
 
 A request with a ``schema`` goes through ``messages.parse`` with a pydantic ``output_format``
 (structured outputs); a request without one through ``messages.create``, and the caller parses
@@ -9,10 +9,10 @@ a config change is never silently served from cache. A refusal is ``stop_reason 
 
 Sampling parameters are not available on this model generation: ``temperature`` / ``top_p`` /
 ``top_k`` are rejected by the API (and are not even parameters of ``messages.parse`` in the
-SDK). Per decision 14 a model that does not accept ``temperature`` must fail loudly, so a
+SDK). Per a model that does not accept ``temperature`` must fail loudly, so a
 configured value raises :class:`UnsupportedDecodingParamError` here instead of being dropped; the
 frozen config sets them to null (= not sent, recorded as null). Thinking depth is steered by
-``decoding.effort`` -> ``output_config.effort`` instead (II.8.2 records it like any other
+``decoding.effort`` -> ``output_config.effort`` instead (the design records it like any other
 decoding parameter); ``messages.parse`` merges the output schema into the same
 ``output_config``.
 

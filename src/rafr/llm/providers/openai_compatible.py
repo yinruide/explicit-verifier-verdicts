@@ -1,7 +1,7 @@
-"""xAI (Grok) and Alibaba DashScope (Qwen): the two panel members' providers (II.3, v0.9).
+"""xAI (Grok) and Alibaba DashScope (Qwen): the two panel members' providers (paper Sec. 3).
 
-The panel re-judges Exp 2's x_T with E's own rubric-free prompt (III.1.2); nothing else in the
-pipeline calls these two providers. Both speak OpenAI-compatible Chat Completions, so the
+The panel re-judges Exp 2's x_T with E's own rubric-free prompt (paper Sec. 4.6); nothing else in
+the pipeline calls these two providers. Both speak OpenAI-compatible Chat Completions, so the
 ``openai`` SDK is pointed at their base URLs, as the annotator-selection test did
 (``annotation/annotator_selection/providers.py``, whose calling conventions these copy):
 

@@ -1,19 +1,19 @@
-# Evidence degradation channel C_lambda — protocol II.5, II.6.
+# Evidence degradation channel C_lambda — paper Sec. 4.3.
 # TBD convention: see configs/models.yaml header.
 #
-# Structure (II.5.1, v0.7): C_lambda = ( p_lambda^(1), p_lambda^(2), q ), where p_lambda^(i)
+# Structure (paper Sec. 4.3): C_lambda = (p_lambda^(1), p_lambda^(2), q), where p_lambda^(i)
 # is the probability that verifier i is perturbed at level lambda. z is derived, not set.
 #
-# Level names (II.5.1, v0.8): lambda1 = lambda_low (lightest perturbation), lambda2 =
+# Level names (paper Sec. 4.3): lambda1 = lambda_low (lightest perturbation), lambda2 =
 # lambda_mid, lambda3 = lambda_high. The keys `low` / `mid` / `high` below, Lambda.LOW /
-# MID / HIGH in code, `R_lambda1 > R_lambda2 > R_lambda3` in II.6.1 and lambda_low /
-# lambda_mid / lambda_high in I.4 all name the same three levels. Since 2026-09-26 (II.5.1,
-# C.27) the levels are fixed: lambda_low p = 0 (unperturbed reference), lambda_mid p = 0.5,
+# MID / HIGH in code, `R_lambda1 > R_lambda2 > R_lambda3` in paper Sec. 4.3 and lambda_low /
+# lambda_mid / lambda_high in all name the same three levels. Since 2026-09-26 (paper Sec. 4.3,
+# ) the levels are fixed: lambda_low p = 0 (unperturbed reference), lambda_mid p = 0.5,
 # lambda_high p = 1 (every score replaced by a state-independent draw), both verifiers alike.
-# observation-conditioned (II.5.2): reads only (s1, s2) and text-surface features;
+# observation-conditioned (paper Sec. 4.3): reads only (s1, s2) and text-surface features;
 # NEVER y*, c_t, or E. Enforced by import-boundary tests and function signatures.
 # Randomness is keyed by (state_id, verifier) — one uniform u and one replacement score per
-# pair, shared by every lambda (nested coupling, II.5.2) — and never by arm (II.5.1: all three
+# pair, shared by every lambda (nested coupling, paper Sec. 4.3) — and never by arm (paper Sec. 4.3: all three
 # arms see identical perturbed scores for the same state and lambda).
 #
 # Decisions (group 6a/6b, 2026-09-16):
@@ -27,15 +27,15 @@
 #              none) are derived from (p^(1), p^(2)) and written to frozen/channel.json.
 
 identity:
-  # Exp 2 has no channel (II.1.3). The identity channel is the only channel allowed there.
+  # Exp 2 has no channel (paper Sec. 4.3). The identity channel is the only channel allowed there.
   name: identity
 
 degrade:
-  # Three discrete levels, no continuous lambda (II.5.2). The six p are FIXED ex ante (protocol
-  # II.5.1, C.27; 2026-09-26): 0 / 0.5 / 1, the same for both verifiers -- not solved from
+  # Three discrete levels, no continuous lambda (paper Sec. 4.3). The six p are FIXED ex ante
+  # (paper Sec. 4.3, 2026-09-26): 0 / 0.5 / 1, the same for both verifiers -- not solved from
   # data, not hand-filled. rafr.channel.degrade.levels_from_config refuses any other values.
   # Under independent resampling a perturbed verifier's judgment is independent of the label,
-  # so in the gate's units (II.6.1 / C.20: detection rate on the E-UNSAFE states)
+  # so in the gate's units (paper Sec. 4.3: detection rate on the E-UNSAFE states)
   #
   #     E[R_lambda^(i)]  =  (1 - p) * TPR_i  +  p * r_i   ->   TPR_i,  (TPR_i + r_i)/2,  r_i
   #
@@ -43,12 +43,12 @@ degrade:
   # delta_R is only the gate's threshold and step08's check (span TPR_i - r_i >= 2 delta_R).
   # A short span stops step08; it never changes p. The levels go to frozen/channel.candidate.json
   # (step08) and are frozen at step09.
-  levels:                           # LOCKED 2026-09-26 (II.5.1, C.27)
+  levels:                           # LOCKED 2026-09-26 (paper Sec. 4.3)
     low: {v1: 0.0, v2: 0.0}
     mid: {v1: 0.5, v2: 0.5}
     high: {v1: 1.0, v2: 1.0}
   q:
-    # margin-matched (II.5.2) by independent resampling: the replacement score is drawn from
+    # margin-matched (paper Sec. 4.3) by independent resampling: the replacement score is drawn from
     # the verifier's empirical score distribution on the unlabeled pool (no labels needed),
     # which aligns the corrupted |m_i| distribution with the uncorrupted one.
     # Fit artifacts go to frozen/channel.json.
@@ -59,29 +59,29 @@ degrade:
     # a picture. The channel seed derives from data.yaml seeds.master (component "channel").
 
 gate:
-  # II.6.1 hard check: R_lambda1 > R_lambda2 > R_lambda3 per verifier, adjacent gap >= delta_R,
+  # paper Sec. 4.3 hard check: R_lambda1 > R_lambda2 > R_lambda3 per verifier, adjacent gap >= delta_R,
   # i.e. lambda_low > lambda_mid > lambda_high in reliability.
-  # Gate metric (d) (docs/decisions.md D-2026-09-24 section 1): R_lambda^(i) is the share of the
+  # Gate metric (d) (section 1): R_lambda^(i) is the share of the
   # split's E-UNSAFE states with 1[s~_i >= tau_i] (recall); the CI resamples those states only;
   # accuracy and balanced accuracy on the whole split are reported, descriptively.
-  delta_r: 0.10                     # formal value, 2026-09-26 at step 8 (App. D) after the
+  delta_r: 0.10                     # formal value, 2026-09-26 at step 8 after the
                                     # D_fit check (runs/step08_20260927T025413Z) and the power
                                     # check over 500 seeds (runs/step08_power_check_20260927T031158Z)
-  delta_r_provisional: 0.10         # 2026-09-25 (D-2026-09-25b): the intended value of
-                                    # D-2026-09-25, kept for the record. With the formal value set,
+  delta_r_provisional: 0.10         # 2026-09-25: the intended value of
+                                    # kept for the record. With the formal value set,
                                     # `step08 --reachability-only` reads the formal one too.
-  max_attempts: 2                   # LOCKED v0.6 (II.6.1)
-  verdict: point_estimate           # LOCKED v0.8 (II.6.1): all four adjacent-gap POINT
+  max_attempts: 2                   # LOCKED (paper Sec. 4.3)
+  verdict: point_estimate           # LOCKED (paper Sec. 4.3): all four adjacent-gap POINT
                                     # estimates must be >= delta_r. The CI below is reported
                                     # next to them and never enters the verdict.
-  multiplicity_correction: none     # LOCKED v0.8 (II.6.1 / III.1.3): the pilot makes no
+  multiplicity_correction: none     # LOCKED (paper Sec. 4.3, App. B): the pilot makes no
                                     # significance claims, so the four gaps get no correction.
   ci:
     # 95% percentile bootstrap for the six R_lambda^(i) and the four gaps; the resampling
     # unit is the STATE and one index vector per replicate is shared by all six cells, so the
-    # pairing across levels is preserved (II.6.1, v0.8).
-    method: percentile_bootstrap    # LOCKED v0.8 (III.1.2)
-    n_boot: 10000                   # LOCKED v0.8 (III.1.2)
+    # pairing across levels is preserved (paper Sec. 4.3).
+    method: percentile_bootstrap    # LOCKED (paper Sec. 4.6)
+    n_boot: 10000                   # LOCKED (paper Sec. 4.6)
     # The seed derives from data.yaml seeds.master (component "gate_ci"); the resolved value is
     # written into the step08 report and into the gate attempt record.
   # Informational: the attempt record lives at rafr.core.paths.FROZEN_GATE_ATTEMPTS. The key
@@ -90,14 +90,14 @@ gate:
   attempts_path: frozen/gate_attempts.json
 
 diagnostics:
-  # II.6.2 descriptive diagnostics. High-margin-but-wrong: the cut is this quantile of |m_i|,
+  # paper App. A descriptive diagnostics. High-margin-but-wrong: the cut is this quantile of |m_i|,
   # taken per lambda and per verifier on the data computed (2026-09-17: the top quartile;
-  # written into II.6.2 and App. D on 2026-09-26).
+  # written into paper App. A and on 2026-09-26).
   high_margin_quantile: 0.75
   # Which states the five diagnostics -- and their lambda = 0 baseline on D_fit -- are computed
   # on: `all` = every state of the split, `unsafe` = its E-UNSAFE states (the population R uses),
-  # `both` = both, reported side by side. No default; step08 / step09 refuse while TBD (II.10).
-  diagnostics_population: both      # 2026-09-24 (decisions.md D-2026-09-24c): both, the
+  # `both` = both, reported side by side. No default; step08 / step09 refuse while TBD.
+  diagnostics_population: both      # 2026-09-24: both, the
                                     # E-UNSAFE subset primary and the whole split secondary; the
                                     # D_fit lambda = 0 baseline likewise both
   n_bins: 10                        # joint (m1, m2) histogram resolution (engineering value)

@@ -1,4 +1,4 @@
-"""Stop point D's engineering smokes of the extension (2026-10-31): states outside every
+"""The engineering smokes of the extension (2026-10-31): states outside every
 formal set, as step 10a's smoke.
 
 * E-incorrect: the unlabeled pool's E-UNSAFE states, read under DRY_RUN (as step 3 and step

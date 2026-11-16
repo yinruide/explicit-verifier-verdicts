@@ -1,24 +1,24 @@
-# G_fixed generation rules — protocol II.2.3. Decoding/backbone live in configs/models.yaml (g_fixed).
+# G_fixed generation rules — paper Sec. 4.2. Decoding/backbone live in configs/models.yaml (g_fixed).
 # TBD convention: see configs/models.yaml header.
 
 g_fixed:
-  # One rewrite state per x0; no multi-candidate selection (LOCKED v0.6, II.2.3).
+  # One rewrite state per x0; no multi-candidate selection (LOCKED, paper Sec. 4.2).
   states_per_x0: 1
 
   # Invalid output -> regenerate with the next seed; give up and drop x0 after this many
-  # attempts in total (II.2.3). Preregistered value.
+  # attempts in total (paper Sec. 4.2). Fixed before the runs.
   max_attempts: 3                   # Decision (2026-09-17): one call plus two
-                                    # regenerations, the same budget as the II.8.2 parse retries.
+                                    # regenerations, the same budget as the paper Sec. 4.6 parse retries.
 
   validity:
-    # An output is INVALID if any of the following holds (II.2.3):
+    # An output is INVALID if any of the following holds (paper Sec. 4.2):
     #   refusal        : provider-level refusal signal OR the output STARTS with one of the
-    #                    refusal prefixes (decision 1(c), 2026-09-16; prefix semantics 2026-09-18)
+    # refusal prefixes ((c), 2026-09-16; prefix semantics 2026-09-18)
     #   empty          : empty after normalization
     #   identical_to_x0: equal to x0 under the equality rule below
-    #   non_english    : non-Latin letter ratio above threshold (decision 3, 2026-09-16)
+    # non_english: non-Latin letter ratio above threshold (2026-09-16)
     refusal_phrases_file: configs/refusal_phrases.yaml
-    # Equality rule (decision 2(b), 2026-09-16): strip leading/trailing whitespace and
+    # Equality rule ((b), 2026-09-16): strip leading/trailing whitespace and
     # collapse internal whitespace runs to one space; case-sensitive. Same rule is used
     # for the controller's "revised_text == x_t" empty-rewrite check.
     equality: normalized_whitespace

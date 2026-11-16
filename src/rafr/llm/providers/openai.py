@@ -1,8 +1,8 @@
-"""OpenAI provider (controller and G_fixed; II.8.2).
+"""OpenAI provider (controller and G_fixed; paper Sec. 4.6).
 
 Uses Chat Completions with ``response_format = json_schema (strict)`` rather than the
 Responses API, because only Chat Completions exposes ``seed``. The raw ``content`` string of
-every attempt is returned untouched so that II.10's "raw output of each attempt" is on disk
+every attempt is returned untouched so that the design's "raw output of each attempt" is on disk
 even when parsing fails. A provider-level refusal is the ``message.refusal`` field.
 
 A 429, a connection failure or a 5xx is raised as :class:`TransientProviderError`, as the

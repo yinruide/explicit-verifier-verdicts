@@ -512,7 +512,7 @@ def spec(form="prm", **changes):
 
 
 def test_pair_requires_disjoint_vendor_and_backbone_not_forms():
-    """M.4 v1.2 (C.28): vendors and bases must differ; the same form is allowed."""
+    """paper Sec. 5: vendors and bases must differ; the same form is allowed."""
     first = spec()
     second = spec("orm", vendor="test-source-b", base_model="test-backbone-b")
     assert models.validate_verifier_pair([first, second]) == (first, second)

@@ -1,4 +1,4 @@
-"""Evidence sensitivity (III.1.2, v1.0): the accept rate by observed judgment pair.
+"""Evidence sensitivity (paper Sec. 4.6): the accept rate by observed judgment pair.
 
 Descriptive. For every arm and every lambda level (Exp 1) or round (Exp 2): the accept rate in
 the four cells of the OBSERVED judgment pair
@@ -16,15 +16,15 @@ arm-independent and is not post-treatment conditioning (:func:`exp1` counts the 
 would not hold, which must be 0). In Exp 2 the evidence at t >= 2 depends on the trajectory, so
 that table is descriptive only.
 
-Use (III.1.2 / III.2.3): when Delta ~ 0, tell "the controller ignored the checkers' evidence"
+Use (paper Sec. 4.6): when Delta ~ 0, tell "the controller ignored the checkers' evidence"
 (the accept rate hardly moves across the four cells) from "it read the evidence but the
 representation did not matter" (it moves, but the same way in every arm). The step 6 smoke run
 accepted at round 2 with both checkers flagging; this table makes that quantifiable. The
 controller prompt is never adjusted because of it: tuning the controller for an effect would be
 tuning the subject.
 
-"Accept" follows the main accounting of II.8.2 (parse_fail = not accepted); the accounting is a
-parameter so the two sensitivities can be re-run through the same function.
+"Accept" follows the main accounting of paper Sec. 4.6 (parse_fail = not accepted); the accounting
+is a parameter so the two sensitivities can be re-run through the same function.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ from analysis._common import accepted, mean_or_nan
 from analysis.error_boundary import verifier_judgments
 
 PAIRS: tuple[tuple[int, int], ...] = ((0, 0), (0, 1), (1, 0), (1, 1))
-"""The four cells of (y1_obs, y2_obs), in the order III.1.2 lists them."""
+"""The four cells of (y1_obs, y2_obs), in the order the design lists them."""
 
 
 def pair_key(pair: tuple[int, int]) -> str:
@@ -94,7 +94,7 @@ def _pairs_differing_across_arms(rows: list[dict[str, Any]]) -> int:
     """How many (state, lambda) cells show a different observed pair to different arms.
 
     Must be 0 in Exp 1: the channel is applied once per (state, lambda) and every arm is shown
-    the same (s1~, s2~) (II.5.1), which is what makes the table arm-independent.
+    the same (s1~, s2~) (paper Sec. 4.3), which is what makes the table arm-independent.
     """
     seen: dict[tuple[str, str], set[tuple[int, int]]] = defaultdict(set)
     for r in rows:
@@ -103,7 +103,7 @@ def _pairs_differing_across_arms(rows: list[dict[str, Any]]) -> int:
 
 
 def exp1(rows: list[dict[str, Any]], *, accounting: str = "main") -> dict[str, Any]:
-    """Per lambda level, per arm, the four-cell table (III.1.2, v1.0)."""
+    """Per lambda level, per arm, the four-cell table (paper Sec. 4.6)."""
     rep = _table(rows, "lam", accounting)
     rep["cells_differing_across_arms"] = _pairs_differing_across_arms(rows)
     rep["note"] = (
@@ -116,7 +116,7 @@ def exp1(rows: list[dict[str, Any]], *, accounting: str = "main") -> dict[str, A
 
 
 def exp2(rows: list[dict[str, Any]], *, accounting: str = "main") -> dict[str, Any]:
-    """Per round t, per arm, the same table (III.1.2, v1.0). Exp 2 has no channel, so the
+    """Per round t, per arm, the same table (paper Sec. 4.6). Exp 2 has no channel, so the
     observed pair is the verifiers' own judgment of x_t; from t >= 2 it depends on the
     trajectory and the table is descriptive only."""
     rep = _table(rows, "t", accounting)

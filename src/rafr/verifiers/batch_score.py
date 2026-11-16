@@ -1,4 +1,4 @@
-"""Batch scoring on the rented GPU: ``to_score.jsonl`` -> the scores table (App. A.2).
+"""Batch scoring on the rented GPU: ``to_score.jsonl`` -> the scores table.
 
     python -m rafr.verifiers.batch_score \\
         --input data/to_score/d_gate.jsonl \\
@@ -14,30 +14,30 @@ that dies halfway (or an hourly budget that runs out) costs only the states it h
 reached. ``--no-resume`` rescores everything, appending fresh rows; the loader keeps the
 last row per state.
 
-**Formal scoring goes through ``--config-id``** (task 2026-09-24 section 3): the one factory,
+**Formal scoring goes through ``--config-id``**: the one factory,
 :func:`rafr.verifiers.factory.make_verifier`, i.e. the step 2 probe's own scoring code checked
 against the probe's records; rows then carry ``prompt_hash`` and ``sub_scores`` like the probe's
 table. ``--candidate`` still builds the registry ENCODERS for smoke tests, but refuses every
 registry guard LM: that backend tokenises a chat-template rendering with a second BOS
-(decisions.md D-2026-09-24b point 4) and is off the formal path. ``--impl`` objects that turn
+(point 4) and is off the formal path. ``--impl`` objects that turn
 out to be the registry guard wrapper are refused too.
 
 Formal scoring refuses a verifier whose weights were never pinned by
-``env/download_models.sh``, because ``model_version`` would then not identify what produced
-the numbers (II.10). ``--allow-unpinned`` is for smoke tests only.
+the RunPod driver (not released), because ``model_version`` would then not identify what produced
+the numbers. ``--allow-unpinned`` is for smoke tests only.
 
-D_gate_reserve is not scored before the first gate failure (II.6.1): any input that holds a
+D_gate_reserve is not scored before the first gate failure (paper Sec. 4.3): any input that holds a
 reserve state raises :class:`rafr.data.labels.LabelAccessError` until
 ``frozen/gate_attempts.json`` records a failed attempt. To know which states are the reserve's,
 the split file ``data/splits/d_gate_reserve.jsonl`` has to be on this machine; without it the
 run refuses rather than scoring blind (``--splits-dir`` / ``--gate-attempts`` point elsewhere).
 The check applies to ``--self-check --input`` too: that scores the input as well.
 
-``--selection`` is for step 2 (verifier selection, App. D v0.9; 2026-09-24): selection
+``--selection`` is for step 2 (verifier selection, 2026-09-24): selection
 may score D_fit and the unlabeled pool only, so with the flag any state of D_gate,
 D_gate_reserve or D_Exp1 raises :class:`rafr.data.labels.LabelAccessError` -- whatever the
 gate record says. It needs all three split files and refuses to run without them. Without the
-flag the formal step-6 rules apply: D_gate and D_Exp1 are scored there (App. A.2).
+flag the formal step-6 rules apply: D_gate and D_Exp1 are scored there.
 """
 
 from __future__ import annotations
@@ -108,7 +108,8 @@ def reserve_ids(split_dir: Path) -> set[str] | None:
 def refuse_locked_reserve(
     items: Sequence[tuple[str, str]], *, split_dir: Path, gate_attempts_path: Path
 ) -> None:
-    """II.6.1: raise if ``items`` hold a D_gate_reserve state and the reserve is still locked."""
+    """paper Sec. 4.3: raise if ``items`` hold a D_gate_reserve state and the reserve is still
+    locked."""
     reserve = reserve_ids(split_dir)
     if reserve is None:
         raise SystemExit(
@@ -127,7 +128,7 @@ def refuse_locked_reserve(
         )
 
 
-#: Splits step 2 (verifier selection) may neither score nor read: App. D (v0.9) allows D_fit
+# Splits step 2 (verifier selection) may neither score nor read: allows D_fit
 #: and the unlabeled pool only. D_Exp1 matters as much as the two gate splits: it holds
 #: E-UNSAFE states only, so scoring it for selection would leak its y* into the choice.
 SELECTION_FORBIDDEN: tuple[Split, ...] = (Split.D_GATE, Split.D_GATE_RESERVE, Split.D_EXP1)
@@ -186,7 +187,7 @@ def make_verifier(
                 "--config-id takes the probe's batch size and id; --batch-size / --verifier-id "
                 "would make it score differently from the probe"
             )
-        # formal (a cuda record and a CUDA run, D-2026-09-24c point 6) unless a drift is
+        # formal (a cuda record and a CUDA run, point 6) unless a drift is
         # explicitly tolerated, which makes it an engineering run on the record's own device
         return factory.make_verifier(
             config_id, tolerate_drift=tolerate_drift, formal=not tolerate_drift, echo=print

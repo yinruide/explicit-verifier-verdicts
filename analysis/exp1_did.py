@@ -1,37 +1,37 @@
-"""Exp 1 primary analysis (III.1.2) + the two II.8.2 sensitivity analyses.
+"""Exp 1 primary analysis (paper Sec. 4.6) + the two paper Sec. 4.6 sensitivity analyses.
 
 Per state i (analysis unit = x0, one state per x0), with Y = the accept indicator (every
 D_Exp1 state is E-UNSAFE, so an accept is a false accept):
 
     D_i = (Y^A1_high,i - Y^B_high,i) - (Y^A1_low,i - Y^B_low,i)
 
-**Levels (v0.8, III.1.2).** D_i uses ONLY the two extreme levels, lambda_high and lambda_low.
+**Levels (paper Sec. 4.6).** D_i uses ONLY the two extreme levels, lambda_high and lambda_low.
 lambda_mid never enters the primary difference-in-differences; the three-level
-Delta_FA(lambda) curve is reported as a SECONDARY result, for the monotonicity shape in
-III.2.3.
+Delta_FA(lambda) curve is reported as a SECONDARY result, for the monotonicity shape.
 
-**Interval (v0.8, III.1.2).** D-bar with a 95% percentile bootstrap CI, resampling unit = x0,
+
+**Interval (paper Sec. 4.6).** D-bar with a 95% percentile bootstrap CI, resampling unit = x0,
 B = 10000, seed recorded in the output (``analysis/_common.py``). The pilot makes no
-significance claims (III.1.1): the interval expresses uncertainty only.
+significance claims: the interval expresses uncertainty only.
 
-**N (v0.9, III.1.2, II.9.3, C.16).** D_Exp1 holds E-UNSAFE states only, so the denominator of
-the false accept rate is D_Exp1 in full: N = |D_Exp1| = 300 and the N = 300 column of III.1.3
-applies directly. A row whose ``e_label`` is not UNSAFE means D_Exp1 is not what II.2.4 builds;
-:func:`check_d_exp1_all_unsafe` raises on it instead of quietly shrinking the denominator.
+**N (paper Sec. 4.6, 3).** D_Exp1 holds E-UNSAFE states only, so the denominator of
+the false accept rate is D_Exp1 in full: N = |D_Exp1| = 300 and the N = 300 column of paper App. B
+applies directly. A row whose ``e_label`` is not UNSAFE means D_Exp1 is not what paper Sec. 4.2
+builds; :func:`check_d_exp1_all_unsafe` raises on it instead of quietly shrinking the denominator.
 
-**H2 (v0.8, III.1.2).** :func:`h2_strata` reports Delta_FA(lambda) inside two arm-independent
+**H2 (paper Sec. 4.6).** :func:`h2_strata` reports Delta_FA(lambda) inside two arm-independent
 strata: (i) whether at least one verifier was perturbed at this (state, lambda), (ii) whether
 the two verifiers disagree in the OBSERVED evidence. All three arms see the same evidence for
 the same (state, lambda), so neither stratifier is post-treatment. This is a mechanism
 diagnostic, not a causal test. r_hat_ref is reported alongside by the runner and is
-deliberately not available here: it is never a stratifier (II.1.1, App. B.1).
+deliberately not available here: it is never a stratifier (paper Sec. 3).
 
-Sign convention (I.2): all deltas are "A1 minus B", positive = B better. Cells:
+Sign convention (paper Sec. 3): all deltas are "A1 minus B", positive = B better. Cells:
 FA(arm, lambda) = P(accept) over every D_Exp1 state. The unnecessary-rewrite rate is gone
-(v0.9, II.1.3 / C.16): its denominator, the SAFE states, is empty by construction.
+(paper Sec. 4.3): its denominator, the SAFE states, is empty by construction.
 Accountings: main (parse_fail = not accepted), parse_fail_as_accept, complete_case (drop the
 whole state if any cell failed to parse, preserving the pairing). Robust iff the three point
-estimates share a sign. Secondary contrast: permuted_B vs B (II.7.3).
+estimates share a sign. Secondary contrast: permuted_B vs B (paper Sec. 3).
 """
 
 from __future__ import annotations
@@ -54,20 +54,20 @@ LAMBDAS = ("low", "mid", "high")
 
 PRIMARY_LAMBDA_HIGH = "high"
 PRIMARY_LAMBDA_LOW = "low"
-"""III.1.2 (v0.8): the primary contrast is the two extreme levels only."""
+"""paper Sec. 4.6: the primary contrast is the two extreme levels only."""
 
 SECONDARY_LAMBDA = "mid"
-"""III.1.2 (v0.8): lambda_mid is reported through the three-level Delta_FA curve only."""
+"""paper Sec. 4.6: lambda_mid is reported through the three-level Delta_FA curve only."""
 
 
 class Exp1DataError(ValueError):
-    """The Exp 1 rows contradict II.2.4: D_Exp1 holds E-UNSAFE states only (v0.9, C.16)."""
+    """The Exp 1 rows contradict paper Sec. 4.2: D_Exp1 holds E-UNSAFE states only ."""
 
 
 def check_d_exp1_all_unsafe(rows: list[dict[str, Any]]) -> None:
     """Raise :class:`Exp1DataError` unless every row carries ``e_label == "UNSAFE"``.
 
-    The false accept rate's denominator is D_Exp1 in full (II.9.3, v0.9). A SAFE or missing
+    The false accept rate's denominator is D_Exp1 in full (paper Sec. 3). A SAFE or missing
     label cannot be dropped from it silently: it means the split or the outcome file is wrong.
     """
     bad = sorted({r["state_id"] for r in rows if r.get("e_label") != "UNSAFE"})
@@ -110,7 +110,7 @@ def cell_rates(rows: list[dict[str, Any]], accounting: str = "main") -> dict[str
 
 
 def effective_n(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """III.1.2 (v0.9): the primary metric's N is D_Exp1 in full.
+    """paper Sec. 4.6: the primary metric's N is D_Exp1 in full.
 
     ``n_states`` is |D_Exp1| as it appears in the log; ``n_did_units`` is how many of those
     states contribute a D_i under the main accounting (a state drops out only if one of the four
@@ -163,7 +163,8 @@ def did(
     lo, hi = bootstrap_ci(units, mean_or_nan, n_boot=n_boot, seed=seed)
     return {
         "contrast": f"{control} - {treated}",
-        "lambdas": [PRIMARY_LAMBDA_HIGH, PRIMARY_LAMBDA_LOW],  # III.1.2: the two extremes only
+        # paper Sec. 4.6: the two extremes only
+        "lambdas": [PRIMARY_LAMBDA_HIGH, PRIMARY_LAMBDA_LOW],
         "accounting": accounting,
         "n_states": len(units),
         "estimate": est,
@@ -175,7 +176,7 @@ def did(
 def delta_by_lambda(
     rows: list[dict[str, Any]], accounting: str = "main", control="A1", treated="B"
 ) -> dict[str, float]:
-    """Delta_FA(lambda) at all three levels — the SECONDARY result of III.1.2 (v0.8)."""
+    """Delta_FA(lambda) at all three levels — the SECONDARY result of paper Sec. 4.6 ."""
     cells = cell_rates(rows, accounting)
     out = {}
     for lam in LAMBDAS:
@@ -186,12 +187,12 @@ def delta_by_lambda(
 
 
 def result_shape(rows: list[dict[str, Any]], accounting: str = "main") -> dict[str, Any]:
-    """The III.2.3 reading of the three-level curves, from the point estimates only.
+    """The reading of the three-level curves, from the point estimates only.
 
-    For A1 - B and for permuted_B - B: Delta_FA at low / mid / high and the two shapes III.2.3
+    For A1 - B and for permuted_B - B: Delta_FA at low / mid / high and the two shapes
     names that need no tolerance -- rising in lambda (low < mid < high) and negative at
-    lambda_low. "Delta ~ 0 everywhere" and "permuted-B ~ B" would need a tolerance III.2.3 does
-    not give, so they get the values and no flag. Descriptive; the pilot tests nothing (III.1.1).
+    lambda_low. "Delta ~ 0 everywhere" and "permuted-B ~ B" would need a tolerance the design does
+    not give, so they get the values and no flag. Descriptive; the pilot tests nothing.
     """
     out: dict[str, Any] = {
         "accounting": accounting,
@@ -212,11 +213,11 @@ def result_shape(rows: list[dict[str, Any]], accounting: str = "main") -> dict[s
     return out
 
 
-# ---- H2 strata (III.1.2, v0.8) ---------------------------------------------------------
+# H2 strata (paper Sec. 4.6) ---------------------------------------------------------
 
 
 def perturbation_index(channel_rows: list[dict[str, Any]]) -> dict[tuple[str, str], bool]:
-    """``channel.jsonl`` -> {(state_id, lam): at least one verifier perturbed} (II.10)."""
+    """``channel.jsonl`` -> {(state_id, lam): at least one verifier perturbed} ."""
     return {
         (r["state_id"], r["lam"]): bool(r.get("perturbed_v1")) or bool(r.get("perturbed_v2"))
         for r in channel_rows
@@ -246,7 +247,7 @@ def observed_disagreement(row: dict[str, Any]) -> bool:
 def _stratum_consistency(rows, key) -> int:
     """How many (state, lambda) cells have a stratum value that differs across arms.
 
-    Must be 0: the three arms see identical evidence for the same (state, lambda) (II.5.1),
+    Must be 0: the three arms see identical evidence for the same (state, lambda) (paper Sec. 4.3),
     which is what makes these stratifiers arm-independent rather than post-treatment.
     """
     seen: dict[tuple[str, str], set[bool]] = defaultdict(set)
@@ -263,12 +264,12 @@ def h2_strata(
     control: str = "A1",
     treated: str = "B",
 ) -> dict[str, Any]:
-    """Delta_FA(lambda) inside the two arm-independent strata of III.1.2 (v0.8).
+    """Delta_FA(lambda) inside the two arm-independent strata of paper Sec. 4.6.
 
     Mechanism diagnostic, not a causal test. Both stratifiers are functions of the (state,
     lambda) evidence alone, which every arm shares, so conditioning on them does not condition
     on anything downstream of treatment. r_hat_ref is NOT a stratifier and is not an input
-    here; the runner reports it next to this block (II.1.1).
+    here; the runner reports it next to this block (paper Sec. 3).
     """
     index = perturbation_index(channel_rows) if channel_rows is not None else None
     stratifiers = {

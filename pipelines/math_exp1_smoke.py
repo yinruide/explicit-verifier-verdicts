@@ -1,16 +1,17 @@
-"""Math Exp 1's single-round live smoke (2026-10-15; protocol II.4.4 / M.10).
+"""Math Exp 1's single-round live smoke (2026-10-15).
 
 Math's Exp 1 may run before the Exp 2 smoke once this smoke has passed. Ten cells of D_Exp1, drawn
 by a fixed seed (component ``math_exp1_smoke``), all at lambda = high, the three arms cycled over
-them (A1, B, permuted-B: 4 / 3 / 3); one real controller call per cell (plus II.8.2's parse retries)
-with Exp 1's own requests -- the same states, frozen channel, permuted-B donors and controller
-configuration as ``MathPipeline.exp1`` -- under their own seed namespace, so the formal run never
-reuses a smoke answer. The prompts are byte for byte Exp 1's (the prompt hash leaves the seed out).
+them (A1, B, permuted-B: 4 / 3 / 3); one real controller call per cell (plus the design's parse
+retries) with Exp 1's own requests -- the same states, frozen channel, permuted-B donors and
+controller configuration as ``MathPipeline.exp1`` -- under their own seed namespace, so the formal
+run never reuses a smoke answer. The prompts are byte for byte Exp 1's (the prompt hash leaves the
+seed out).
 
-It looks only for engineering defects (the 10a disposition table, II.4.4): parsing, decision
+It looks only for engineering defects (the 10a disposition table): parsing, decision
 extraction, E (D_Exp1's step 5 judgments, hashed before any controller call; Math-Verify on each
 rewrite), the log records and the cost accounting. The controller's behaviour is no release
-condition and the report holds no arm comparison (M.10). Everything goes to ``<run>/exp1_smoke``,
+condition and the report holds no arm comparison. Everything goes to ``<run>/exp1_smoke``,
 marked SMOKE; the formal flow reads only its report, through ``require``.
 """
 
@@ -35,10 +36,10 @@ N_CELLS = 10
 LEVEL = Lambda.HIGH
 ARM_CYCLE = (Arm.A1, Arm.B, Arm.PERMUTED_B)
 NAMESPACE = "math_exp1_smoke"
-#: Core's log grid has no Exp 1 smoke; a non-formal run logs as ``dry_run`` (II.10).
+# Core's log grid has no Exp 1 smoke; a non-formal run logs as ``dry_run``.
 LOG_EXPERIMENT = "dry_run"
 DIR = "exp1_smoke"
-#: The II.10 fields every Exp 1 log record must carry.
+# The fields every Exp 1 log record must carry.
 LOG_FIELDS = (
     "x_t",
     "s1",
@@ -185,7 +186,7 @@ def cost(rows: list[dict], price, live_keys: set[str]) -> dict:
 
 
 def e_status(pipeline, qid: str, text: str) -> str:
-    """Math-Verify on a rewrite, not written to the run's E log: M.9's rule -- an E error is
+    """Math-Verify on a rewrite, not written to the run's E log: The design's rule -- an E error is
     retried twice; three worker wall-clock timeouts make it unresolved; any other error is an
     engineering defect here (``e_error``)."""
     from pipelines.math_pipeline import WALL_CLOCK_TIMEOUT
@@ -204,7 +205,7 @@ def e_status(pipeline, qid: str, text: str) -> str:
 
 
 def audit(pipeline, out, chosen, builder, donors, pairs, cfg, outcome, labels) -> dict:
-    """Engineering checks only (II.4.4's table); no controller behaviour is judged."""
+    """Engineering checks only (the design's table); no controller behaviour is judged."""
     rows = {(r["state_id"], r["arm"]): r for r in read_jsonl(out / "decisions.jsonl")}
     defects, review, prompts, e_rewrites = [], [], [], Counter()
     live_keys: set[str] = set()
@@ -215,7 +216,7 @@ def audit(pipeline, out, chosen, builder, donors, pairs, cfg, outcome, labels) -
         if row is None:
             defects.append(f"missing_decision:{sid}:{arm.value}")
             continue
-        # logging: Core's record, every II.10 field
+        # logging: Core's record, every field
         try:
             LogRecord.model_validate(row)
         except ValueError:
@@ -225,7 +226,8 @@ def audit(pipeline, out, chosen, builder, donors, pairs, cfg, outcome, labels) -
             missing.append("permuted_from_state_id")
         if missing:
             defects.append(f"log_fields_missing:{sid}:{','.join(missing)}")
-        # E: the outcome is step 5's judgment of this state (II.9.1), INCORRECT by construction
+        # E: the outcome is step 5's judgment of this state (paper Sec. 3), INCORRECT by
+        # construction
         if getattr(labels.get(qid), "value", labels.get(qid)) != "INCORRECT":
             defects.append(f"outcome_label_not_incorrect:{qid}")
         # prompts: rebuild each attempt's request; the logged hash and seed must be it

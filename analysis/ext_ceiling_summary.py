@@ -11,7 +11,7 @@ fill run, with the original Exp 2 finals (sha256 from ``configs/math/ext.yaml``)
 all 300 starts: the original Exp 2's A1 half plus the fill run's A1 on the other half.
 
 1. Cumulative correction rate by round t = 1..4: the share of the starts whose first rewrite that
-   E judged correct came at a decision <= t (UNRESOLVED counts as not correct, M.9).
+   E judged correct came at a decision <= t (UNRESOLVED counts as not correct, paper App. D.1).
 2. TFR = P(task failure at x_T) of the ceiling (``oracle_feedback``), No Verifier and A1, and the
    paired contrasts no_verifier - oracle_feedback and A1 - oracle_feedback (less information -
    more information, the extension's direction: positive = the oracle feedback reduced failures).

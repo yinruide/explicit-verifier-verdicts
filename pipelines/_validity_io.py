@@ -46,7 +46,7 @@ def load_scores_for(states: list[State], verifier_id: str) -> dict[str, float]:
     table = load_scores_table(scores_table_path(verifier_id, paths.DATA_SCORES))
     reserve = reserve_scores_table_path(verifier_id, paths.DATA_SCORES)
     if reserve.is_file() and any(s.state_id not in table for s in states):
-        # D_gate_reserve's scores live in their own table (decisions.md D-2026-09-27)
+        # D_gate_reserve's scores live in their own table
         table = {**table, **load_scores_table(reserve)}
     missing = [s.state_id for s in states if s.state_id not in table]
     if missing:

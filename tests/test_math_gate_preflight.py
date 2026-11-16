@@ -1,4 +1,4 @@
-"""Adversarial execution-order checks for Appendix M and Core step 8/12."""
+"""Adversarial execution-order checks for paper Sec. 5, App. D and Core step 8/12."""
 
 import pytest
 

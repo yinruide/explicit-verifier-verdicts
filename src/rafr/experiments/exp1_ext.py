@@ -1,6 +1,6 @@
 """Exp 1 extension (post-pilot, 2026-10-31): the four new arms, two cohorts.
 
-Not part of the preregistered Exp 1: ``exp1.py``, its run directory and its results are only read.
+Not part of the primary Exp 1: ``exp1.py``, its run directory and its results are only read.
 
 * cohort ``e_incorrect`` = the original D_Exp1 (E-UNSAFE). The four new arms only; A1, B and
   permuted-B are the original run's decisions, read only and never rerun. Before any controller
@@ -9,8 +9,9 @@ Not part of the preregistered Exp 1: ``exp1.py``, its run directory and its resu
   perturbation assignment -- so the new arms see exactly the s_obs the original arms saw. Seed
   namespace ``exp1``: each state keeps the original run's per-state seed.
 * cohort ``e_correct`` = the E-correct cohort drawn from D_gate. All seven arms, the states
-  perturbed by the same frozen channel (II.5); permuted-B's table is drawn over this cohort only
-  with the original rule (seed component ``permuted_b``). Seed namespace ``exp1_ecorrect``.
+  perturbed by the same frozen channel (paper Sec. 4.3); permuted-B's table is drawn over this
+  cohort only with the original rule (seed component ``permuted_b``). Seed namespace
+  ``exp1_ecorrect``.
 
 Everything else follows ``exp1.run_exp1``: the channel once per (state, lambda), shared by all
 arms; one decision per (state, arm, lambda); resume skips cells on disk; E's judgment of every
@@ -118,10 +119,11 @@ class Exp1ExtSetup:
     original_channel: Sequence[Mapping[str, Any]] | None = None
     experiment_name: str = "exp1"  # the log label; the cohort's seed namespace is separate
     # None = the cohort's namespace. A smoke run passes "<namespace>_smoke" so that none of its
-    # requests shares a seed or a cached answer with the formal run (II.4.4's rule).
+    # requests shares a seed or a cached answer with the formal run (the design's rule).
     seed_namespace: str | None = None
-    # stop point D's smoke (2026-10-31): states outside every formal set, as step 10a, so
-    # there is no original channel row to match; the regression of stop point B covers that
+    # the smoke (2026-10-31): states outside every formal set, as step 10a, so
+    # there is no original channel row to match; the regression check against the primary runs
+    # covers that
     smoke: bool = False
     meta: dict[str, Any] = field(default_factory=dict)
 
@@ -402,7 +404,7 @@ def summarize_exp1_ext(rows: Sequence[Mapping[str, Any]], cohort: str) -> dict[s
     """Quick run report per arm x lambda (the analysis is analysis/ext_contrasts.py).
 
     ``e_incorrect``: false accept rate = P(accept); ``e_correct``: false reject rate =
-    P(not accepted). parse_fail counts as not accepted (II.8.2's main accounting), so in
+    P(not accepted). parse_fail counts as not accepted (the design's main accounting), so in
     ``e_correct`` it counts towards false reject; the rewrite-only rate is given next to it.
     """
     if cohort not in COHORTS:

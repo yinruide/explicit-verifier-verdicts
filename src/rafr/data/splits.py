@@ -1,16 +1,16 @@
-"""Group-level splits by x0 (II.2.4, v0.9): D_fit, D_gate, D_gate_reserve, D_Exp1, pool.
+"""Group-level splits by x0 (paper Sec. 4.2): D_fit, D_gate, D_gate_reserve, D_Exp1, pool.
 
 Every split is a set of ``x0_id``; the sets are pairwise disjoint by construction and
 :func:`assert_disjoint` re-checks them whenever they are loaded. Exp 2 reuses the D_Exp1 x0
-(II.8.3), so it has no split of its own.
+(paper Sec. 4.4), so it has no split of its own.
 
-The v0.9 procedure (:data:`PROCEDURE`), run by step05 after E has judged every state:
+The procedure (data:`PROCEDURE`), run by step05 after E has judged every state:
 
 1. D_fit, D_gate, D_gate_reserve are cut from one seeded shuffle of ALL x0, in that order. No
    label is looked at: the three are random samples of the whole state population, so tau has
-   both classes to fit on (C.16);
+   both classes to fit on;
 2. D_Exp1 is drawn from the x0 that remain, keeping only those whose state E judged UNSAFE
-   (C.16): the first ``d_exp1`` of them in the same shuffled order, which is a uniform random
+   the first ``d_exp1`` of them in the same shuffled order, which is a uniform random
    sample without replacement of the remaining E-UNSAFE states;
 3. every remaining x0 goes to the unlabeled pool.
 
@@ -40,14 +40,14 @@ SPLIT_ORDER: tuple[Split, ...] = (
 )
 
 RANDOM_SPLITS: tuple[Split, ...] = (Split.D_FIT, Split.D_GATE, Split.D_GATE_RESERVE)
-"""Drawn first, from every state, blind to the labels (II.2.4)."""
+"""Drawn first, from every state, blind to the labels (paper Sec. 4.2)."""
 
 PROCEDURE = "random_then_e_unsafe_v09"
 """Name of the procedure implemented by :func:`make_splits`; configs/data.yaml names it too,
 and step05 refuses to split when the two disagree."""
 
 SEED_COMPONENT = "splits_v09"
-"""The v0.9 split seed's component name (a new one: round 1 used ``splits``)."""
+"""The split seed's component name (a new one: round 1 used ``splits``)."""
 
 REST = "rest"
 
@@ -57,7 +57,7 @@ class SplitError(ValueError):
 
 
 class InsufficientUnsafeError(SplitError):
-    """Too few E-UNSAFE states remain for D_Exp1 after the three random splits (II.2.4)."""
+    """Too few E-UNSAFE states remain for D_Exp1 after the three random splits (paper Sec. 4.2)."""
 
     def __init__(self, have: int, need: int, n_remaining: int):
         self.have, self.need, self.n_remaining = have, need, n_remaining
@@ -81,7 +81,7 @@ def make_splits(
     sizes: Mapping[str, Any],
     seed: int,
 ) -> dict[Split, list[str]]:
-    """The v0.9 split (:data:`PROCEDURE`); see the module docstring.
+    """The split (data:`PROCEDURE`); see the module docstring.
 
     ``x0_ids`` are the x0 whose state has a y* (E failures already removed); their order does
     not matter, they are sorted before the seeded shuffle. ``is_unsafe(x0_id)`` is E's
@@ -120,9 +120,9 @@ def make_splits(
 
 
 def split_plan(configs: Mapping[str, Any]) -> dict[str, Any]:
-    """What the split will be, fixed before step 5 judges a single state (II.2.4).
+    """What the split will be, fixed before step 5 judges a single state (paper Sec. 4.2).
 
-    Written into ``data/manifest.json`` (``splits.plan``) the first time a v0.9 step runs;
+    Written into ``data/manifest.json`` (``splits.plan``) the first time a step runs;
     step05 refuses to split if the configured plan no longer equals the recorded one.
     """
     data = configs.get("data") or {}

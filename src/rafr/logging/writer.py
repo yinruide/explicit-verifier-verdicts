@@ -22,7 +22,7 @@ class JsonlWriter:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        crlf_append_notice(self.path)  # a CRLF file from before 2026-09-27 (D-2026-09-27)
+        crlf_append_notice(self.path)  # a CRLF file from before 2026-09-27
         self._fh = self.path.open("a", encoding="utf-8", newline="\n")
         self.count = 0
 

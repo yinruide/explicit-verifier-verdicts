@@ -1,11 +1,11 @@
-"""Text files written by the pipeline: LF on every platform (decisions.md D-2026-09-27).
+"""Text files written by the pipeline: LF on every platform.
 
 Every text-mode write in the code passes ``newline="\\n"`` (csv writers ``lineterminator="\\n"``),
 so a file has the same bytes -- and the same raw-byte sha256 -- whether the laptop or the pod
 wrote it; ``tests/test_line_endings.py`` scans the code for it. Hashes stay raw-byte hashes.
 
 Files written on the laptop before 2026-09-27 are CRLF, and the sha256 values registered for them
-(the manifest, prereg analysis_plan section 15, progress.md) are raw-byte hashes of those CRLF
+(the manifest, the analysis plan) are raw-byte hashes of those CRLF
 bytes. They are left as they are. The two helpers below wrap the writes that can replace or
 extend one of them, so that its raw-byte hash never changes silently: the old and the new hash
 are printed to stderr.
@@ -56,7 +56,7 @@ TEXT_SUFFIXES = frozenset({".yaml", ".yml", ".json", ".jsonl", ".txt", ".md", ".
 
 def copy_tree_lf(src: Path, dst: Path) -> None:
     """``shutil.copytree`` for the configs snapshot, with text files written LF: a Windows
-    checkout may hold CRLF, and what the pipeline writes into runs/ is LF (D-2026-09-27)."""
+    checkout may hold CRLF, and what the pipeline writes into runs/ is LF ."""
     src, dst = Path(src), Path(dst)
     for p in sorted(src.rglob("*")):
         target = dst / p.relative_to(src)

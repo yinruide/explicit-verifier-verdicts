@@ -1,7 +1,6 @@
 """Step 2 probe: the candidates, their two policy variants, and a pure two-token scorer.
 
-What is probed and how is fixed by ``docs/decisions.md`` (D-2026-09-24, sections 2-4 of
-the authors' step-2 instructions, copied there verbatim):
+What is probed and how is fixed by the authors' step-2 instructions:
 
 =================  =========================================  ===========
 id                 HF repo                                    runs on
@@ -22,7 +21,7 @@ Harassment and Hate Speech guidelines from the model card (one call each, score 
 P(Yes), both sub-scores kept), Llama Guard's default category list, Granite Guardian's
 pre-baked harm criterion in no-think mode. ``task`` takes the one word E's rubric-free prompt
 uses to name what is judged, "toxic", and puts it into each vendor's own customisation format,
-replacing only the content word (2026-09-24, decisions.md D-2026-09-24b): a ShieldGemma
+replacing only the content word (2026-09-24): a ShieldGemma
 "No ..." policy, a single Llama Guard category, a Granite Guardian bring-your-own criterion.
 Every prompt text lives in ``configs/prompts/verifier_*.txt`` (the three task texts together in
 ``verifier_task_def.txt``); this module adds no wording of its own.
@@ -85,8 +84,8 @@ ENCODER_BATCH_SIZE = 16
 #: Fixed prompt lengths are rounded up to a multiple of this, after one multiple of slack.
 PAD_MULTIPLE = 64
 
-#: Direction self-check (decisions.md section 4): two invented sentences, never data. The
-#: neutral one is also the example input of the rendered prompts shown at stop point A.
+# Direction self-check (section 4): two invented sentences, never data. The
+#: neutral one is also the example input of the rendered prompts shown for review.
 NEUTRAL_EXAMPLE = "The community garden on Elm Street opens at eight every Saturday morning."
 ABUSIVE_EXAMPLE = "You are a worthless, pathetic idiot and everyone is sick of you."
 
@@ -97,7 +96,7 @@ SG_HATE_SPEECH_FILE = "verifier_sg_hate_speech.txt"
 GG_HARM_FILE = "verifier_gg_harm.txt"
 GG_BLOCK_FILE = "verifier_gg_block.txt"
 PROMPT_FILES = (TASK_DEF_FILE, SG_HARASSMENT_FILE, SG_HATE_SPEECH_FILE, GG_HARM_FILE, GG_BLOCK_FILE)
-#: Written once the authors have confirmed the rendered prompts (stop point A); scoring refuses to
+#: Written once the authors have confirmed the rendered prompts; scoring refuses to
 #: start while it is missing or while a prompt file no longer matches it.
 PROMPT_LOCK_FILE = "verifier_probe_prompts.lock.json"
 
@@ -539,7 +538,7 @@ def prompt_hash(config: ProbeConfig, prompt_dir: Path | None = None) -> str | No
 
 
 # ---------------------------------------------------------------------------------------
-# prompt lock (stop point A)
+# prompt lock
 # ---------------------------------------------------------------------------------------
 
 
@@ -751,5 +750,5 @@ def split_prefix(
 
 
 def direction_ok(neutral_score: float, abusive_score: float) -> bool:
-    """decisions.md section 4: the invented abusive sentence must score above the neutral one."""
+    """section 4: the invented abusive sentence must score above the neutral one."""
     return float(abusive_score) > float(neutral_score)

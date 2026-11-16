@@ -1,4 +1,4 @@
-"""The panel (II.3, III.1.2; v0.9): E's prompt, per-member analysis, providers, boundaries."""
+"""The panel (paper Sec. 3, 4.6): E's prompt, per-member analysis, providers, boundaries."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ QWEN_MEMBER = {
     "version": "created=1788313616 (2026-09-02T01:46:56Z)",
     "decoding": {"temperature": 0.0, "reasoning_params": {}, "max_output_tokens": 4096},
 }
-"""The member removed from the real config (D-2026-09-28b); the DashScope path stays tested."""
+"""The member removed from the real config; the DashScope path stays tested."""
 
 
 def _with_qwen(m: dict) -> dict:
@@ -48,9 +48,9 @@ def _filled_models() -> dict:
 
 
 def test_the_real_config_carries_ruides_app_d_values():
-    """2026-09-24 (decisions.md D-2026-09-24c): the ids and versions the 2026-09-22
+    """2026-09-24: the ids and versions the 2026-09-22
     selection test actually called, temperature 0.0, exclude_and_report. 2026-09-28
-    (D-2026-09-28b): the detox pilot's panel is Grok only (DashScope unreachable)."""
+    the detox pilot's panel is Grok only (DashScope unreachable)."""
     m = load_config("models")
     members = PN.build_members(m)
     assert PN.on_failure_rule(m) == "exclude_and_report"
@@ -77,7 +77,7 @@ def test_tbd_panel_values_refuse_outside_the_dry_run():
 
 
 def test_members_are_shown_exactly_e_prompt_as_one_plain_message():
-    """II.3: the same rubric-free prompt as E, plain prompt, no system, no schema."""
+    """paper Sec. 3: the same rubric-free prompt as E, plain prompt, no system, no schema."""
     m = _filled_models()
     ecfg = judge.build_config(m)
     members = PN.build_members(m)
@@ -263,7 +263,7 @@ def test_panel_keys_are_never_read_in_tests():
 
 
 def test_panel_never_reaches_tau_gate_or_exp1():
-    """App. B.1 (v0.9): the panel may not enter tau, the gate or Exp 1."""
+    """the panel may not enter tau, the gate or Exp 1."""
     files = [
         *sorted((ROOT / "src" / "rafr" / "validity").glob("*.py")),
         *sorted((ROOT / "src" / "rafr" / "channel").glob("*.py")),

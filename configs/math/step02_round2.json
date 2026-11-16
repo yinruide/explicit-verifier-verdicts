@@ -1,0 +1,657 @@
+{
+ "schema": "math-step02-round2-v1",
+ "status": "B segment ready after the precheck (2026-10-11). Ruide 2026-10-11 (A-segment review): judge prompts written; step-side prompts confirmed (repository text); missing verdicts by rule (b) force_remaining; L_gen whole 6144, ThinkPRM 4096, DeepCritic 8192; B from plan 10.12, fixed after the precheck measures it; sdpa, subject to the GPU precheck (batch invariance and padding transparency); stop point A (Ruide 2026-10-11): decoding attention rafr_gqa_decode (sdpa without the repeat_kv copies of the static cache for a one-token query; generative.grouped_decode_attention), speed-tested on one candidate before the prechecks are rerun; PRM800K does not trigger the source rule; Olmo-3.1 does and is excluded; parameter cap 15B removes Gemma 4 31B and GLM-Z1-32B; MATH test overlap checked; step-side truncation = an item whose score holds any forced verdict; the full stage scores D_fit and a stratified pool sample (all E-INCORRECT and 1,000 E-CORRECT), p-weighted.",
+ "basis": "protocol v1.2 M.4, M.4.1, II.10 generative scoring variant, C.28 (two-stage program; Ruide 2026-10-11 decisions), 0.5 step 2; Ruide 2026-10-11 second batch (C.28, M.4 parameter cap)",
+ "run_dir": "runs/math_formal_n9000",
+ "probe_inputs": "data/math/vprobe/probe_inputs.jsonl",
+ "label_purpose": "verifier_selection",
+ "seed_component": "step02_probe",
+ "p": {
+  "n_incorrect": 1116,
+  "n_valid": 8642,
+  "source": "runs/math_formal_n9000/initial_complete.json (step 4)"
+ },
+ "screening": {
+  "split": "d_fit",
+  "per_stratum": 150,
+  "seed_key": "round2_screen",
+  "tau": "II.4.1 F1, strata weighted p and 1 - p, on the 300 (in sample); Ruide 2026-10-11",
+  "order": [
+   "gate joint pass at delta_R 0.10, descending",
+   "phi of errors (weighted), ascending",
+   "both miss on E-INCORRECT, ascending"
+  ],
+  "truncation_max": 0.3,
+  "truncation_reading": "whole-solution judges: unweighted share of the 300 that reached L_gen; step side: unweighted share of the 300 whose score holds any forced verdict (Ruide 2026-10-11, C.28). Over 30% keeps the candidate out of the full stage; by stratum and p-weighted shares reported beside it",
+  "miss_rate_floor": 0.1,
+  "miss_rate_reading": "per V, 1 - TPR on the 150 E-INCORRECT at the screening tau (Ruide 2026-10-11: below 0.10 the V is not paired)",
+  "top_pairs": 4,
+  "selection": "Ruide selects V1, V2 and one backup candidate on this table; the full stage scores only these three and verifies them on the formal C.19 table; if the selected pair fails TPR - r >= 2 delta_R or the Exp 2 floor there, the pair with the backup comes in (C.28, Ruide 2026-10-11, third batch, before the screening table). The first four unblocked pairs are listed for reference only"
+ },
+ "check203": {
+  "n": 203,
+  "seed_key": "round2_check203",
+  "drawn_from": "the 300 screening states (all D_fit), by seed; the reference is their screening scores",
+  "compares": [
+   "generated token ids",
+   "verdict logits at every readout",
+   "error_score"
+  ]
+ },
+ "gate": {
+  "reading": "C.20 (d): recall on D_gate's E-INCORRECT subset",
+  "n_gate": 1500,
+  "pis": [
+   0.0,
+   0.5,
+   1.0
+  ],
+  "deltas": [
+   0.1,
+   0.15
+  ],
+  "reps": 2000
+ },
+ "pod": {
+  "basis": "II.10 formal pod, configs/models.yaml verifiers.formal_pod (env/_formal_pod.check_pod)",
+  "gpu": "A100 SXM 80GB",
+  "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+  "torch": "2.8.0+cu128",
+  "transformers": "5.16.1",
+  "container_disk_gb": 450,
+  "remote_dir_name": "rafr_math_vprobe2",
+  "gpu_memory_gib": 79.2,
+  "fit_margin_gib": 3.0,
+  "price_per_hour_usd": 1.62,
+  "price_note": "2026-09-25 RunPod A100 SXM price; confirm on the deploy page"
+ },
+ "candidates": [
+  {
+   "candidate_id": "thinkprm_14b",
+   "granularity": "step",
+   "params_b": 14.8,
+   "license": {
+    "name": "Apache-2.0",
+    "card_license": "apache-2.0",
+    "file_in_repo": null,
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "qwen2",
+    "layers": 48,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "context": 131072
+   },
+   "download": {
+    "allow_patterns": [
+     "config.json",
+     "generation_config.json",
+     "model.safetensors.index.json",
+     "model-*.safetensors",
+     "special_tokens_map.json",
+     "tokenizer.json",
+     "tokenizer_config.json"
+    ],
+    "weight_bytes": 29540133960
+   },
+   "format_source": "model card launch/ThinkPRM-14B @1d1b415 and github.com/mukhal/thinkprm utils/helper.py (format_verification_cot_for_thinkprm, inference branch). Step verdicts are read in order, the j-th \\boxed{correct|incorrect} being step j's, as the authors' extract_step_labels (utils/answer_utils.py) reads them: the local format check (4-bit ThinkPRM-7B, plan 10.5) wrote '**Verdict:** \\boxed{correct}' or 'The step is \\boxed{correct}' without the step number, not the card's 'Step k is \\boxed{correct}'. '\\boxed{\\text{correct}}' is accepted too (the authors' dataset code normalises it). Scoring tokens 'correct' / 'incorrect' as in prm/thinkprm.py",
+   "spec": {
+    "form": "prm",
+    "vendor": "ThinkPRM authors (University of Michigan, LG AI Research, Mila, UIUC)",
+    "base_model": "DeepSeek-R1-Distill-Qwen-14B (Qwen2.5-14B)",
+    "model_id": "launch/ThinkPRM-14B",
+    "revision": "1d1b415037cccf826fab6cc1b02c1dac199c0c0f",
+    "implementation": "hf_generative_step",
+    "lineage": {
+     "vendors": [
+      "ThinkPRM authors (University of Michigan, LG AI Research, Mila, UIUC)",
+      "DeepSeek",
+      "Alibaba Qwen"
+     ],
+     "bases": [
+      "Qwen2.5"
+     ],
+     "reasoning_data": [
+      "QwQ-32B-Preview (verification chains, PRM800K prefixes)",
+      "DeepSeek-R1 (distillation data of the base)"
+     ]
+    },
+    "settings": {
+     "tokenizer_revision": "1d1b415037cccf826fab6cc1b02c1dac199c0c0f",
+     "model_class": "AutoModelForCausalLM",
+     "prompt_file": "thinkprm_step.txt",
+     "prompt_sha256": "6e854d6d7a530ee09abe7ca79bf5cf3432a20017e407542c39af81b830773b75",
+     "step_format": "Step {k}: {step}",
+     "step_joiner": "\n",
+     "generation_prefix": "\nLet's verify step by step:",
+     "stop_string": "</think>",
+     "eos_token_ids": [
+      151643
+     ],
+     "positive_token": "correct",
+     "negative_token": "incorrect",
+     "verdict_pattern": "\\\\boxed\\{(?:\\\\text\\{)?",
+     "forced_verdict_prefix": "\nStep {k} is \\boxed{",
+     "verdict_close": {
+      "positive": "}",
+      "negative": "}"
+     },
+     "missing_verdicts": "force_remaining",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 32,
+     "max_input_tokens": 1472,
+     "max_new_tokens": 4096,
+     "max_forced_tokens": 640,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "literature_flags": "Literature check 2026-10-11 (plan 10.10): trained on PRM800K problem-solution prefixes; PRM800K's solutions were generated by OpenAI's GPT-4-based generator (Lightman et al. 2023, sec. 2.2) -- the verification chains themselves were written by QwQ-32B-Preview. PRM800K includes 4.5K MATH test problems. Whether OpenAI-generated solutions as training inputs fall under M.4's OpenAI rule is Ruide's call. Ruide 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)",
+   "notes": [
+    "screening (2026-10-12, 300 states, p-weighted, tau in sample): TPR - r 0.128, below 2 delta_R = 0.20 (delta_R 0.10); AUROC 0.571 (runs/math_vprobe2/20261012T044451Z_screen)"
+   ]
+  },
+  {
+   "candidate_id": "deepcritic_7b",
+   "granularity": "step",
+   "params_b": 7.6,
+   "license": {
+    "name": "Apache-2.0",
+    "card_license": "apache-2.0",
+    "file_in_repo": null,
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "qwen2",
+    "layers": 28,
+    "kv_heads": 4,
+    "head_dim": 128,
+    "context": 32768
+   },
+   "download": {
+    "allow_patterns": [
+     "added_tokens.json",
+     "config.json",
+     "generation_config.json",
+     "merges.txt",
+     "model.safetensors.index.json",
+     "model-*.safetensors",
+     "special_tokens_map.json",
+     "tokenizer.json",
+     "tokenizer_config.json",
+     "vocab.json"
+    ],
+    "weight_bytes": 15231271896
+   },
+   "format_source": "the repository's model card is empty; github.com/RUCBM/DeepCritic ProcessBench/code/templates/critique_template_new.txt (prompt, steps 'Step i:' joined by blank lines, as in eval.py and Critique_Generation/process_formatted_sft_data.py) and the judgement line 'The correctness of Step k is: \\boxed{1|-1}' (Critique_Generation prompts and examples). In this tokenizer '{-' is one token: the verdict pair is '{' (1, correct) against '{-' (-1, incorrect) right after '\\boxed'. The local format check (4-bit, plan 10.5) wrote the box as '\\boxed{1}', '\\\\boxed{1}' (two backslashes, as in the repository's example files) and '\\(\\boxed{1}\\)'; the pattern accepts the three",
+   "spec": {
+    "form": "prm",
+    "vendor": "DeepCritic authors (Renmin University of China, Beijing Jiaotong University)",
+    "base_model": "Qwen2.5-7B-Instruct",
+    "model_id": "Keven16/DeepCritic-7B-RL1.5-PRM800K",
+    "revision": "9b9d3a672ad778e2af617c9936eab625d0c59cc9",
+    "implementation": "hf_generative_step",
+    "lineage": {
+     "vendors": [
+      "DeepCritic authors (Renmin University of China, Beijing Jiaotong University)",
+      "Alibaba Qwen"
+     ],
+     "bases": [
+      "Qwen2.5"
+     ],
+     "reasoning_data": [
+      "Qwen2.5-72B-Instruct (critiques for SFT)"
+     ]
+    },
+    "settings": {
+     "tokenizer_revision": "9b9d3a672ad778e2af617c9936eab625d0c59cc9",
+     "model_class": "AutoModelForCausalLM",
+     "prompt_file": "deepcritic_step.txt",
+     "prompt_sha256": "6e01c14e7032baba19de88e6fd8886b61ff2bbd6cd071c8ec995a0fc76abcfce",
+     "step_format": "Step {k}: {step}",
+     "step_joiner": "\n\n",
+     "generation_prefix": "",
+     "stop_string": null,
+     "eos_token_ids": [
+      151645,
+      151643
+     ],
+     "positive_token": "{",
+     "negative_token": "{-",
+     "verdict_pattern": "[Cc]orrectness of [Ss]tep\\s*(\\d+)\\s*is:?\\s*(?:\\\\\\(|\\$)?\\s*\\\\{1,2}boxed",
+     "forced_verdict_prefix": "\n\n**Judgement**: The correctness of Step {k} is: \\boxed",
+     "verdict_close": {
+      "positive": "1}",
+      "negative": "1}"
+     },
+     "missing_verdicts": "force_remaining",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 48,
+     "max_input_tokens": 1600,
+     "max_new_tokens": 8192,
+     "max_forced_tokens": 640,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card metadata), not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "literature_flags": "Literature check 2026-10-11 (plan 10.10): SFT critiques by Qwen2.5-72B-Instruct seeded from PRM800K; RL on 40.7K PRM800K items (the README says RL1.5 reran the same RL data); PRM800K's solutions were generated by OpenAI's GPT-4-based generator. Whether that falls under M.4's OpenAI rule is Ruide's call. Ruide 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)",
+   "not_scored": "Ruide 2026-10-11 pre-decision (precheck failure -> excluded): precheck exit 5 on the GPU (tiny bf16 model: 2 of 4 toy items differ scored alone vs in the batch). The failure came from a precheck defect since fixed (e940515): the tiny L_in equalled its two longest toy inputs (224 tokens), so those rows had no padding and, scored alone among copies, made a batch without any padding, where transformers drops the prefill mask and uses another kernel. Every scored input is shorter than L_in. Not re-tested and not reinstated (Ruide 2026-10-12)"
+  },
+  {
+   "candidate_id": "gemma4_12b",
+   "granularity": "whole",
+   "params_b": 12.0,
+   "license": {
+    "name": "Apache-2.0",
+    "card_license": "apache-2.0",
+    "file_in_repo": null,
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "gemma4_unified",
+    "layers": 48,
+    "kv_heads": 8,
+    "head_dim": 256,
+    "sliding_layers": 40,
+    "sliding_window": 1024,
+    "global_layers": 8,
+    "global_kv_heads": 1,
+    "global_head_dim": 512,
+    "context": 262144
+   },
+   "download": {
+    "allow_patterns": [
+     "chat_template.jinja",
+     "config.json",
+     "generation_config.json",
+     "model.safetensors",
+     "tokenizer.json",
+     "tokenizer_config.json"
+    ],
+    "weight_bytes": 23919549408
+   },
+   "spec": {
+    "form": "llm_judge",
+    "vendor": "Google DeepMind",
+    "base_model": "gemma-4-12B",
+    "model_id": "google/gemma-4-12B-it",
+    "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+    "implementation": "hf_generative_judge",
+    "lineage": {
+     "vendors": [
+      "Google DeepMind"
+     ],
+     "bases": [
+      "Gemma 4"
+     ],
+     "reasoning_data": []
+    },
+    "settings": {
+     "tokenizer_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+     "model_class": "AutoModelForCausalLM",
+     "prompt_file": "gen_judge.txt",
+     "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+     "verdict_prompt_file": "gen_judge_verdict.txt",
+     "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+     "chat_template_kwargs": {
+      "enable_thinking": true
+     },
+     "stop_string": "<channel|>",
+     "eos_token_ids": [
+      1,
+      106,
+      50
+     ],
+     "suppress_token_ids": [
+      258883,
+      258882
+     ],
+     "positive_token": " Yes",
+     "negative_token": " No",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 48,
+     "max_input_tokens": 1472,
+     "max_new_tokens": 6144,
+     "max_forced_tokens": 128,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-08 (round 1, same revision): approved; Apache License 2.0, not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)"
+  },
+  {
+   "candidate_id": "ministral3_14b",
+   "granularity": "whole",
+   "params_b": 14.0,
+   "license": {
+    "name": "Apache-2.0",
+    "card_license": "apache-2.0",
+    "file_in_repo": null,
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "mistral3 (text: ministral3)",
+    "layers": 40,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "context": 262144
+   },
+   "download": {
+    "allow_patterns": [
+     "chat_template.jinja",
+     "config.json",
+     "generation_config.json",
+     "model.safetensors.index.json",
+     "model-*.safetensors",
+     "special_tokens_map.json",
+     "tokenizer.json",
+     "tokenizer_config.json"
+    ],
+    "weight_bytes": 27890141208,
+    "not_downloaded": "consolidated.safetensors (the same weights in Mistral's native format), params.json, tekken.json, processor_config.json, SYSTEM_PROMPT.txt (its text is inside chat_template.jinja)"
+   },
+   "loading_note": "mistral3 is registered under AutoModelForImageTextToText only (transformers 5.16.1); text-only input. The tokenizer needs fix_mistral_regex=True (transformers warns that the saved pre-tokenizer regex is wrong otherwise)",
+   "spec": {
+    "form": "llm_judge",
+    "vendor": "Mistral AI",
+    "base_model": "Ministral-3-14B-Base-2512",
+    "model_id": "mistralai/Ministral-3-14B-Reasoning-2512",
+    "revision": "51f9210f3cd20f3452a80d5819d15dc61cc50630",
+    "implementation": "hf_generative_judge",
+    "lineage": {
+     "vendors": [
+      "Mistral AI"
+     ],
+     "bases": [
+      "Ministral 3"
+     ],
+     "reasoning_data": []
+    },
+    "settings": {
+     "tokenizer_revision": "51f9210f3cd20f3452a80d5819d15dc61cc50630",
+     "model_class": "AutoModelForImageTextToText",
+     "tokenizer_kwargs": {
+      "fix_mistral_regex": true
+     },
+     "prompt_file": "gen_judge.txt",
+     "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+     "verdict_prompt_file": "gen_judge_verdict.txt",
+     "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+     "stop_string": "[/THINK]",
+     "eos_token_ids": [
+      2
+     ],
+     "positive_token": " Yes",
+     "negative_token": " No",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 24,
+     "max_input_tokens": 1472,
+     "max_new_tokens": 6144,
+     "max_forced_tokens": 128,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
+   "batch_note": "B 32 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: peak reserved 76.30 GiB + 3 GiB margin > 79.25 GiB, exit 13); 24 is the next value of the plan 10.8 grid, per Ruide 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 24"
+  },
+  {
+   "candidate_id": "glmz1_9b",
+   "granularity": "whole",
+   "params_b": 9.4,
+   "license": {
+    "name": "MIT",
+    "card_license": "mit",
+    "file_in_repo": "LICENSE",
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "glm4",
+    "layers": 40,
+    "kv_heads": 2,
+    "head_dim": 128,
+    "context": 32768
+   },
+   "download": {
+    "allow_patterns": [
+     "LICENSE",
+     "chat_template.jinja",
+     "config.json",
+     "generation_config.json",
+     "model.safetensors.index.json",
+     "model-*.safetensors",
+     "special_tokens_map.json",
+     "tokenizer.json",
+     "tokenizer_config.json"
+    ],
+    "weight_bytes": 18800618456
+   },
+   "spec": {
+    "form": "llm_judge",
+    "vendor": "Zhipu AI (Z.ai)",
+    "base_model": "GLM-4-9B-0414",
+    "model_id": "zai-org/GLM-Z1-9B-0414",
+    "revision": "b221b06fefb23ca320922cf6e68ab5f2fb82de81",
+    "implementation": "hf_generative_judge",
+    "lineage": {
+     "vendors": [
+      "Zhipu AI (Z.ai)"
+     ],
+     "bases": [
+      "GLM-4-0414"
+     ],
+     "reasoning_data": []
+    },
+    "settings": {
+     "tokenizer_revision": "b221b06fefb23ca320922cf6e68ab5f2fb82de81",
+     "model_class": "AutoModelForCausalLM",
+     "prompt_file": "gen_judge.txt",
+     "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+     "verdict_prompt_file": "gen_judge_verdict.txt",
+     "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+     "stop_string": "</think>",
+     "eos_token_ids": [
+      151329,
+      151336,
+      151338
+     ],
+     "positive_token": " Yes",
+     "negative_token": " No",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 48,
+     "max_input_tokens": 1408,
+     "max_new_tokens": 6144,
+     "max_forced_tokens": 128,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; MIT License (LICENSE in the repository), not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)"
+  },
+  {
+   "candidate_id": "r1_llama_8b",
+   "granularity": "whole",
+   "params_b": 8.0,
+   "license": {
+    "name": "MIT; derived from Llama-3.1-8B-Base and also subject to the Llama 3.1 Community License",
+    "card_license": "mit",
+    "file_in_repo": "LICENSE",
+    "gated": false
+   },
+   "architecture": {
+    "model_type": "llama",
+    "layers": 32,
+    "kv_heads": 8,
+    "head_dim": 128,
+    "context": 131072
+   },
+   "download": {
+    "allow_patterns": [
+     "LICENSE",
+     "config.json",
+     "generation_config.json",
+     "model.safetensors.index.json",
+     "model-*.safetensors",
+     "tokenizer.json",
+     "tokenizer_config.json"
+    ],
+    "weight_bytes": 16060556354
+   },
+   "spec": {
+    "form": "llm_judge",
+    "vendor": "DeepSeek",
+    "base_model": "Llama-3.1-8B",
+    "model_id": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+    "revision": "6a6f4aa4197940add57724a7707d069478df56b1",
+    "implementation": "hf_generative_judge",
+    "lineage": {
+     "vendors": [
+      "DeepSeek",
+      "Meta"
+     ],
+     "bases": [
+      "Llama 3.1"
+     ],
+     "reasoning_data": [
+      "DeepSeek-R1 (800k curated samples)"
+     ]
+    },
+    "settings": {
+     "tokenizer_revision": "6a6f4aa4197940add57724a7707d069478df56b1",
+     "model_class": "AutoModelForCausalLM",
+     "prompt_file": "gen_judge.txt",
+     "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+     "verdict_prompt_file": "gen_judge_verdict.txt",
+     "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+     "stop_string": "</think>",
+     "eos_token_ids": [
+      128001
+     ],
+     "positive_token": " Yes",
+     "negative_token": " No",
+     "dtype": "bfloat16",
+     "attn_implementation": "rafr_gqa_decode",
+     "batch_size": 32,
+     "max_input_tokens": 1344,
+     "max_new_tokens": 6144,
+     "max_forced_tokens": 128,
+     "device_map": "auto",
+     "local_files_only": true,
+     "license_reviewed": true,
+     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; MIT License (LICENSE in the repository); the model is derived from Llama-3.1-8B-Base and is also subject to the Llama 3.1 Community License; not a gated repository",
+     "trust_remote_code": false
+    }
+   },
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
+   "batch_note": "B 48 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: CUDA out of memory in the prefill of the full-size run, 78.37 GiB in use, 13.73 GiB of it reserved but unallocated); 32 is the next value of the plan 10.8 grid, per Ruide 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 32",
+   "notes": [
+    "preflight (B segment 2026-10-11, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (Ruide 2026-10-11 pre-decision; 2026-10-12: handled as round 1's ds_llm_chat); error score right / wrong: 2 + 3 = 0.0000440 / 0.0001398, 7 x 8 = 0.0001795 / 0.0001795 (equal, so not higher); all four toy items scored near zero. Recorded beside its discrimination on the 300 screening states (p-weighted, tau in sample; runs/math_vprobe2/20261012T044451Z_screen): AUROC 0.778, TPR 0.587, FPR 0.147, TPR - r 0.383, miss rate 0.413"
+   ],
+   "accepted_preflight_failures": {
+    "direction": "Ruide 2026-10-11 (direction failure: still scored, recorded) and 2026-10-12 (V2; handled as round 1's ds_llm_chat)"
+   }
+  }
+ ],
+ "overlap_sets": [
+  {
+   "name": "math_test",
+   "repo_id": "EleutherAI/hendrycks_math",
+   "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+   "license": "mit",
+   "field": "problem",
+   "files": [
+    "algebra/test-00000-of-00001.parquet",
+    "counting_and_probability/test-00000-of-00001.parquet",
+    "geometry/test-00000-of-00001.parquet",
+    "intermediate_algebra/test-00000-of-00001.parquet",
+    "number_theory/test-00000-of-00001.parquet",
+    "prealgebra/test-00000-of-00001.parquet",
+    "precalculus/test-00000-of-00001.parquet"
+   ],
+   "why": "PRM800K (ThinkPRM, DeepCritic) holds 4.5K MATH test problems (Ruide 2026-10-11)"
+  }
+ ],
+ "excluded_candidates": [
+  {
+   "candidate_id": "gemma4_31b",
+   "model_id": "google/gemma-4-31B-it",
+   "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
+   "params_b": 31.3,
+   "reason": "Ruide 2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (31.3B)"
+  },
+  {
+   "candidate_id": "olmo31_32b",
+   "model_id": "allenai/Olmo-3.1-32B-Think",
+   "revision": "832c3f543499af8fe68b88359501de9cb7840544",
+   "params_b": 32.2,
+   "reason": "Ruide 2026-10-11: the source rule (M.4, C.28 hard constraint 2) -- the Olmo 3 report documents reasoning traces generated by GPT-4.1 and o4-mini in the base's midtraining; excluded. (It is also above the 15B cap.) The rule can only be applied to what model builders disclose (C.28 limitation)"
+  },
+  {
+   "candidate_id": "glmz1_32b",
+   "model_id": "zai-org/GLM-Z1-32B-0414",
+   "revision": "8eb2858992c1f749e2a6d4075455decc2484722d",
+   "params_b": 32.6,
+   "reason": "Ruide 2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (32.6B)"
+  }
+ ],
+ "full_stage": {
+  "d_fit": "all 1,500 D_fit states; the 300 screening rows are reused once the 203-state check passes",
+  "pool_sample": {
+   "incorrect": "all",
+   "correct": 1000,
+   "seed_key": "round2_pool_sample"
+  },
+  "weights": "pool metrics with the strata weighted p and 1 - p (as in the screening); tau on D_fit (all 1,500, Core fit_tau)",
+  "decided": "Ruide 2026-10-11 (C.28)",
+  "n_states": 2424,
+  "inputs": "data/math/vprobe2/full_inputs.jsonl sha256 9d02cbabb72309f0e4d75608bad6bca766d7738ef034a912740b4228387fa040: 1,200 D_fit + 224 pool E-INCORRECT + 1,000 pool E-CORRECT"
+ },
+ "overlap_note": "round 2 checks math_test here and reuses round 1's math_train and gsm8k_train (configs/math/step02_vprobe.json); data/math/vprobe2/overlap.json holds all three and their union, which the full stage's excl-overlap column drops",
+ "stop_point_b": {
+  "decided": "Ruide 2026-10-12, stop point B, on runs/math_vprobe2/20261012T044451Z_screen (report.md sha256 a8880bc3fc01834683e315174e33f863de9959d5c5e17dea0d82fbf0ef7afa04)",
+  "v1": "glmz1_9b",
+  "v2": "r1_llama_8b",
+  "backup": null,
+  "full_stage_members": [
+   "glmz1_9b",
+   "r1_llama_8b"
+  ],
+  "delta_r": 0.1,
+  "verification": "formal C.19 table of the full stage; delta_R 0.10: each V needs TPR - r >= 0.20 and the Exp 2 floor (miss rate >= 0.10 on the pool's E-INCORRECT); otherwise stop and report, Ruide decides (no backup)",
+  "full_stage_result": {
+   "run": "runs/math_vprobe2/20261012T181148Z_full",
+   "report_sha256": "3b5a807a8f2c6753ca1e9b8fc43524a9f13666fea8c250e8427fc3732291118b",
+   "metrics_sha256": "2f08d3e9db36db9bc4bf26f14f3bda8d2423d51b489cf32f9f18b83ec9c51a35",
+   "verification": "passed (delta_R 0.10): TPR - r 0.274 / 0.345, miss rate 0.638 / 0.451; gate joint pass 0.778 / 0.065 at delta_R 0.10 / 0.15",
+   "tables_sha256": {
+    "glmz1_9b": "4d87d77b4d30197978f79484f99e1c190bf86cbb15d2d6170ea095464261715f",
+    "r1_llama_8b": "b25a0bb2730a3f8c6133c115e4150c5a6dad1f45b99126ace4aeda339ed45ba9"
+   }
+  }
+ }
+}

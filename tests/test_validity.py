@@ -63,7 +63,7 @@ def test_tau_plateau_midpoint():
 
 
 def test_tau_is_chosen_by_f1_and_f2_is_only_reported():
-    """v0.9 (II.4.1, C.17): F1 decides, F2 is an auxiliary. On this data the two disagree:
+    """(paper Sec. 5): F1 decides, F2 is an auxiliary. On this data the two disagree:
     F2 peaks at the lowest threshold (0.1, recall 1), F1 at 0.45."""
     s = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
     y = [1, 0, 0, 0, 1, 0, 1, 1]
@@ -128,7 +128,7 @@ def test_gate_attempts_bookkeeping(tmp_path: Path):
         G.record_attempt(path, fail, Split.D_GATE_RESERVE)
     G.record_attempt(path, fail, Split.D_GATE)
     assert G.next_attempt_split(path) is Split.D_GATE_RESERVE
-    with pytest.raises(G.GateError):  # same D_gate data may not be reused (II.6.1)
+    with pytest.raises(G.GateError):  # same D_gate data may not be reused (paper Sec. 4.3)
         G.record_attempt(path, ok, Split.D_GATE)
     G.record_attempt(path, fail, Split.D_GATE_RESERVE)
     with pytest.raises(G.GateError):  # max 2 attempts
@@ -139,7 +139,7 @@ def test_gate_attempts_bookkeeping(tmp_path: Path):
 
 
 def test_paired_correctness_correlation_is_phi_over_the_same_states():
-    """III.1.3 / App. D: per verifier and pair of levels, phi of the two correctness vectors
+    """paper App. B: per verifier and pair of levels, phi of the two correctness vectors
     over the same E-UNSAFE states, with the 2x2 counts; None where a vector is constant."""
     low = [1, 1, 1, 0, 0, 1]
     mid = [1, 1, 0, 0, 0, 1]
@@ -191,7 +191,7 @@ def test_cue_diagnostics_five_items():
     assert rep.auroc_margin_to_correct["v1"] > 0.5
 
 
-# ---- gate metric (d): R on the E-UNSAFE states (decisions.md D-2026-09-24 section 1) --------
+# gate metric (d): R on the E-UNSAFE states (section 1) --------
 
 
 def test_detection_vectors_keep_only_e_unsafe_states_in_split_order():
@@ -237,7 +237,7 @@ def test_ladder_ci_on_the_subset_resamples_only_its_states():
 
 
 def test_exact_resampling_floor_matches_the_sampler():
-    """r_i = P_{s~q_i}(s >= tau_i) (task 2026-09-24 section 2) is computed exactly from the pool
+    """r_i = P_{s~q_i}(s >= tau_i) is computed exactly from the pool
     scores; it matches the channel's own inverse-CDF sampler."""
     from rafr.channel.margin_fit import fit_margin_model
 

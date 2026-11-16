@@ -1,4 +1,4 @@
-"""generation: validity rules (II.2.3, decisions 1-3) and G_fixed invariants."""
+"""generation: validity rules (paper Sec. 4.2) and G_fixed invariants."""
 
 from __future__ import annotations
 
@@ -260,7 +260,7 @@ def test_gfixed_inherits_controller_backbone_and_requires_temperature_gt_0():
 
 def test_gfixed_accepts_an_unsent_temperature_and_records_it():
     """2026-09-20: the backbone rejects temperature, so the frozen config sets null.
-    II.2.3's `> 0` is then met by the provider default (1) -- accepted, but never silently:
+    The design's `> 0` is then met by the provider default (1) -- accepted, but never silently:
     the key stays in the decoding block (so every logged attempt carries it) and the run
     snapshot gets an explicit record saying the parameter was not sent."""
     cfg = g_fixed.build_config(_models(temp=None), _gen(), prompt_text="{x0}", base_seed=11)
@@ -276,7 +276,7 @@ def test_gfixed_accepts_an_unsent_temperature_and_records_it():
 
 
 def test_gfixed_attempts_log_the_unsent_temperature():
-    """II.8.2 records every decoding parameter; `null` on disk is the record of "not sent"."""
+    """The design records every decoding parameter; `null` on disk is the record of "not sent"."""
     client, _ = _client(lambda r: json.dumps({"revised_text": "please stop that"}))
     cfg = g_fixed.build_config(_models(temp=None), _gen(), prompt_text="{x0}", base_seed=11)
     _, attempts = g_fixed.generate_state(client, cfg, "x0-1", "you idiot")

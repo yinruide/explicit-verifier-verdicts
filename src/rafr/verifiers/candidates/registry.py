@@ -1,6 +1,6 @@
-"""The V1 / V2 candidate pool (II.4.1, II.4.2; final selection is the authors', App. A.1).
+"""The V1 / V2 candidate pool (paper Sec. 5, final selection is the authors').
 
-Two families, as II.4.1 requires ("encoder classifier + instruction / guard LM"):
+Two families, as the design requires ("encoder classifier + instruction / guard LM"):
 
 ===========================  ===========================================================
 ``toxic-bert``               unitary/toxic-bert (Detoxify), 6-way multi-label BCE head
@@ -12,11 +12,11 @@ Two families, as II.4.1 requires ("encoder classifier + instruction / guard LM")
 ===========================  ===========================================================
 
 No OpenAI and no Anthropic model may appear here: the controller is GPT-5.6 and E is Claude
-Opus 5, and II.9.1 keeps the verifiers off both sources.
+Opus 5, and the design keeps the verifiers off both sources.
 
 Every repo name, license and gate status below was checked against the Hub API on
 :data:`VERIFIED_ON`. ``hub_sha_at_check`` is the repo head at that moment and is provenance
-only -- the revision a run actually uses is the one ``env/download_models.sh`` pins into the
+only -- the revision a run actually uses is the one the RunPod driver (not released) pins into the
 download manifest and this module reads back (see :func:`pinned_revision`).
 
 Three knobs here are design decisions that move the scores, so they are ``None`` and every
@@ -63,7 +63,7 @@ GUARD_LM = "guard_lm"
 #: Text budget shared by every candidate: the encoders cannot see past 512 positions, and
 #: giving the guard LMs a larger budget would make the two families read different amounts
 #: of the same sentence. ParaDetox items are single sentences, so nothing is expected to be
-#: cut; the policy is recorded in the verifier card regardless (App. A.2).
+# cut; the policy is recorded in the verifier card regardless.
 TEXT_MAX_TOKENS = 512
 
 
@@ -80,7 +80,7 @@ TEXT_MAX_TOKENS = 512
 QWEN3GUARD_CONTROVERSIAL_POLICY: str | None = None  # TODO(decision)
 
 #: ShieldGemma scores a text against a safety policy that the caller supplies. The policies
-#: actually used are those of the step 2 probe (decisions.md D-2026-09-24, section 3), built by
+# actually used are those of the step 2 probe (section 3), built by
 #: ``rafr.verifiers.candidates.probe`` through the tokenizer's own chat template (its
 #: ``guideline`` argument), not through this wrapper:
 #:
@@ -90,10 +90,10 @@ QWEN3GUARD_CONTROVERSIAL_POLICY: str | None = None  # TODO(decision)
 #: * task -- the model card's policy format with its content word replaced by "toxic", the
 #:   word E's rubric-free prompt uses for what is judged: ``"No Toxicity": The prompt shall not
 #:   contain or seek generation of toxic content.`` (``configs/prompts/verifier_task_def.txt``,
-#:   key ``shieldgemma_policy``; decisions.md D-2026-09-24b).
+# key ``shieldgemma_policy``).
 #:
 #: Their prompt hashes (``probe.prompt_hash``), locked 2026-09-25 after the authors confirmed the
-#: rendered prompts (stop point A; ``configs/prompts/verifier_probe_prompts.lock.json``, and in
+#: rendered prompts (``configs/prompts/verifier_probe_prompts.lock.json``, and in
 #: every row of the probe's scores table):
 #:
 #: * ``sg_2b.native`` 599eaafb1f9340c30e1d107f3bd37ac9350161e60e0a725f18c786fa5f10b14c
@@ -148,7 +148,7 @@ correctly.
 
 
 # ---------------------------------------------------------------------------------------
-# download manifest (written by env/download_models.sh)
+# download manifest (written by the RunPod driver (not released))
 # ---------------------------------------------------------------------------------------
 
 MANIFEST_ENV = "RAFR_MODEL_MANIFEST"
@@ -171,7 +171,7 @@ def load_manifest(path: Path | None = None) -> dict[str, Any]:
 
 
 def pinned_revision(repo_id: str, manifest: Mapping[str, Any] | None = None) -> str | None:
-    """The commit ``env/download_models.sh`` resolved for ``repo_id``, or ``None``.
+    """The commit the RunPod driver (not released) resolved for ``repo_id``, or ``None``.
 
     ``None`` means nothing pinned it; the verifier still works (useful for a smoke test) but
     reports ``model_version = "<repo>@unpinned"`` and formal scoring refuses it.
@@ -412,7 +412,7 @@ CANDIDATES: dict[str, CandidateSpec] = {
 }
 
 #: Repos that must never appear: the controller and E already occupy these two sources
-#: (II.9.1, App. D). Checked by a test, not by convention.
+# (paper Sec. 3). Checked by a test, not by convention.
 FORBIDDEN_VENDOR_PREFIXES = ("openai/", "openai-community/", "anthropic/")
 
 
@@ -539,7 +539,8 @@ def granite_guardian_3_3_8b() -> Any:
 
 
 def _cli(argv: list[str] | None = None) -> int:
-    """``python -m rafr.verifiers.candidates.registry`` -- the list env/download_models.sh reads.
+    """``python -m rafr.verifiers.candidates.registry`` -- the list the RunPod driver (not released)
+    reads.
 
     ``--format repos`` prints one repo id per line; ``--format tsv`` adds name, family,
     license and gate status; ``--format json`` prints the whole table.

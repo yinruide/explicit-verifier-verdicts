@@ -54,11 +54,13 @@ gpu = [
 semantic = [
   "sentence-transformers==6.1.0",
   "sacrebleu==2.6.0",
+  "scipy==1.17.1",
 ]
 dev = [
   "pytest==9.1.1",
   "ruff==0.16.8",
   "matplotlib==3.11.2",
+  "scipy==1.17.1",
 ]
 
 [tool.setuptools.packages.find]
@@ -79,7 +81,7 @@ filterwarnings = ["error::DeprecationWarning:rafr.*"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests", "pipelines", "analysis"]
+src = ["src", "tests", "pipelines", "analysis", "scripts", "scripts/gpu"]
 extend-exclude = ["data", "runs", "frozen", "*.md"]
 
 [tool.ruff.lint]
@@ -93,6 +95,7 @@ ignore = [
 "tests/**" = ["S", "T20", "N812"]
 "pipelines/**" = ["T20", "N812"]
 "analysis/**" = ["T20", "N812"]
+"scripts/**" = ["T20", "N812", "E402"]
 # The command-line entry points under src/ print their progress on purpose.
 "src/rafr/verifiers/batch_score.py" = ["T20"]
 "src/rafr/verifiers/cards/generate.py" = ["T20"]

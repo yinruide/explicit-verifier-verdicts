@@ -1,4 +1,4 @@
-"""LLM-judge and ORM backends (M.4) at injected tokenizer / model / torch boundaries.
+"""LLM-judge and ORM backends (paper Sec. 5) at injected tokenizer / model / torch boundaries.
 
 No checkpoint is downloaded. The fakes stand in for any Hugging Face model: nothing in
 the adapters may depend on which one. ``test_math_hf_stub_weights.py`` runs the real

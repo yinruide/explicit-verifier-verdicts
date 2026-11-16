@@ -81,7 +81,7 @@ def _finite_json(value):
 
 
 def cue_diagnostics(scores, labels, taus, *, high_margin_quantile=0.75) -> dict:
-    """M.6: adapt math's 1=INCORRECT labels to the unmodified Core five-cue table.
+    """paper Sec. 4.3: adapt math's 1=INCORRECT labels to the unmodified Core five-cue table.
 
     Both populations are reported before effects: INCORRECT states are primary,
     and the whole split is secondary. Missing scores remain in coverage counts.
@@ -325,7 +325,7 @@ def channel_diagnostics(channel: DegradeChannel, scores, labels, ids, delta_r) -
         for level in LADDER
     }
     # Reuse the Core step-8 reachability calculation, including its whole-split
-    # accuracy/BA baseline, fully resampled floor and span (II.5.2).
+    # accuracy/BA baseline, fully resampled floor and span (paper Sec. 4.3).
     core_reach = reachability(
         channel.q,
         [SimpleNamespace(state_id=qid) for qid in ids],
@@ -826,7 +826,7 @@ def _outcome_core_rows(exp1_rows, trajectories):
                     "parse_fail": row["parse_fail"],
                     "s1": scores[0],
                     "s2": scores[1],
-                    # M.8's Exp2 channel is identity.
+                    # The design's Exp2 channel is identity.
                     "s1_tilde": scores[0],
                     "s2_tilde": scores[1],
                     "tau1": taus[0],
@@ -849,7 +849,7 @@ def _status_coverage(rows):
 
 
 def protocol_outcome_diagnostics(exp1_rows, trajectories, gate_r, *, n_boot=10_000, seed=0):
-    """II.6.3 / II.10 / III.3 tables via the existing Core analysis algorithms.
+    """paper App. C.1, D.1 / paper Sec. 6.2 tables via the existing Core analysis algorithms.
 
     This reporting adapter never deletes a condition, changes a gate verdict or
     invents a drift threshold. UNRESOLVED is task failure; evaluator errors stay
@@ -925,8 +925,9 @@ def _exp1_outcome(first, gate_r, *, n_boot, seed) -> dict:
 
 
 def exp1_outcome_diagnostics(exp1_rows, gate_r, *, n_boot=10_000, seed=0):
-    """The Exp 1 part of :func:`protocol_outcome_diagnostics` (II.6.3 drift against the gate,
-    III.3 error boundary, result shape), for Exp 1's report before Exp 2 exists; the same
+    """The Exp 1 part of :func:`protocol_outcome_diagnostics` (paper App. C.1, D.1 drift against the
+    gate, paper Sec. 6.2 error boundary, result shape), for Exp 1's report before Exp 2 exists; the
+    same
     algorithms and the same seed, so the numbers equal the full report's."""
     first, _, _ = _outcome_core_rows(exp1_rows, [])
     out = _exp1_outcome(first, gate_r, n_boot=n_boot, seed=seed)

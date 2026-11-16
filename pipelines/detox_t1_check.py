@@ -1,6 +1,6 @@
 """Read-only: detox Exp 2 round-1 in-process scores vs step 6 D_Exp1 scores, bit for bit.
 
-Stop point A of the post-pilot extension (2026-10-31); the result is in docs/progress.md.
+A check of the post-pilot extension (2026-10-31); the result is in
 Usage: ``python pipelines/detox_t1_check.py <repo>``.
 """
 

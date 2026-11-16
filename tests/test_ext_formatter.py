@@ -3,7 +3,7 @@ wording. Verdict-only = B's block with the two distance lines and the two distan
 deleted, nothing else; B + pi-hat starts with B byte for byte; the mismatch arm swaps pi-hat only;
 pi-hat with 5 significant digits; the forbidden words hold everywhere except "probability" in the
 pi-hat block; the No Verifier prompts have no checker part. The wording is final (the authors
-2026-10-31, reply to stop point C)."""
+2026-10-31)."""
 
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ OBS = [_obs(), _obs(0.7, 0.7), _obs(0.2, 0.9), _obs(0.1, 0.1), _obs(0.5, 0.6)]
 
 
 def test_verdict_only_template_is_b_block_minus_distance_lines_and_sentences():
-    """Every other character of B's derived block is kept (2026-10-31, decision 2)."""
+    """Every other character of B's derived block is kept (2026-10-31)."""
     expected = tpl.DERIVED_BLOCK
     for part in DISTANCE_LINES + DISTANCE_SENTENCES:
         assert expected.count(part) == 1, part
@@ -93,7 +93,7 @@ def test_b_pihat_starts_with_b_byte_for_byte(obs):
     b = format_observation(Arm.B, obs)
     assert text.encode("utf-8").startswith(b.encode("utf-8"))
     assert text == b + tpl.B_SEPARATOR + render_pihat(w.pihat_template, p)
-    assert "0.12346" in text and "0.000012346" in text  # 5 significant digits (C.23)
+    assert "0.12346" in text and "0.000012346" in text  # 5 significant digits
 
 
 def test_mismatch_shows_the_donor_pihat_and_nothing_else_of_the_donor():
@@ -201,7 +201,7 @@ NO_VERIFIER_SYSTEM_DELETIONS = (
 
 
 def test_the_wording_is_final():
-    """2026-10-31 (reply to stop point C): the pi-hat block verbatim, the No Verifier
+    """2026-10-31 (): the pi-hat block verbatim, the No Verifier
     prompts as drafted with the placeholder line removed; no placeholder is left."""
     for p in (DETOX_PIHAT_PATH, NO_VERIFIER_SYSTEM, NO_VERIFIER_REWRITE, DETOX_VERDICT_ONLY_PATH):
         assert not file_has_placeholder(p), p

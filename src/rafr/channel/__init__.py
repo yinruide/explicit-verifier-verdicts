@@ -1,9 +1,9 @@
-"""Evidence-degradation channel C_lambda (II.5) and its interception point (II.10).
+"""Evidence-degradation channel C_lambda (paper Sec. 4.3) and its interception point.
 
 A channel is a pure function ``(state_id, s1, s2, lam) -> (s1_tilde, s2_tilde)``. Its
-signature is the enforcement of II.5.2: it receives the two verifier scores and the
+signature is the enforcement of paper Sec. 4.3: it receives the two verifier scores and the
 ``(state_id, lambda)`` randomness key, and nothing else — no y*, no c_t, no E, no arm.
-Randomness keyed by ``(state_id, lambda)`` also guarantees II.5.1: every arm sees the same
+Randomness keyed by ``(state_id, lambda)`` also guarantees paper Sec. 4.3: every arm sees the same
 perturbed scores for the same state and lambda.
 
 This package must never import ``rafr.annotation``, ``rafr.data.labels`` or
@@ -23,11 +23,11 @@ NO_PERTURBATION: dict[str, Any] = {
     "replacement_s1": None,
     "replacement_s2": None,
 }
-"""What a channel without perturbation reports (II.10 log fields)."""
+"""What a channel without perturbation reports (log fields)."""
 
 
 def channel_assignment(channel: object, state_id: str, lam: Lambda) -> dict[str, Any]:
-    """II.10: which verifier was perturbed, the derived z mode, and the replacement scores.
+    """which verifier was perturbed, the derived z mode, and the replacement scores.
 
     A channel may expose ``assignment(state_id, lam)``; one that does not (identity, test
     doubles) perturbs nothing.
@@ -44,11 +44,11 @@ class Channel(Protocol):
 
 
 class ObservationBuilder:
-    """The interception point: raw scores -> channel -> Observation (II.1.2, II.10).
+    """The interception point: raw scores -> channel -> Observation (paper Sec. 3).
 
     Results are memoized by ``(state_id, lam)`` so that the three arms of Exp 1 receive the
-    identical ``(s1_tilde, s2_tilde)`` (II.5.1) and so that the pair is computed exactly once
-    per state and level.
+    identical ``(s1_tilde, s2_tilde)`` (paper Sec. 4.3) and so that the pair is computed exactly
+    once per state and level.
     """
 
     def __init__(self, channel: Channel, tau1: float, tau2: float, v1_id: str, v2_id: str) -> None:

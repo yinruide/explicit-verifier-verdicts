@@ -70,7 +70,7 @@ def test_stability_balanced_core_sample_math_labels_and_public_only_requests(tmp
     assert report["stability_status"] == "COMPLETE"
     sample = read_json(h.root / "verifier_diagnostics/sample.json")
     assert Counter(row["e_label"] for row in sample) == {"INCORRECT": 3, "CORRECT": 3}
-    # M.4 (2026-10-13): the stability sample comes from D_fit alone
+    # paper Sec. 5 (2026-10-13): the stability sample comes from D_fit alone
     assert {row["split"] for row in sample} == {"d_fit"}
     requests = h.provider.calls[calls:]
     assert len(requests) == 6

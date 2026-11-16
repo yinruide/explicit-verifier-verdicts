@@ -1,4 +1,4 @@
-"""Appendix M compatibility must preserve Core access gates and detox outcomes."""
+"""paper Sec. 5, App. D compatibility must preserve Core access gates and detox outcomes."""
 
 from __future__ import annotations
 
@@ -178,7 +178,7 @@ def test_empty_and_refusal_use_existing_four_parse_categories(text, error, refus
 
 
 def test_parse_layer_does_not_read_the_provider_error_field():
-    """M.8 (2026-10-03): network errors raise in the client; parse judges content only."""
+    """paper App. E (2026-10-03): network errors raise in the client; parse judges content only."""
     response = _controller_response('{"action":"accept","revised_text":""}', error="provider")
     parsed = parse_attempt(response, "candidate", [])
     assert parsed.ok and parsed.action is Action.ACCEPT and parsed.fail_reason is None

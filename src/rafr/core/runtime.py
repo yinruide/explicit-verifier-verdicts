@@ -44,7 +44,7 @@ PRICES: dict[str, Prices] = {
     # Anthropic list price, checked 2026-09-20: $5 / $25 per MTok, cache write 1.25x
     # (5-minute TTL), cache read 0.1x.
     "claude-opus-5": Prices(input_=5.00, output=25.00, cache_write=6.25, cache_read=0.50),
-    # OpenAI list price, developers.openai.com/docs/pricing, checked 2026-09-20: standard
+    # OpenAI list price, developers.openai.com/, checked 2026-09-20: standard
     # tier, SHORT context ($2 / $12; the long-context column is $4 / $18, and a G_fixed or
     # controller request is a couple of hundred tokens, nowhere near that tier).
     # cache_read / cache_write are carried for completeness: OpenAI's automatic caching needs
@@ -52,7 +52,7 @@ PRICES: dict[str, Prices] = {
     # not report cached tokens separately anyway — so every input token is priced at the full
     # rate here. That errs high, which is the right direction for a ceiling.
     "gpt-5.6-terra": Prices(input_=2.00, output=12.00, cache_write=2.50, cache_read=0.20),
-    # The two panel models (II.3), as the annotator-selection config recorded them on
+    # The two panel models (paper Sec. 3), as the annotator-selection config recorded them on
     # 2026-09-22 (docs.x.ai pricing; Alibaba Model Studio, Beijing region converted at
     # Alibaba's own rate). Neither provider bills a cache write; cache_write = input.
     "grok-4.6": Prices(input_=2.00, output=6.00, cache_write=2.00, cache_read=0.50),
@@ -223,7 +223,7 @@ def build_pod_client(
     cache_dir: paths.Path,
     providers: Mapping[str, Provider] | None = None,
 ) -> LLMClient:
-    """The controller's client on the rented pod (Exp 2's loop, task 2026-09-24 section 5).
+    """The controller's client on the rented pod (Exp 2's loop).
 
     OpenAI only: the loop needs no Anthropic, xAI or Qwen key (E and the panel run on the
     laptop afterwards). The key is the pod's ``OPENAI_API_KEY`` environment variable, which
@@ -267,8 +267,8 @@ def build_panel_client(
     providers: Mapping[str, Provider] | None = None,
     cache_dir: paths.Path | None = None,
 ) -> LLMClient:
-    """The panel's client (II.3): xAI and DashScope only, built for the members configured in
-    ``models.panel.members``. ``fake=True`` registers the fake provider under both names.
+    """The panel's client (paper Sec. 3): xAI and DashScope only, built for the members configured
+    in ``models.panel.members``. ``fake=True`` registers the fake provider under both names.
     ``cache_dir`` replaces the shared ``data/cache`` (a smoke keeps its own, 2026-10-31)."""
     provs: dict[str, Provider]
     wanted = {

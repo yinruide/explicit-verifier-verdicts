@@ -2,12 +2,21 @@
 
 Code for the paper. Paper: `ARXIV_LINK_TBD`. Data: `DATA_DOWNLOAD_URL_TBD`.
 
-> **Content warning.** The detoxification data (ParaDetox source sentences and the model's rewrites
-> of them, inside the released run records) contain offensive and toxic language.
+> **Content warning.** The detoxification data (ParaDetox source sentences, the model's rewrites
+> of them and the evaluator's reasons, inside the released run records) contain offensive and
+> toxic language.
 
 ## Abstract
 
 LLM agents in generate-check-revise loops accept or revise their outputs based on reports from imperfect automated verifiers, yet how those reports are shown to the agent is usually an ad hoc choice. We show that this choice changes an agent's accept/rewrite decisions and the final outcome of the loop when the evidence is identical. Holding first attempts and verifier scores fixed, we vary only the presentation (no verifier output, raw scores and thresholds, or explicit verdicts, margins and cross-verifier agreement), cross it with a hidden degradation of the scores, and run the full revision loop in text detoxification and mathematical problem solving. In mathematics, explicit fields lowered false accepts by 10.7 points on intact scores and by 1.3 points once every score had been replaced; stating each verdict accounted for most of the gain without raising false rejects, and lowered terminal failure by 3.7 points. In detoxification, where the agent already used raw scores as well as the best fixed rule, showing verifier output lowered terminal failure from 0.70 to 0.47 and explicit fields changed single decisions by at most 3 points. The design separates presentation from evidence quality and single decisions from final outputs, and applies to other agents and verifiers.
+
+## Licences
+
+* Code (this repository): **Apache-2.0** (`LICENSE`).
+* Data (the released run records): **CC BY-NC-SA 4.0**, non-commercial research use only. The data
+  archive carries `LICENSE` (the licence text) and `DATA_LICENSE.md`, which lists every upstream
+  source (datasets, verifier models, API providers), its terms and links; users of the data must
+  also comply with all of those upstream terms.
 
 ## Repository layout
 
@@ -16,11 +25,12 @@ LLM agents in generate-check-revise loops accept or revise their outputs based o
 | `src/rafr/` | Python package (`rafr`): channel, formatter (representations A1, B, Verdict-only, B + pi-hat, No-Verifier), controller, evaluators, verifiers, calibration, logging |
 | `pipelines/` | Experiment pipeline: state construction, thresholds, degradation channel, manipulation check, Experiments 1 and 2, the extensions, and the mathematics pipeline |
 | `analysis/` | Analysis behind every table and figure; `analysis/reproduce.py` drives the reproduction |
+| `scripts/gpu/` | GPU-side workers of the mathematics stages (verifier scoring, Experiment 2 loops); see [GPU workers](#gpu-workers-for-the-mathematics-stages) |
 | `configs/` | Run configurations (models, seeds, channel, experiments) as used for the paper |
 | `tests/` | Offline test suite (no API call, no GPU) |
 
-The data (run records, frozen thresholds/channel/calibration files) are not in git. They live in a
-separate data directory that the code finds through the `RAFR_DATA_DIR` environment variable.
+The data (run records and frozen parameter files) are not in git. They live in a separate data
+directory that the code finds through the `RAFR_DATA_DIR` environment variable.
 
 ## Installation
 
@@ -30,20 +40,23 @@ Python 3.11 or later.
 python -m pip install -e ".[analysis,math,dev]"
 ```
 
-The `gpu` extra (torch 2.8.0, transformers 5.16.1, ...) is only needed to rerun the verifiers; the
-`semantic` extra only for detoxification's descriptive semantic-preservation report.
+`requirements.txt` lists the exact version of every third-party package the code imports, as
+installed in the environment that ran the tests and regenerated the tables (Python 3.11.5, CPU).
+The `gpu` extra of `pyproject.toml` pins the versions the GPU stages ran with (torch 2.8.0,
+transformers 5.16.1, ...); it is only needed to rerun the verifiers. The `semantic` extra is only
+needed for detoxification's descriptive semantic-preservation report.
 
 ## Data
 
-Download the data archive from `DATA_DOWNLOAD_URL_TBD` and unpack it anywhere. It has three
-top-level directories, mirroring the layout the code expects:
+Download the data archive from `DATA_DOWNLOAD_URL_TBD` and unpack it anywhere:
 
 ```
 <data dir>/
-  runs/     run records of every experiment the paper reports, plus the original analysis outputs
-  data/     splits, first-attempt labels, gate diagnostics, extension cohorts
-  frozen/   thresholds, degradation channel, gate record, pi-hat calibration maps
-  MANIFEST.tsv / MANIFEST.json   every file with its size and sha256
+  runs/      run records of every experiment the paper reports, and the original analysis outputs
+  data/      splits, first-attempt states, labels and verifier scores, gate diagnostics, cohorts
+  frozen/    parameters fixed before the experiments that use them (see below)
+  LICENSE, DATA_LICENSE.md        CC BY-NC-SA 4.0 and the upstream terms
+  MANIFEST.tsv, MANIFEST.json     every file with its size and sha256
 ```
 
 Point the code at it:
@@ -52,8 +65,30 @@ Point the code at it:
 export RAFR_DATA_DIR=/path/to/data
 ```
 
-The files are byte-for-byte the records written during the runs. Run records keep the provenance
-written at run time (paths, git commits, configuration snapshots).
+**`frozen/`** sits in the data directory, not in git. It holds the parameters each later stage
+reads and that were fixed before that stage ran: the detoxification thresholds (`tau.json`), the
+degradation channel (`channel.json`; `channel.candidate.json` is the identical candidate it was
+promoted from), the record of the manipulation check (`gate_attempts.json`), and the pi-hat
+calibration maps (`calibration_detox.json`, `calibration_math.json`;
+`calibration_detox_v1_no_prior_correction.json` is the superseded fit before the prior correction).
+The mathematics thresholds and channel are part of its run (`runs/math_formal_n9000/fit.json`,
+`gate_1.json`). The files are byte-for-byte the originals: configurations and run records refer to
+them by sha256, and they keep the provenance written at the time (paths, commits).
+
+For every step the records hold the controller's decisions and rewrite texts (`decisions.jsonl`,
+trajectories), the verifier scores of every scored text (`scores.jsonl`, `text_scores.jsonl`, and
+the first-attempt score tables in `data/scores/` and `runs/math_formal_n9000/scores.jsonl`), the
+pi-hat values shown to the controller (`pihat.jsonl`), and the evaluator's judgments (first-attempt
+labels, `evaluations.jsonl`, `round_judgments.jsonl`, `extension_e_evaluations.jsonl`,
+`math_judgments.jsonl`, and the second judge's `panel_grok.jsonl`).
+
+The source datasets are not redistributed as such; they are available on Hugging Face at the
+revisions used:
+
+| Dataset | Hugging Face ID | Revision |
+|---|---|---|
+| ParaDetox | `s-nlp/paradetox` | `958b799a4c3a7c16463632465aaaa8ad083235a8` |
+| DeepMath-103K | `zwhe99/DeepMath-103K` | `5cf055d1fe3d7a2eb19719ac020211469736ae44` |
 
 ## Reproducing the tables and figures (no API, no GPU)
 
@@ -130,10 +165,45 @@ Each entry point documents its arguments in its module docstring.
 
 **Mathematics**: `pipelines/math_formal_sample.py` (problem sample from DeepMath-103K), then
 `pipelines/math_run.py` (`prepare`, `generate`, `split`, `fit`, `channel-check`, `gate`, `exp1`,
-`exp2`, `judge`, `report`, with `--config configs/math/formal.json`), and `pipelines/math_ext_run.py`
-for the extensions and the correction ceiling. The GPU-side workers that ran the mathematics
-verifiers inside a rented GPU session are not part of this release; the verifier implementations
-they call are in `src/rafr/domains/math/` (`models.py`, `generative.py`).
+`judge`, `report`, with `--config configs/math/formal.json`) on a CPU machine, with the GPU stages in
+`scripts/gpu/` (below), and `pipelines/math_ext_run.py` for the extensions and the correction
+ceiling.
+
+### GPU workers for the mathematics stages
+
+`scripts/gpu/` holds the GPU-side workers that ran the mathematics verifiers:
+
+| Script | Stage |
+|---|---|
+| `math_step06_remote.py` | verifier scoring of the first attempts (`fetch`, `check203`, `loopfit`, `score`, ...) |
+| `math_exp2_remote.py` | the primary Experiment 2 loop (V1, V2 on the GPU, OpenAI controller) |
+| `math_ext_remote.py` | the extension's Experiment 2 loops |
+| `math_vprobe2_remote.py`, `math_vprobe_remote.py` | helpers the scoring worker imports (model download, prechecks) |
+
+These scripts were written for RunPod pods and are released as they ran, with only their path
+setup adjusted to this directory; **they have not been re-executed in this repository.** The
+laptop-side drivers that started the pods, pushed the inputs and pulled the results back over SSH
+are not released.
+
+* **GPU and software**: one NVIDIA A100-SXM4-80GB; the runs used the image
+  `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404` (CUDA 12.8.1, Ubuntu 24.04, Python 3.12.3,
+  torch 2.8.0+cu128) with the `gpu` extra (transformers 5.16.1). Room for both verifiers' weights
+  (about 35 GB).
+* **Before use**:
+  1. Prepare the `--base` directory the workers read and write (`data/` for inputs, `models/` for
+     weights, `out/` for results; layouts in each script's docstring). The inputs come from the CPU
+     side: `pipelines/math_step06.py` (scoring inputs, thresholds, Experiment 2 first states) and
+     `pipelines/math_ext_run.py` (the extension's input bundles).
+  2. Download the pinned weights with the `fetch` command (pinned revisions; no Hugging Face token
+     is needed for these two models).
+  3. Set `OPENAI_API_KEY` in the environment for the Experiment 2 loops (the scripts' messages refer
+     to the RunPod UI, where it was set).
+  4. The workers refuse to score until the 203-state check (`check203`) reproduces recorded scores
+     of 203 D_fit states on the machine; a different GPU or software stack can fail it. Its
+     reference rows (`data/check203.json`, `data/reference/<id>.jsonl` under `--base`) come from the
+     verifier-selection probe that preceded the study and are not part of the data archive.
+  5. Copy the outputs back to the CPU side yourself; `pipelines/math_ext_run.py` and
+     `pipelines/math_run.py` then judge and report them.
 
 ## Models
 
@@ -151,18 +221,14 @@ they call are in `src/rafr/domains/math/` (`models.py`, `generative.py`).
 ShieldGemma is gated on Hugging Face: accept the Gemma Terms of Use on the model page with your
 account before downloading, and set `HF_TOKEN`.
 
-## Datasets and third-party terms
+## Third-party terms
 
-The code is released under Apache-2.0 (`LICENSE`). Datasets, models and API outputs have their own
-terms; check them before reuse:
-
-* ParaDetox: <https://huggingface.co/datasets/s-nlp/paradetox> (card: `openrail++`) and
-  <https://github.com/s-nlp/paradetox> (LICENSE: CC0-1.0).
-* DeepMath-103K: <https://huggingface.co/datasets/zwhe99/DeepMath-103K> (card: MIT).
-* Verifier models: see the model pages linked above (`openrail++`; Gemma Terms of Use; MIT; MIT
-  with a note on the Llama 3.1 Community License for the R1 distillation).
-* Model outputs in the run records come from the OpenAI, Anthropic and xAI APIs, under those
-  providers' terms.
+Datasets, models and API outputs have their own terms; `DATA_LICENSE.md` in the data archive lists
+them with links. In short: ParaDetox (Hugging Face card: OpenRAIL++; GitHub: CC0-1.0),
+DeepMath-103K (MIT), `s-nlp/roberta_toxicity_classifier` (OpenRAIL++; card metadata also lists
+CC BY-NC-SA), ShieldGemma (Gemma Terms of Use), GLM-Z1-9B-0414 (MIT), DeepSeek-R1-Distill-Llama-8B
+(MIT, derived from Llama 3.1), Math-Verify (Apache-2.0), and the OpenAI, Anthropic and xAI terms for
+the model outputs in the run records.
 
 ## Citation
 

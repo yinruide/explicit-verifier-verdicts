@@ -1,4 +1,4 @@
-"""Fit the pi-hat calibrators (post-pilot extension, stop point C; local compute, no API call).
+"""Fit the pi-hat calibrators (post-pilot extension; local compute, no API call).
 
 Per verifier, logit-scale Platt on the unlabeled pool, diagnosed on D_gate (2026-10-31;
 settings in ``configs/ext.yaml: calibration``). Order of operations:
@@ -7,7 +7,7 @@ settings in ``configs/ext.yaml: calibration``). Order of operations:
 2. the clipped-score counts per verifier x split (pool, D_gate, D_Exp1; scores only) -- any cell
    above ``max_clip_share`` stops the step before anything is fitted, and the table is printed;
 3. the fit on the pool, y* read with purpose CALIBRATION_FIT;
-4. the prior correction (2026-10-31, reply to stop point C;
+4. the prior correction (2026-10-31;
    ``calibration.prior_correction``): its two premises checked first
    (``rafr.calibration.fit.check_prior_premises``: pool + D_Exp1 = all states - D_fit - D_gate -
    D_gate_reserve, and the recorded split is the procedure's seeded draw, so D_Exp1 is a uniform

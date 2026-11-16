@@ -1,4 +1,4 @@
-"""Static invariants enforced by scanning the source tree (II.1.4, II.5.2, II.9.1, App. B.1).
+"""Static invariants enforced by scanning the source tree (paper App. E, Sec. 4.3, 3).
 
 1. No arm branch outside ``rafr.formatter`` and ``rafr.experiments``.
 2. ``rafr.channel``, ``rafr.formatter``, ``rafr.controller`` never import (transitively)
@@ -135,7 +135,7 @@ def test_c_t_and_r_ref_absent_from_decision_path():
 
 
 def test_r_ref_never_enters_the_gate_and_r_t_never_stratifies_primary_analyses():
-    """II.1.1 / App. B.1: r_ref is not a gate input; R_t is never a stratification variable."""
+    """paper Sec. 3: r_ref is not a gate input; R_t is never a stratification variable."""
     root = SRC.parent.parent
     gate_files = [SRC / "validity" / "gate.py", SRC / "validity" / "cue_diagnostics.py"]
     for f in gate_files:
@@ -143,7 +143,7 @@ def test_r_ref_never_enters_the_gate_and_r_t_never_stratifies_primary_analyses()
     primary = [
         root / "analysis" / "exp1_did.py",
         root / "analysis" / "exp2_tfr.py",
-        # III.3 feeds the null-result A/B split, so it is held to the same rule (v0.8)
+        # paper Sec. 6.2 feeds the null-result A/B split, so it is held to the same rule
         root / "analysis" / "error_boundary.py",
     ]
     for f in primary:
@@ -155,7 +155,7 @@ def test_r_ref_never_enters_the_gate_and_r_t_never_stratifies_primary_analyses()
 
 
 def test_x0_prefilter_never_reaches_a_verifier():
-    """App. B.1 (v0.7): the x0 prefilter uses E, never V1/V2 — verifier error is the object
+    """the x0 prefilter uses E, never V1/V2 — verifier error is the object
     of study and must not select the data. step00 is the only place the prefilter runs."""
     step00 = SRC.parents[1] / "pipelines" / "step00_prepare_data.py"
     closure = _transitive_imports(_imports(step00)) | _imports(step00)

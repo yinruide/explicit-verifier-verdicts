@@ -36,7 +36,7 @@ def draw_cohort(candidate_ids: Sequence[str], n: int, seed: int) -> list[str]:
 
 
 def draw_smoke(candidate_ids: Sequence[str], n: int, seed: int, stream: str) -> list[str]:
-    """Stop point D's smoke (2026-10-31): ``n`` of the candidates -- states outside every
+    """The smoke (2026-10-31): ``n`` of the candidates -- states outside every
     formal set, chosen by the caller -- without replacement, returned sorted. Deterministic in
     (the candidate set, ``n``, ``seed``, ``stream``)."""
     ids = sorted(candidate_ids)

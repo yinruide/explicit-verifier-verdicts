@@ -4,7 +4,7 @@ Zero cost: no API call, no pod, no label read. Every number is read from runs al
 and every recomputed estimate is cross-checked against the report it duplicates. A failed check
 stops the script before anything is written.
 
-A. The five cue diagnostics of II.6.2 (``rafr.validity.cue_diagnostics``) for detox and math,
+A. The five cue diagnostics of paper App. A (``rafr.validity.cue_diagnostics``) for detox and math,
    copied from the files steps 8 and 9 wrote. D_fit is the lambda = 0 baseline and D_gate is the
    first (passed) gate attempt. Each is reported on the primary set (the E-UNSAFE / E-INCORRECT
    subset) and on the secondary set (the whole split). The denominators of every column follow
@@ -19,7 +19,8 @@ B. MDE = (z_.975 + z_.80) * SD(d) / sqrt(n): 80% power, two-sided alpha 0.05, d 
      because the two cohorts are independent;
    - Exp 2: the extension's paired TFR contrasts over the 300 starts, and the pilot's unpaired
      150 / 150 A1 vs B;
-   - the preregistered feasibility table (III.1.3), back-solved for its implied SD(D_i). Its
+   - the feasibility table computed before the runs (paper App. B), back-solved for its implied
+   SD(D_i). Its
      simulation script (``feas/``) was never committed, so the simulation itself cannot be rerun;
    - the gate's pass-rate checks against the observed gaps.
 
@@ -67,7 +68,7 @@ STATUS = (
 _ND = NormalDist()
 Z975, Z95, Z80 = _ND.inv_cdf(0.975), _ND.inv_cdf(0.95), _ND.inv_cdf(0.80)
 K_TWO_SIDED = Z975 + Z80  # alpha 0.05 two-sided, power 0.80
-K_ONE_SIDED = Z95 + Z80  # alpha 0.05 one-sided (the preregistered table's alpha), power 0.80
+K_ONE_SIDED = Z95 + Z80  # alpha 0.05 one-sided (the feasibility table's alpha), power 0.80
 DOMAINS = ("detox", "math")
 LAMBDAS = ("low", "mid", "high")
 CHECK_TOL = 1e-12
@@ -147,7 +148,7 @@ PAIRS: tuple[tuple[str, str], ...] = (
     ("permuted_B", "B"),
 )
 
-# protocol III.1.3 / prereg/analysis_plan.md section 13: power by effect and N (one-sided 0.05)
+# paper App. B / section 13: power by effect and N (one-sided 0.05)
 PREREG_TABLE: dict[float, dict[int, float]] = {
     0.11: {100: 0.33, 200: 0.53, 300: 0.68, 400: 0.79, 600: 0.91},
     0.06: {100: 0.15, 200: 0.21, 300: 0.29, 400: 0.33, 600: 0.45},
@@ -427,7 +428,7 @@ def exp1_block(rec: Recorder, dom: str) -> dict[str, Any]:
                               c["estimate"])  # fmt: skip
                     s |= {"ci95_reported": c["ci"], "ci_source": spec["ext_report"]}
                 elif metric == "FA":
-                    # A1 - B and permuted-B - B on e_incorrect: the preregistered run's tables
+                    # A1 - B and permuted-B - B on e_incorrect: the primary run's tables
                     t = rec.json(spec["by_lambda"])
                     rec.check(f"{dom} FA {lam} {name} vs {spec['by_lambda']}", fa["estimate"],
                               _cell(t, _row(t, contrast=name), lam))  # fmt: skip

@@ -10,10 +10,10 @@ Settings (2026-10-31, ``configs/ext.yaml: calibration``):
 * ECE over 10 equal-frequency bins: the predictions sorted (stable, so ties keep the caller's
   order) and cut into 10 runs whose sizes differ by at most one, ``numpy.array_split``'s rule;
   ECE = sum_b (n_b / n) |mean prediction_b - observed rate_b|;
-* every interval is III.1.2's: a 95% percentile bootstrap with B replicates, the state as the
+* every interval is the design's: a 95% percentile bootstrap with B replicates, the state as the
   resampling unit, seeded by the caller. Equal-frequency bins are recut inside every replicate
   for ECE; the reliability table's per-bin intervals keep the full sample's bins;
-* the prior correction (2026-10-31, reply to stop point C; :func:`prior_shift`): the
+* the prior correction (2026-10-31; :func:`prior_shift`): the
   intercept moves by logit(p_R) - logit(p_pool), the slope stays.
 """
 

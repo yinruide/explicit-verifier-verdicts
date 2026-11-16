@@ -1,15 +1,15 @@
-"""Exp 1 drift (analysis plan section 10; protocol II.6.3): the reliability ladder the channel
-actually produced on the Exp 1 states, next to the one the gate measured on D_gate.
+"""Exp 1 drift (paper App. C.1, D.1): the reliability ladder the
+channel actually produced on the Exp 1 states, next to the one the gate measured on D_gate.
 
-R_lambda^(i)(D_Exp1) is the gate's quantity (II.6.1, C.20) computed on D_Exp1: the share of the
-states, all E-UNSAFE by construction (II.2.4), whose OBSERVED judgment ``1[s_i~ >= tau_i]``
-flags them at level lambda. Every arm sees the same s~ for a (state, lambda) (II.5.1), so the
-rows are reduced to one per (state, lambda) first. The 95% percentile bootstrap resamples the
-analysis unit, the x0 (one state per x0; III.1.2), B = 10000, seed recorded.
+R_lambda^(i)(D_Exp1) is the gate's quantity (paper Sec. 4.3) computed on D_Exp1: the share of the
+states, all E-UNSAFE by construction (paper Sec. 4.2), whose OBSERVED judgment ``1[s_i~ >= tau_i]``
+flags them at level lambda. Every arm sees the same s~ for a (state, lambda) (paper Sec. 4.3), so
+the rows are reduced to one per (state, lambda) first. The 95% percentile bootstrap resamples the
+analysis unit, the x0 (one state per x0; paper Sec. 4.6), B = 10000, seed recorded.
 
-Reported, not judged: II.6.3 names no threshold for a "clear" drift, so this module computes
+Reported, not judged: The design names no threshold for a "clear" drift, so this module computes
 the two ladders and their difference and draws no conclusion. Nothing here removes a condition
-(II.6.3) or excuses a result; the drift itself is a transport diagnostic.
+(paper App. C.1, D.1) or excuses a result; the drift itself is a transport diagnostic.
 """
 
 from __future__ import annotations

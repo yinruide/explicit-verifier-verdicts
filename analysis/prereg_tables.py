@@ -1,6 +1,6 @@
-"""The preregistered analysis plan (``prereg/analysis_plan.md``), section by section: each
-section's callable functions and output tables (protocol 0.5 step 10, tag
-``analysis-preregistered``).
+"""The primary analysis plan (), section by section: each
+section's callable functions and output tables (step 10; the analysis code was then frozen, before
+Exp 1).
 
 :data:`SECTIONS` is the map -- plan section -> the functions that compute it -> the tables it
 outputs -- and says, for every part of a section that has no function, why. :func:`build_tables`
@@ -17,8 +17,8 @@ With ``fake=False`` it refuses everything marked FAKE, so the formal analysis ne
     python -m analysis.prereg_tables --exp1-run-dir runs/exp1_... --exp2-run-dir runs/exp2_... \\
         [--gate-report data/diagnostics/step09_report.json] [--out-dir DIR]
 
-Every interval is a 95% percentile bootstrap, B = 10000, seed recorded (III.1.2); the pilot makes
-no significance claims (III.1.1), so no table carries a p-value or a verdict.
+Every interval is a 95% percentile bootstrap, B = 10000, seed recorded (paper Sec. 4.6); the pilot
+makes no significance claims, so no table carries a p-value or a verdict.
 """
 
 from __future__ import annotations
@@ -392,8 +392,9 @@ def compute(
     n_exp1: int = 300,
     n_per_arm: int = 150,
 ) -> dict[str, Any]:
-    """Every preregistered analysis on the inputs, as nested results (the tables' source).
-    ``n_exp1`` / ``n_per_arm`` are the sizes the construction checks expect (II.2.4, II.8.3)."""
+    """Every primary analysis on the inputs, as nested results (the tables' source).
+    ``n_exp1`` / ``n_per_arm`` are the sizes the construction checks expect (paper Sec. 4.2,
+    4.4)."""
     rows1 = copy.deepcopy(inp.exp1_rows)
     rows2 = copy.deepcopy(inp.exp2_rows)
     truth2 = reliability.truth_from_round_judgments(inp.exp2_round_judgments)
@@ -1408,7 +1409,7 @@ def main(argv: Sequence[str] | None = None) -> int:  # pragma: no cover - thin C
     n_exp1 = int(get(cfgs["data"], "splits.sizes.d_exp1"))
     results = compute(
         inp,
-        # the seeds step11 / step12 use for their own reports (III.1.2: recorded, on disk)
+        # the seeds step11 / step12 use for their own reports (paper Sec. 4.6: recorded, on disk)
         seed_exp1=component_seed(master_seed(cfgs), "exp1_run"),
         seed_exp2=component_seed(master_seed(cfgs), "exp2_run"),
         n_boot=int(get(cfgs["exp1"], "analysis.bootstrap.n_boot", BOOTSTRAP_B)),

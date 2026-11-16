@@ -36,10 +36,10 @@ its rows) are not checked and need not log flags.
    the 95% intervals of dFA, dFRR and dBA (:func:`dominance_ci`, 2026-11-01); BA(arm) -
    BA(rule) for every arm and rule, likewise; one FA-vs-FRR panel per lambda (PNG and PDF).
 
-The accounting counts a parse_fail as not accepted (II.8.2, the extension's main accounting);
-parse_fail counts are reported per arm. A lambda level whose channel replaces every score by a
-state-independent draw (detox: lambda_high, p = 1 for both verifiers, independent resampling) is
-marked: its flags carry no information about the text.
+The accounting counts a parse_fail as not accepted (paper Sec. 4.6, the extension's main
+accounting); parse_fail counts are reported per arm. A lambda level whose channel replaces every
+score by a state-independent draw (detox: lambda_high, p = 1 for both verifiers, independent
+resampling) is marked: its flags carry no information about the text.
 
 Intervals: 95% percentile bootstrap, B = 10000. The two cohorts are resampled by x0 (one state per
 x0), independently of each other; within a cohort every arm, rule and lambda uses the same draw

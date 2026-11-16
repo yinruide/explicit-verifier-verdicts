@@ -1,4 +1,4 @@
-"""Post-run engineering audit of actual Core controller prompts (M.10 / II.4.4)."""
+"""Post-run engineering audit of actual Core controller prompts ."""
 
 from collections import Counter
 from pathlib import Path

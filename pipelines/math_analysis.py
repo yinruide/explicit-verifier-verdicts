@@ -1,4 +1,4 @@
-"""Paired/stratified math analysis under protocol v1.1 Appendix M.
+"""Paired/stratified math analysis under paper Sec. 5, App. D.
 
 These functions analyse validated run records, including offline control records.
 They do not promote a stub/development run to formal status; the run manifest and
@@ -363,7 +363,7 @@ def _exp2_accounting(trajectories: list[dict], rule: str, n_boot: int, seed: int
     for trajectory in trajectories:
         arm = trajectory["arm"]
         first_failure = next((row for row in trajectory["rounds"] if row["parse_fail"]), None)
-        # M.8 (2026-10-13): a v_input_overlength trajectory is dropped as a parse_fail one
+        # paper App. E (2026-10-13): a v_input_overlength trajectory is dropped as a parse_fail one
         overlong = trajectory["termination_reason"] == OVERLENGTH
         if rule == "complete_case" and (first_failure is not None or overlong):
             excluded[arm] += 1
@@ -527,7 +527,7 @@ def _mechanism(trajectories: list[dict]) -> dict:
     Core consumes the hash only as a join key. The opaque keys below identify a
     question, round and input/output side, so identical solution text on different
     mathematical questions can never overwrite one another's E labels.
-    UNRESOLVED is task failure under M.8; E errors remain missing.
+    UNRESOLVED is task failure under paper App. E; E errors remain missing.
     """
     import json
 
@@ -568,7 +568,7 @@ def _mechanism(trajectories: list[dict]) -> dict:
 
 def _overlength_by_verifier(trajectories: list[dict]) -> dict[str, int]:
     """Ended trajectories by the V whose loop L_in the text exceeded (the first V that refused
-    it; II.10, 2026-10-13)."""
+    it; 2026-10-13)."""
     counts = Counter(
         (row.get(OVERLENGTH) or {}).get("verifier_id", "unknown")
         for row in trajectories
@@ -578,7 +578,7 @@ def _overlength_by_verifier(trajectories: list[dict]) -> dict[str, int]:
 
 
 def summarize_exp2(trajectories: list[dict], n_boot: int = 10_000, seed: int = 0) -> dict:
-    """M.8: unresolved is a task failure; E backend errors remain unknown."""
+    """paper App. E: unresolved is a task failure; E backend errors remain unknown."""
     bootstrap = {**_settings(n_boot, seed), "unit": "trajectory (stratified by arm)"}
     if not isinstance(trajectories, list) or not trajectories:
         raise MathAnalysisError("Exp2 requires nonempty trajectories")
@@ -681,7 +681,7 @@ def summarize_exp2(trajectories: list[dict], n_boot: int = 10_000, seed: int = 0
 
 
 def summarize_smoke(trajectories: list[dict]) -> dict:
-    """M.10: one A1 arm, no effects, contrasts, paired tests or arm comparisons."""
+    """one A1 arm, no effects, contrasts, paired tests or arm comparisons."""
     if not isinstance(trajectories, list) or len(trajectories) != 30:
         raise MathAnalysisError("smoke requires exactly 30 trajectories")
     provenance = _provenance(trajectories)

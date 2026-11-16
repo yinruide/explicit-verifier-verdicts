@@ -1,4 +1,4 @@
-"""pipelines: step00 / step04 / step05 end-to-end on the fake provider (protocol v0.9),
+"""pipelines: step00 / step04 / step05 end-to-end on the fake provider,
 step07 / step08 / step09 on synthetic data (step03: tests/test_step03.py). Offline: nothing
 here reaches a real API."""
 
@@ -43,7 +43,7 @@ def _fake_step00(*extra: str) -> int:
 
 
 def test_step00_fake_end_to_end(sandbox: Path):
-    """v0.9: every deduplicated x0 is judged, nothing is split, the split plan is pinned."""
+    """every deduplicated x0 is judged, nothing is split, the split plan is pinned."""
     assert _fake_step00() == 0
     root = sandbox / "data" / paths.FAKE_ROOT_NAME
     m = Manifest.load(root / "manifest.json")
@@ -64,7 +64,7 @@ def test_step00_fake_end_to_end(sandbox: Path):
 
 
 def test_step00_prefilter_drops_x0_when_e_keeps_failing(sandbox: Path, monkeypatch):
-    """II.2.3: an x0 on which E still fails after its retries is dropped with its reason
+    """paper Sec. 4.2: an x0 on which E still fails after its retries is dropped with its reason
     recorded; the step does not abort."""
     from rafr.core.runtime import build_client
     from rafr.llm.providers.fake import FakeProvider, FakeReply, default_responder
@@ -137,7 +137,7 @@ def test_step04_still_refuses_on_a_verifier_tbd_only_through_the_steps_that_read
 ):
     """A TBD verifier id must not block step04, which does not read it -- the narrowed guard
     must not resurrect that block (2026-09-18). The real ids are filled since
-    2026-09-25 (decisions.md D-2026-09-25), so the TBD is put back on a copy."""
+    2026-09-25, so the TBD is put back on a copy."""
     cfgs = load_config()
     cfgs["models"]["verifiers"]["v1"]["id"] = TBD
     assert "models.verifiers.v1.id" in find_tbd(cfgs, "")
@@ -277,8 +277,8 @@ def _validity_config(sandbox: Path, *, delta_r=0.1, population="both"):
     real["models"]["verifiers"]["v1"] = {"id": "real-v1"}
     real["models"]["verifiers"]["v2"] = {"id": "real-v2"}
     real["channel"]["diagnostics"]["out_dir"] = str(sandbox / "diag")
-    real["channel"]["gate"]["ci"]["n_boot"] = 50  # small B keeps the test fast (v0.8, II.6.1)
-    # p is fixed at 0 / 0.5 / 1 (II.5.1, C.27); delta_R is only checked against the span, which a
+    real["channel"]["gate"]["ci"]["n_boot"] = 50  # small B keeps the test fast (paper Sec. 4.3)
+    # p is fixed at 0 / 0.5 / 1 (paper Sec. 4.3); delta_R is only checked against the span, which a
     # perfectly separating D_fit keeps wide, so 0.1 passes the check here.
     real["channel"]["gate"]["delta_r"] = delta_r
     real["channel"]["diagnostics"]["diagnostics_population"] = population
@@ -309,10 +309,10 @@ def _step08_sandbox(sandbox: Path, monkeypatch, **cfg):
 def test_step08_refuses_the_formal_run_while_delta_r_or_the_population_is_tbd(
     sandbox: Path, monkeypatch
 ):
-    """II.10 (task 2026-09-24 section 2): the formal delta_R and diagnostics_population are
+    """the formal delta_R and diagnostics_population are
     the authors'; the formal run refuses while either is TBD. --reachability-only needs no formal
     delta_R (it falls back to the provisional one) but, since it now measures the ladder and the
-    cue diagnostics too (C.27), it does need the population."""
+    cue diagnostics too, it does need the population."""
     step08, real = _step08_sandbox(sandbox, monkeypatch, delta_r="TBD", population="TBD")
     with pytest.raises(NotFrozenError) as ei:
         step08.main([])
@@ -329,10 +329,10 @@ def test_step08_refuses_the_formal_run_while_delta_r_or_the_population_is_tbd(
     assert not (sandbox / "diag").exists()
     rd = next(paths.RUNS.glob("step08_*"))
     out = json.loads((rd / "reachability.json").read_text(encoding="utf-8"))
-    assert out["delta_r"] == 0.10 and out["delta_r_status"] == "provisional"  # D-2026-09-25b
+    assert out["delta_r"] == 0.10 and out["delta_r_status"] == "provisional"  #
     assert out["gate_population"] == "e_unsafe" and out["stopped"] is False
     # the whole check, under the fixed p: the realized ladder with its CI and the five
-    # diagnostics on both populations, lambda = 0 baseline included (II.6.2)
+    # diagnostics on both populations, lambda = 0 baseline included (paper App. A)
     assert out["levels_p"]["fixed"] is True and out["levels_p"]["values"] == FIXED_LEVELS_P
     assert set(out["ladder_on_d_fit"]["r"]) == {"v1", "v2"} and "ci" in out["ladder_on_d_fit"]
     assert set(out["cue_diagnostics"]) == {"unsafe", "all"}
@@ -344,9 +344,9 @@ def test_step08_refuses_the_formal_run_while_delta_r_or_the_population_is_tbd(
 
 
 def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkeypatch):
-    """Gate metric (d) (decisions.md D-2026-09-24 section 1; task 2026-09-24 section 2):
+    """Gate metric (d) (section 1):
     baseline TPR on D_fit's E-UNSAFE subset, the all-resampled floor r = P_{s~q}(s >= tau) from
-    the pool's scores alone, the span and 2 delta_R; p fixed at 0 / 0.5 / 1 (C.27), recorded as
+    the pool's scores alone, the span and 2 delta_R; p fixed at 0 / 0.5 / 1, recorded as
     such, never solved; R and its CI on the same subset; accuracy / balanced accuracy on all of
     D_fit, descriptively."""
     from rafr.channel.margin_fit import fit_margin_model
@@ -368,7 +368,7 @@ def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkey
         assert rc["span"] == pytest.approx(1.0 - floor)
         assert rc["expected_adjacent_gap"] == pytest.approx((1.0 - floor) / 2)
         assert rc["two_gaps_of_delta_r_reachable"] == (rc["span"] >= 2 * rep["delta_r"])
-        # II.5.2 (v1.0): the same three quantities in accuracy / balanced-accuracy units over
+        # paper Sec. 4.3: the same three quantities in accuracy / balanced-accuracy units over
         # ALL of D_fit, descriptively; the floors follow from a label-independent judgment
         d = rc["descriptive_whole_split"]
         assert d["n_states"] == 12 and d["e_unsafe_share"] == pytest.approx(0.5)
@@ -383,7 +383,7 @@ def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkey
         ex = rep["expected_ladder"][v]
         assert ex["low"] == 1.0 and ex["high"] == pytest.approx(floor)
         assert ex["mid"] == pytest.approx((1.0 + floor) / 2)
-    # fixed, not solved (II.5.1, C.27): the record says so, nothing was derived from the span
+    # fixed, not solved (paper Sec. 4.3): the record says so, nothing was derived from the span
     assert "solved_from" not in rep
     assert rep["levels_p"]["fixed"] is True and rep["levels_p"]["values"] == FIXED_LEVELS_P
     assert "C.27" in rep["levels_p"]["rule"]
@@ -395,7 +395,7 @@ def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkey
     ladder = rep["ladder_on_d_fit"]
     assert set(ladder["r"]) == {"v1", "v2"} and ladder["population"] == "e_unsafe"
     assert ladder["n_states"] == 6
-    # v0.8 (II.6.1): the CI travels with the ladder result and is reporting material only;
+    # (paper Sec. 4.3): the CI travels with the ladder result and is reporting material only;
     # it resamples the six E-UNSAFE states, not the twelve
     ci = ladder["ci"]
     assert ci["unit"] == "state" and ci["n_boot"] == 50 and ci["n_states"] == 6
@@ -406,7 +406,7 @@ def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkey
     desc = rep["descriptive_whole_split"]
     assert desc["v1"]["none"] == {"n": 12, "accuracy": 1.0, "balanced_accuracy": 1.0}
     assert set(rep["cue_diagnostics"]) == {"all", "unsafe"}
-    # 2026-09-24 (D-2026-09-24c): with `both`, E-UNSAFE primary, the whole split secondary
+    # 2026-09-24: with `both`, E-UNSAFE primary, the whole split secondary
     assert rep["diagnostics_population"] == ["unsafe", "all"]
     assert rep["diagnostics_roles"] == {"unsafe": "primary", "all": "secondary"}
     assert rep["cue_diagnostics"]["all"]["none"]["n"] == 12
@@ -418,7 +418,7 @@ def test_step08_reachability_is_tpr_on_the_e_unsafe_subset(sandbox: Path, monkey
 def test_step08_stops_when_the_span_is_below_two_delta_r(
     sandbox: Path, monkeypatch, reachability_only: bool
 ):
-    """II.5.3 / II.6.1 (C.27): a span TPR_i - r_i < 2 delta_R stops step08 -- the numbers are
+    """paper Sec. 4.3: a span TPR_i - r_i < 2 delta_R stops step08 -- the numbers are
     printed and recorded in the run directory, nothing goes to frozen/ or data/diagnostics/, and
     p stays where it is (0 / 0.5 / 1). With the formal delta_R and, under --reachability-only,
     with the provisional one alike."""
@@ -444,7 +444,7 @@ def test_step08_stops_when_the_span_is_below_two_delta_r(
 
 
 def test_step07_and_step08_outputs_are_lf_on_any_platform(sandbox: Path, monkeypatch):
-    """decisions.md D-2026-09-27: everything step07 and step08 write -- frozen/, the run
+    """everything step07 and step08 write -- frozen/, the run
     directories (snapshot, the configs copy, reachability.json), data/diagnostics/ -- is LF."""
     step08, _ = _step08_sandbox(sandbox, monkeypatch)
     assert step08.main(["--reachability-only"]) == 0
@@ -463,7 +463,8 @@ def test_step07_and_step08_outputs_are_lf_on_any_platform(sandbox: Path, monkeyp
 
 
 def test_step08_reads_d_fit_labels_only_for_the_channel_check(sandbox: Path, monkeypatch):
-    """II.2.4 (2026-09-26): step08 reads y* once, of D_fit, under purpose CHANNEL_CHECK, which
+    """paper Sec. 4.2 (2026-09-26): step08 reads y* once, of D_fit, under purpose CHANNEL_CHECK,
+    which
     the gate lets through for D_fit only."""
     step08, _ = _step08_sandbox(sandbox, monkeypatch)
     seen: list[tuple] = []
@@ -527,8 +528,8 @@ def _write_gate_split(unsafe_scores, safe_scores):
 
 
 def test_step09_gate_uses_the_e_unsafe_subset_and_reports_the_rest(sandbox: Path, monkeypatch):
-    """II.6.1 with gate metric (d): R and its CI on D_gate's E-UNSAFE states only; accuracy and
-    balanced accuracy on all of D_gate as description; diagnostics per population written before
+    """paper Sec. 4.3 with gate metric (d): R and its CI on D_gate's E-UNSAFE states only; accuracy
+    and balanced accuracy on all of D_gate as description; diagnostics per population written before
     the verdict; the attempt record and the reserve logic unchanged."""
     from pipelines import step07_fit_tau as step07
     from pipelines import step08_tune_channel as step08
@@ -637,7 +638,7 @@ def test_step09_prints_what_it_reads_reads_y_star_once_and_writes_one_report(
 
 
 # ---------------------------------------------------------------------------------------
-# step00 (v0.9): the whole pool is judged; --limit / --budget / E-failure stops only
+# step00: the whole pool is judged; --limit / --budget / E-failure stops only
 # ---------------------------------------------------------------------------------------
 
 
@@ -704,7 +705,7 @@ def test_processing_order_is_a_seeded_shuffle_of_the_whole_pool():
 
 
 def test_step00_has_no_split_and_no_split_driven_stop():
-    """v0.9: the "enough to fill the splits" and "cannot fill the splits" stops are gone."""
+    """the "enough to fill the splits" and "cannot fill the splits" stops are gone."""
     for name in ("candidate_cap", "wilson_interval", "shortfall_report", "plan_topup"):
         assert not hasattr(step00, name), name
     from rafr.core.runtime import ERROR_STOP_REASONS
@@ -737,7 +738,7 @@ def test_prefilter_limit_stops_and_a_rerun_does_not_re_buy(tmp_path: Path, monke
 
 
 def test_prefilter_rows_name_their_e(tmp_path: Path, monkeypatch):
-    """II.9.1 / II.10 (v0.9): every prefilter row carries the E identity."""
+    """paper Sec. 3: every prefilter row carries the E identity."""
     _stub_judge(monkeypatch, lambda t: "UNSAFE", fail_texts={"t1"})
     ecfg = _ecfg()
     step00.prefilter(
@@ -857,7 +858,7 @@ def test_step00_writes_its_output_only_when_every_x0_is_judged(sandbox: Path, mo
 
 
 def test_step00_refuses_a_prefilter_written_by_another_e(sandbox: Path, monkeypatch):
-    """v0.9 (II.9.1, C.15): judgments of a different E are never reused or mixed in."""
+    """(paper Sec. 3): judgments of a different E are never reused or mixed ."""
     assert _formal_step00(monkeypatch, "--limit", "3") == 0
     p = paths.DATA_POOLS / "prefilter.jsonl"
     rows = list(read_jsonl(p))
@@ -880,7 +881,7 @@ def test_step00_pins_the_split_plan_and_refuses_a_changed_one(sandbox: Path, mon
 
 
 # ---------------------------------------------------------------------------------------
-# step04 (v0.9): one state per prefiltered x0, before any split
+# step04: one state per prefiltered x0, before any split
 # ---------------------------------------------------------------------------------------
 
 
@@ -954,7 +955,7 @@ def test_step04_builds_one_state_per_prefiltered_x0_and_resumes_for_free(
 
 
 def test_step04_records_the_unchanged_g_fixed_config_hash(sandbox: Path, monkeypatch):
-    """v0.9: G_fixed is rebuilt exactly as in round 1. 3750a3fc... is the hash of the round-1
+    """G_fixed is rebuilt exactly as in round 1. 3750a3fc... is the hash of the round-1
     inputs (configs of runs/step04_20260920T*, prompt and refusal list at 58e1876 / ede6427)."""
     _prepare_pool(2)
     _fake_client(step04, monkeypatch)
@@ -1059,12 +1060,12 @@ def test_step04_regenerates_everything_when_the_state_file_is_deleted(sandbox: P
     fp2 = _fake_client(step04, monkeypatch)
     assert step04.main(["--budget", "5"]) == 0
     assert len(_states()) == 6
-    # and it cost nothing: the LLM cache still held every response (II.10)
+    # and it cost nothing: the LLM cache still held every response
     assert fp2.calls == [] and Manifest.load().states["run"]["spend_usd"] == 0.0
 
 
 # ---------------------------------------------------------------------------------------
-# step05 (v0.9): E judges every state (= y*), then the split
+# step05: E judges every state (= y*), then the split
 # ---------------------------------------------------------------------------------------
 
 SMALL_SIZES = {"d_fit": 5, "d_gate": 5, "d_gate_reserve": 5, "d_exp1": 4, "unlabeled_pool": "rest"}
@@ -1149,7 +1150,7 @@ def test_step05_judges_every_state_then_splits(sandbox: Path, monkeypatch):
 
 
 def test_step05_drops_a_state_and_its_x0_when_e_keeps_failing(sandbox: Path, monkeypatch):
-    """II.9.1: after 2 retries the state and its x0 are dropped, before the split."""
+    """paper Sec. 3: after 2 retries the state and its x0 are dropped, before the split."""
     _prepare_states(monkeypatch)
     fp = _fake_e(monkeypatch, fail_texts=("state 7 is fine",))
     assert step05.main(["judge", "--budget", "5"]) == 0

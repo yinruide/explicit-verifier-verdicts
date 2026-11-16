@@ -1,4 +1,4 @@
-"""Step 2 probe runner: download, preflight, score -- one model at a time (decisions.md).
+"""Step 2 probe runner: download, preflight, score -- one model at a time.
 
     python -m rafr.verifiers.probe_run download  --models all-gpu --out OUT
     python -m rafr.verifiers.probe_run preflight --models lg_1b --out OUT
@@ -21,8 +21,8 @@ is written (atomically) as soon as it is complete, so an interrupted run loses a
 model it was on; a rerun skips every table that is already complete.
 
 The input may hold ``state_id`` and ``text`` only and must match the sha256 recorded when it
-was built locally (y* never leaves the laptop; App. D / decisions.md). Scoring refuses to
-start until the probe prompts are locked (stop point A, ``probe.check_prompt_lock``), and a
+was built locally (y* never leaves the laptop). Scoring refuses to
+start until the probe prompts are locked (``probe.check_prompt_lock``), and a
 guard LM is scored only after its preflight has settled the verdict prefix and tokens and its
 direction check has passed.
 """
@@ -195,7 +195,7 @@ def _driver_version() -> str | None:
 
 def _git_head() -> str | None:
     """HEAD of the checkout this runs from; on the pod the code is a ``git archive`` without
-    ``.git``, and env/probe_remote_setup.sh exports RAFR_GIT_HEAD instead."""
+    ``.git``, and the RunPod driver (not released) exports RAFR_GIT_HEAD instead."""
     try:
         from rafr.logging.snapshot import git_head
 
@@ -321,7 +321,7 @@ def preflight_lm(
 
     Raises :class:`PreflightError` when the model does not emit a verdict word, emits it
     after different prefixes, emits a prefix other than the expected one, or spells a verdict
-    word as more than one token (decisions.md section 4: stop and report).
+    word as more than one token (section 4: stop and report).
     """
     configs = P.configs_for(m.model_id, prompt_dir)
     report: dict[str, Any] = {

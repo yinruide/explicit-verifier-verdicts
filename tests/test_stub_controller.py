@@ -1,4 +1,4 @@
-"""The always-rewrite stub controller (protocol II.4.4, 2026-09-25 revision): rounds 3 and 4, the
+"""The always-rewrite stub controller (2026-09-25 revision): rounds 3 and 4, the
 terminal text x_5 when nothing is accepted, x_5 = x_4 when the fourth decision is a parse_fail, a
 bit-identical resume from any round, and the formal steps' refusal of a ``stub-`` controller. No
 API call is made anywhere here."""
@@ -69,7 +69,8 @@ def _client(responder) -> LLMClient:
 
 def test_stub_controller_runs_every_trajectory_to_round_4_and_x_t_is_x5(tmp_path: Path):
     """A controller that never accepts: all four rounds run, every trajectory ends unaccepted at
-    t = 5 with x_T = x_5, the fourth rewrite, which is judged by E but never scored (II.8.3)."""
+    t = 5 with x_T = x_5, the fourth rewrite, which is judged by E but never scored (paper Sec.
+    4.4)."""
     states = _states(5)
     ccfg = cstub.stub_controller_config()
     assert cstub.is_stub_controller(ccfg.model) and ccfg.model.startswith("stub-")
@@ -101,8 +102,8 @@ def test_stub_controller_runs_every_trajectory_to_round_4_and_x_t_is_x5(tmp_path
 
 
 def test_stub_controller_parse_fail_at_round_4_leaves_x5_equal_to_x4(tmp_path: Path):
-    """II.8.3: when the fourth decision is a parse_fail, x_5 = x_4 -- the round is consumed
-    (II.8.2), no new text appears, and the terminal text is x_4."""
+    """paper Sec. 4.4: when the fourth decision is a parse_fail, x_5 = x_4 -- the round is consumed
+    (paper Sec. 4.6), no new text appears, and the terminal text is x_4."""
     states = _states(4)
     ccfg = cstub.stub_controller_config()
     setup = _setup(tmp_path / "b", states)
@@ -143,7 +144,7 @@ def _freeze_time(monkeypatch) -> None:
 def test_resume_from_any_round_is_bit_identical_to_one_pass(
     tmp_path: Path, monkeypatch, resume_after: int
 ):
-    """II.8.3 / II.4.4: a run cut off after any complete round and resumed produces exactly the
+    """paper Sec. 4.4: a run cut off after any complete round and resumed produces exactly the
     files of one uninterrupted run -- every round directory, the assembled streams, the loop
     marker -- byte for byte (timestamps pinned; a parse_fail on the way at round 3)."""
     _freeze_time(monkeypatch)
@@ -172,7 +173,7 @@ def test_resume_from_any_round_is_bit_identical_to_one_pass(
 
 
 def test_formal_steps_refuse_a_stub_controller(sandbox: Path, monkeypatch):
-    """II.4.4: a controller whose model id starts with stub- is for tests only; step 11 and both
+    """a controller whose model id starts with stub- is for tests only; step 11 and both
     of step 12's loops refuse it before any other precondition, as they refuse a stub verifier."""
     from pipelines import step11_exp1 as s11
     from pipelines import step12_exp2 as s12

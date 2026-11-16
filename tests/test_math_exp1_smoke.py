@@ -1,5 +1,5 @@
-"""Math Exp 1's single-round smoke (pipelines/math_exp1_smoke.py; 2026-10-15, II.4.4 /
-M.10) on the offline stub run: ten cells at lambda = high with all three arms, Exp 1's own
+"""Math Exp 1's single-round smoke (pipelines/math_exp1_smoke.py; 2026-10-15, /
+) on the offline stub run: ten cells at lambda = high with all three arms, Exp 1's own
 prompts under the smoke's seed namespace, engineering checks only, and Exp 1's live release."""
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ def test_ten_cells_at_high_with_every_arm_and_no_defect(harness):
     assert report["cost"]["problems"] == [] and report["cost"]["input_tokens"] > 0
     rows = list(read_jsonl(out / "decisions.jsonl"))
     assert {r["experiment"] for r in rows} == {"dry_run"} and {r["lam"] for r in rows} == {"high"}
-    # no arm comparison in the report (M.10)
+    # no arm comparison in the report
     text = json.dumps(report)
     assert "FA" not in report and "accept_rate" not in text
     # the smoke's prompts are Exp 1's (the hash leaves the seed out), its seeds are its own
@@ -103,7 +103,7 @@ def test_exp1_is_released_by_the_single_round_smoke_or_the_exp2_smoke(harness):
 
 
 def test_exp1_report_before_exp2_equals_the_full_reports_exp1_parts(harness):
-    """2026-10-15: Exp 1's preregistered report when Exp 2 does not exist yet."""
+    """2026-10-15: Exp 1's primary report when Exp 2 does not exist yet."""
     import random
 
     from pipelines import math_step10 as s10

@@ -1,15 +1,15 @@
-"""C_lambda — observation-conditioned evidence degradation (II.5).
+"""C_lambda — observation-conditioned evidence degradation (paper Sec. 4.3).
 
-    C_lambda = ( p_lambda^(1), p_lambda^(2), q )     (II.5.1, v0.7)
+    C_lambda = (p_lambda^(1), p_lambda^(2), q) (paper Sec. 4.3)
 
 Decisions (group 6a/6b, 2026-09-16) fixing the geometry and the assignment:
 
 * **q = independent resampling.** A perturbed verifier's score is redrawn from that verifier's
   empirical score distribution on the unlabeled pool (``margin_fit``). The judgment may or
-  may not flip; nothing is forced across the threshold (naive reflection stays excluded, C.2).
+  may not flip; nothing is forced across the threshold (naive reflection stays excluded).
 * **Per-verifier, nested assignment.** Each level lambda has one perturbation probability per
-  verifier, ``p_lambda^(i)``, non-decreasing in the level. They are FIXED ex ante (protocol
-  II.5.1, C.27; 2026-09-26): p = 0 / 0.5 / 1 at low / mid / high, the same for both
+  verifier, ``p_lambda^(i)``, non-decreasing in the level. They are FIXED ex ante
+  (paper Sec. 4.3, 2026-09-26): p = 0 / 0.5 / 1 at low / mid / high, the same for both
   verifiers, read from ``configs/channel.yaml: degrade.levels`` by :func:`levels_from_config`,
   which refuses any other values. Nothing is solved from data or hand-filled; delta_R is only
   the gate's threshold and step08's reachability check. For every ``(state, verifier)`` a
@@ -22,9 +22,9 @@ Decisions (group 6a/6b, 2026-09-16) fixing the geometry and the assignment:
   implied probabilities are derived from ``(p^(1), p^(2))`` under independence and written to
   ``frozen/channel.json`` / the step08 report for the record.
 
-Per call the channel is keyed by ``(state_id, lambda)`` and never by arm (II.5.1): all three
+Per call the channel is keyed by ``(state_id, lambda)`` and never by arm (paper Sec. 4.3): all three
 arms see the same ``(s1~, s2~)``. Inputs are the two scores and the key only; the function
-cannot see y*, c_t or E (II.5.2) and never normalizes across verifiers.
+cannot see y*, c_t or E (paper Sec. 4.3) and never normalizes across verifiers.
 """
 
 from __future__ import annotations
@@ -89,7 +89,7 @@ class LevelParams:
 
 
 def z_mode(p1: bool, p2: bool) -> str:
-    """The perturbation mode z derived from the two per-verifier draws (II.5.1: z is no
+    """The perturbation mode z derived from the two per-verifier draws (paper Sec. 4.3: z is no
     longer a parameter, it is read off the assignment and logged)."""
     if p1 and p2:
         return "both"
@@ -170,7 +170,7 @@ class DegradeChannel:
         return t1, t2
 
     def assignment(self, state_id: str, lam: Lambda) -> dict[str, Any]:
-        """II.10 log fields: whether each verifier was perturbed at this level, the derived z
+        """log fields: whether each verifier was perturbed at this level, the derived z
         mode, and the replacement scores actually used (``None`` where nothing was replaced).
         ``u_v*`` are the per-(state, verifier) uniforms that make the levels nested."""
         d = self.draws(state_id)
@@ -187,7 +187,7 @@ class DegradeChannel:
 
     def resample_all(self, state_id: str) -> tuple[float, float]:
         """The pair the state would show if BOTH verifiers were perturbed (p = 1). step08's
-        reachability floor r_i is the same limit taken in expectation over q_i (II.5.2, v1.0)."""
+        reachability floor r_i is the same limit taken in expectation over q_i (paper Sec. 4.3)."""
         d = self.draws(state_id)
         return d["v1"][1], d["v2"][1]
 
@@ -226,11 +226,11 @@ class DegradeChannel:
 
 
 FIXED_P: dict[Lambda, float] = {Lambda.LOW: 0.0, Lambda.MID: 0.5, Lambda.HIGH: 1.0}
-"""p_lambda^(i) per level, the same for both verifiers (protocol II.5.1, C.27; 2026-09-26).
+"""p_lambda^(i) per level, the same for both verifiers (paper Sec. 4.3, 2026-09-26).
 
 Fixed ex ante: not solved from delta_R, TPR_i or r_i and not hand-filled. lambda_low leaves the
 evidence unperturbed; lambda_high replaces every score by a draw that carries no information
-about the state (the floor r_i of II.5.2); lambda_mid is the midpoint. Under independent
+about the state (the floor r_i of paper Sec. 4.3); lambda_mid is the midpoint. Under independent
 resampling the expected detection rates are TPR_i, (TPR_i + r_i)/2 and r_i
 (:func:`expected_ladder`), so adjacent levels are (TPR_i - r_i)/2 apart in expectation."""
 
@@ -238,7 +238,7 @@ resampling the expected detection rates are TPR_i, (TPR_i + r_i)/2 and r_i
 def levels_from_config(degrade_cfg: Mapping[str, Any]) -> dict[Lambda, LevelParams]:
     """The three levels from ``configs/channel.yaml: degrade.levels``.
 
-    The config must carry exactly :data:`FIXED_P` for both verifiers (II.5.1, C.27); any other
+    The config must carry exactly :data:`FIXED_P` for both verifiers (paper Sec. 4.3); any other
     value -- a level missing, a TBD, the two verifiers apart, a number that is not the fixed one
     -- is refused rather than run. The result depends on the config alone: no measurement
     (TPR_i, r_i, delta_R) enters it."""
@@ -268,8 +268,8 @@ def levels_from_config(degrade_cfg: Mapping[str, Any]) -> dict[Lambda, LevelPara
 def expected_ladder(
     tpr: Mapping[str, float], floor: Mapping[str, float], levels: Mapping[Lambda, LevelParams]
 ) -> dict[str, dict[str, float]]:
-    """E[R_lambda^(i)] = (1 - p) TPR_i + p r_i under the given levels (II.5.2), for the report.
-    With the fixed p this is TPR_i, (TPR_i + r_i)/2, r_i. The levels are an input, never an
+    """E[R_lambda^(i)] = (1 - p) TPR_i + p r_i under the given levels (paper Sec. 4.3), for the
+    report. With the fixed p this is TPR_i, (TPR_i + r_i)/2, r_i. The levels are an input, never an
     output: nothing here feeds back into p."""
     return {
         v: {

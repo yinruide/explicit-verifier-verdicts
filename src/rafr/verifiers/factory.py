@@ -1,4 +1,4 @@
-"""The one scoring path for V1 / V2 (task 2026-09-24 section 3; decisions.md D-2026-09-24b point 4).
+"""The one scoring path for V1 / V2.
 
     make_verifier(config_id) -> verifier;   verifier.score(texts: list[str]) -> list[float]
 
@@ -27,7 +27,7 @@ numerical drift (another GPU, another torch) before a single state is scored; on
 ``tolerate_drift=True`` lets a drift through (never in formal mode), and it is then recorded in
 :meth:`describe`.
 
-**Device kinds** (2026-09-24, decisions.md D-2026-09-24c point 6). A probe record is a
+**Device kinds** (2026-09-24, point 6). A probe record is a
 ``cpu`` or a ``cuda`` record, by where the probe ran (its ``environment.json``), and the direction
 sentences' reference scores live in that record: they are kept per device kind and a run is only
 ever compared with a record of its own kind. Formal scores come from the GPU only:
@@ -70,10 +70,11 @@ FACTORY_PATH = "rafr.verifiers.factory:make_verifier"
 
 DEFAULT_RECORDS: tuple[str, ...] = ("data/probe/local", "data/probe/remote")
 """Where the probe's records live on the laptop: the local CPU run (the encoder) and the GPU
-run pulled back by env/sync_data.py. ``models.verifiers.probe_records`` overrides it."""
+run pulled back by the RunPod driver (not released). ``models.verifiers.probe_records``
+overrides it."""
 
 FORBIDDEN_SOURCES: tuple[str, ...] = ("anthropic", "openai", "qwen", "xai", "x-ai", "grok")
-"""II.9.1 (v0.9): V1 and V2 may not share a source with E (Anthropic), the controller (OpenAI)
+"""paper Sec. 3: V1 and V2 may not share a source with E (Anthropic), the controller (OpenAI)
 or the panel (Qwen, xAI)."""
 
 ENCODER_CANDIDATE: dict[str, str] = {"enc_paradetox": "roberta-toxicity"}
@@ -111,7 +112,7 @@ def parse_config_id(config_id: str) -> tuple[str, str | None]:
 
 
 def check_source(model: probe.ProbeModel) -> None:
-    """II.9.1: refuse a verifier from E's, the controller's or a panel member's source."""
+    """paper Sec. 3: refuse a verifier from E's, the controller's or a panel member's source."""
     hay = f"{model.repo_id} {model.vendor}".lower()
     hit = [s for s in FORBIDDEN_SOURCES if s in hay]
     if hit:
@@ -264,7 +265,7 @@ def static_checks(cfg: probe.ProbeConfig, rec: ProbeRecord) -> dict[str, Any]:
             rec.meta.get("text_max_tokens"),
             where,
         )
-        # every batch at the probe's batch size, the short last one filled up (D-2026-09-24c)
+        # every batch at the probe's batch size, the short last one filled up
         _require_equal("fixed batch shape", True, rec.meta.get("fixed_shape"), where)
         settings["fixed_shape"] = True
         settings["prompt_hash"] = info.get("prompt_hash")
@@ -585,7 +586,7 @@ def make_verifier(
 
     ``device`` (``cpu`` / ``cuda``) picks the probe record of that kind and runs there; without
     it the one record there is decides. ``formal=True`` (step 6, Exp 2): cuda only -- a cuda
-    record, a CUDA device present, no tolerated drift (D-2026-09-24c point 6).
+    record, a CUDA device present, no tolerated drift (point 6).
     """
     say = echo or (lambda _s: None)
     if device is not None and device not in DEVICE_KINDS:
@@ -604,7 +605,7 @@ def make_verifier(
     check_source(m)
     cfg = config_for(config_id, prompt_dir)
     if m.is_lm:
-        probe.check_prompt_lock(prompt_dir)  # prompts are the ones confirmed at stop point A
+        probe.check_prompt_lock(prompt_dir)  # prompts are the ones confirmed in the prompt review
     rec = find_probe_record(model_id, records_dirs, device_kind=device)
     settings = static_checks(cfg, rec)
     settings["device"] = rec.device_kind
@@ -674,7 +675,7 @@ def from_config(
 
 def refuse_legacy_guard(obj: Any) -> Any:
     """Formal steps call this on every verifier object they are handed: the registry's guard
-    LM wrapper (double BOS; decisions.md D-2026-09-24b point 4) never scores formally."""
+    LM wrapper (double BOS; point 4) never scores formally."""
     from rafr.verifiers.candidates.guard_lm import GuardLMVerifier
 
     if isinstance(obj, GuardLMVerifier):

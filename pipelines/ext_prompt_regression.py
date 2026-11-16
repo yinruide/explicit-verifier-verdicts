@@ -1,6 +1,6 @@
-"""Regression of the extension against the preregistered detox runs (read only; no API call).
+"""Regression of the extension against the primary detox runs (read only; no API call).
 
-Post-pilot extension, stop point B (2026-10-31). Two checks; neither writes anything into
+Post-pilot extension (2026-10-31). Two checks; neither writes anything into
 the original run directories:
 
 1. **LogRecord.** Every decision row of the original detox Exp 1 and Exp 2 runs (the run-level

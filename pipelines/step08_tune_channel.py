@@ -1,10 +1,10 @@
-"""Step 08 — check C_lambda on D_fit (protocol II.5, II.6.1, II.6.2 baseline; 0.5 step 8).
+"""Step 08 — check C_lambda on D_fit (paper Sec. 4.3, App. A baseline; step 8).
 
-The three levels are FIXED ex ante (protocol II.5.1, C.27; 2026-09-26): p = 0 / 0.5 / 1
+The three levels are FIXED ex ante (paper Sec. 4.3, 2026-09-26): p = 0 / 0.5 / 1
 at low / mid / high, the same for both verifiers, from ``configs/channel.yaml: degrade.levels``
 (``degrade.levels_from_config`` refuses anything else). This step solves nothing: it checks.
 
-Gate metric (d) (decisions.md D-2026-09-24 section 1): R_lambda^(i) is computed on the E-UNSAFE
+Gate metric (d) (section 1): R_lambda^(i) is computed on the E-UNSAFE
 states, so every reliability number this step uses is taken on D_fit's E-UNSAFE subset:
 
 1. fit q (independent resampling, group 6a) on the UNLABELED pool (scores only, no labels);
@@ -12,18 +12,18 @@ states, so every reliability number this step uses is taken on D_fit's E-UNSAFE 
    baseline TPR_i (no perturbation); the all-resampled floor r_i = P_{s~q_i}(s >= tau_i),
    computed exactly from the pool's score distribution and no label
    (``MarginModel.prob_at_least``); the span TPR_i - r_i and whether it is >= 2 delta_R, i.e.
-   whether the expected adjacent gap (TPR_i - r_i)/2 is >= delta_R (II.5.2, II.5.3). If either
+   whether the expected adjacent gap (TPR_i - r_i)/2 is >= delta_R (paper Sec. 4.3). If either
    span is short the step STOPS: it prints the numbers, records them in the run directory and
-   writes nothing to frozen/ or data/diagnostics/ (II.6.1: do not enter the gate; the authors decide
-   between another verifier and another delta_R);
+   writes nothing to frozen/ or data/diagnostics/ (paper Sec. 4.3: do not enter the gate; the
+   authors decide between another verifier and another delta_R);
 3. with the fixed levels: the realized R_lambda^(i) on the same subset, adjacent gaps vs delta_R
    and their CI (resampling E-UNSAFE states only); accuracy and balanced accuracy on ALL of D_fit,
-   descriptively; the five cue diagnostics per lambda (lambda = 0 is the baseline, II.6.2) on the
-   population(s) named by ``channel.diagnostics.diagnostics_population``;
+   descriptively; the five cue diagnostics per lambda (lambda = 0 is the baseline, paper App. A) on
+   the population(s) named by ``channel.diagnostics.diagnostics_population``;
 4. formal run: write ``frozen/channel.candidate.json`` and ``data/diagnostics/step08_report.json``.
 
 delta_R is read from ``channel.gate.delta_r``. Its formal value is the authors', written at step 8,
-and is TBD until he sets it; the formal run refuses while it is (II.10). ``--reachability-only``
+and is TBD until he sets it; the formal run refuses while it is. ``--reachability-only``
 runs steps 1-3 against the formal delta_R if set, else the PROVISIONAL one
 (``channel.gate.delta_r_provisional``, labelled as such), and writes only
 ``runs/step08_<ts>/reachability.json`` -- nothing in frozen/ or data/diagnostics/.
@@ -75,11 +75,11 @@ DIAGNOSTICS_POPULATIONS: dict[str, tuple[str, ...]] = {
     "unsafe": ("unsafe",),
     "both": ("unsafe", "all"),
 }
-"""``channel.diagnostics.diagnostics_population`` -> the population(s) the five II.6.2
+"""``channel.diagnostics.diagnostics_population`` -> the population(s) the five paper App. A
 diagnostics (and their lambda = 0 baseline on D_fit) are computed on, primary first. ``all`` =
 every state of the split; ``unsafe`` = its E-UNSAFE states, the population R is computed on (gate
 metric (d)). With ``both`` the E-UNSAFE subset is primary and the whole split secondary (the authors
-2026-09-24, decisions.md D-2026-09-24c)."""
+2026-09-24)."""
 
 
 def diagnostics_roles(populations: tuple[str, ...]) -> dict[str, str]:
@@ -104,7 +104,7 @@ checked."""
 
 
 def fixed_levels(channel_cfg) -> dict[Lambda, LevelParams]:
-    """The three levels, fixed ex ante (II.5.1, C.27): ``channel.degrade.levels`` must hold
+    """The three levels, fixed ex ante (paper Sec. 4.3): ``channel.degrade.levels`` must hold
     p = 0 / 0.5 / 1 for both verifiers. Nothing measured here can change them."""
     try:
         return levels_from_config(get(channel_cfg, "degrade", {}) or {})
@@ -124,7 +124,8 @@ def levels_record(levels: dict[Lambda, LevelParams]) -> dict[str, Any]:
 
 
 def ci_n_boot(channel_cfg) -> int:
-    """``channel.gate.ci.n_boot``; B = 10000 is locked by III.1.2 and only lowered in tests."""
+    """``channel.gate.ci.n_boot``; B = 10000 is locked by paper Sec. 4.6 and only lowered in
+    tests."""
     return int(get(channel_cfg, "gate.ci.n_boot", BOOTSTRAP_B))
 
 
@@ -134,7 +135,8 @@ def ci_seed(configs) -> int:
 
 
 def diagnostics_populations(channel_cfg) -> tuple[str, ...]:
-    """The population(s) of the II.6.2 diagnostics. No default: TBD (or anything else) refuses."""
+    """The population(s) of the paper App. A diagnostics. No default: TBD (or anything else)
+    refuses."""
     value = get(channel_cfg, "diagnostics.diagnostics_population", TBD)
     if value not in DIAGNOSTICS_POPULATIONS:
         raise SystemExit(
@@ -176,7 +178,7 @@ class LevelEvaluation:
     ``r`` / ``vectors`` are gate metric (d): E-UNSAFE states only, the vectors in split order
     (what ``gate.ladder_ci`` resamples). ``r_none`` is the same quantity with no perturbation
     (r_ref in step09). ``descriptive`` is accuracy / balanced accuracy on ALL states.
-    ``diagnostics[population][lambda]`` are the five II.6.2 items.
+    ``diagnostics[population][lambda]`` are the five paper App. A items.
     """
 
     n_states: int
@@ -246,10 +248,10 @@ def reachability(
     * ``baseline_tpr`` -- TPR_i, 1[s_i >= tau_i] over the E-UNSAFE states, no perturbation;
     * ``all_resampled_floor`` -- r_i = P_{s~q_i}(s >= tau_i): what TPR becomes when EVERY state
       is resampled, from the pool's score distribution alone (no label);
-    * ``span`` = TPR_i - r_i and whether it is >= 2 * delta_R (II.5.2, II.5.3): with p fixed at
+    * ``span`` = TPR_i - r_i and whether it is >= 2 * delta_R (paper Sec. 4.3): with p fixed at
       0 / 0.5 / 1 the expected adjacent gap is span / 2, so this is "expected gap >= delta_R";
     * ``descriptive_whole_split`` -- the same three quantities in accuracy and balanced-accuracy
-      units over ALL of D_fit (II.5.2, v1.0: reported descriptively, next to the detection-rate
+      units over ALL of D_fit (paper Sec. 4.3,: reported descriptively, next to the detection-rate
       ones the ladder is checked in). With every state resampled the judgment is independent of
       the label, so the accuracy floor is ``r_i * pi + (1 - r_i) * (1 - pi)`` (pi = D_fit's
       E-UNSAFE share) and the balanced-accuracy floor is 1/2 (TPR r_i, TNR 1 - r_i).
@@ -395,7 +397,7 @@ def main(argv: list[str] | None = None) -> int:
         populations=populations,
     )  # fmt: skip
     # CI first, verdict second: ladder_check gets the interval already formed and only
-    # carries it (II.6.1, v0.8 - the step 8 read is point estimates as well).
+    # carries it (paper Sec. 4.3, - the step 8 read is point estimates as well).
     ci = G.ladder_ci(ev.vectors, n_boot=ci_n_boot(ch_cfg), seed=ci_seed(cfgs))
     ladder = G.ladder_check(
         ev.r,

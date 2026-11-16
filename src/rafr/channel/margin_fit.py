@@ -1,4 +1,4 @@
-"""Margin-matched q (II.5.2, C.2): the empirical score distribution of each verifier.
+"""Margin-matched q (paper Sec. 4.3): the empirical score distribution of each verifier.
 
 Decision (group 6a, 2026-09-16): q is *independent resampling*. A perturbed verifier's score
 is redrawn from that verifier's empirical score distribution on the unlabeled pool (no labels

@@ -1,1 +1,1 @@
-"""English detoxification domain (I.6, II.2)."""
+"""English detoxification domain (paper Sec. 5, 4.2)."""

@@ -1,7 +1,7 @@
-"""Wording perturbations for II.4.2's stability row (step 6; decisions.md D-2026-09-25c).
+"""Wording perturbations for the design's stability row (step 6).
 
-II.4.2 asks for V1 / V2's "intrinsic stability": how often the verdict ``1[s >= tau]`` survives a
-change of wording that leaves the meaning alone -- a paraphrase, and an irrelevant prefix. The
+The design asks for V1 / V2's "intrinsic stability": how often the verdict ``1[s >= tau]`` survives
+a change of wording that leaves the meaning alone -- a paraphrase, and an irrelevant prefix. The
 texts made here serve that one descriptive number; they never enter tau, the channel, the gate,
 Exp 1 or Exp 2.
 

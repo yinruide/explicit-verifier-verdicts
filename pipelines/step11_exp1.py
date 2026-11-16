@@ -1,30 +1,30 @@
-"""Step 11 — Exp 1 main experiment (0.5 step 11; 0.2, II.5, II.7, II.8.2, II.9.3).
+"""Step 11 — Exp 1 main experiment (step 11; 0.2, paper Sec. 4.3, 3, paper Sec. 4.6, 3).
 
 Preconditions (all checked, run refused otherwise):
 
 * every config value frozen (no TBD), no PLACEHOLDER in prompts or formatter templates;
 * ``frozen/tau.json`` and ``frozen/channel.json`` exist and the gate attempts file records a
-  PASSED attempt (II.6.1); ``data/diagnostics/gate_diagnostics.json`` exists (II.6.2:
+  PASSED attempt (paper Sec. 4.3); ``data/diagnostics/gate_diagnostics.json`` exists (paper App. A:
   diagnostics recorded before A1 - B is looked at);
 * score tables of both formal verifiers cover every D_Exp1 state (step06).
 
-Order of operations (decision 10; v0.9, II.9.1): the Exp 1 outcome IS D_Exp1's y* -- the
+Order of operations (paper Sec. 3): the Exp 1 outcome IS D_Exp1's y* -- the
 judgments step05 made before the split, with the same E. They are read through the label gate
 (purpose EXP1_OUTCOME), checked to come from the configured E, copied to
 ``exp1.outcome.judgments_file`` and hashed, THEN the controller runs. No E call is made here.
 Outputs under ``runs/<run_id>/``.
 
-The run report carries, besides the primary difference-in-differences (III.1.2: lambda_high vs
-lambda_low only, lambda_mid as a secondary three-level curve):
+The run report carries, besides the primary difference-in-differences (paper Sec. 4.6: lambda_high
+vs lambda_low only, lambda_mid as a secondary three-level curve):
 
-* the parse_fail table by arm x lambda, any cell above 2% flagged (II.8.2);
-* the N of the primary metric: D_Exp1 holds E-UNSAFE states only (v0.9, II.2.4 / C.16), so
-  the false accept rate's denominator is D_Exp1 in full (III.1.2); a state that is not
+* the parse_fail table by arm x lambda, any cell above 2% flagged (paper Sec. 4.6);
+* the N of the primary metric: D_Exp1 holds E-UNSAFE states only (paper Sec. 4.2), so
+  the false accept rate's denominator is D_Exp1 in full (paper Sec. 4.6); a state that is not
   E-UNSAFE stops the analysis (``analysis.exp1_did.Exp1DataError``);
-* the H2 strata (III.1.2, v0.8), computed from ``channel.jsonl``'s perturbation assignment;
+* the H2 strata (paper Sec. 4.6), computed from ``channel.jsonl``'s perturbation assignment;
 * r_hat_ref, copied from the gate diagnostics next to those strata — offline reference only,
-  never a stratifier and never a prompt input (II.1.1);
-* error boundary alignment per lambda and arm (III.3, v0.8).
+  never a stratifier and never a prompt input (paper Sec. 3);
+* error boundary alignment per lambda and arm (paper Sec. 6.2).
 """
 
 from __future__ import annotations
@@ -104,7 +104,7 @@ def _sha256(p: Path) -> str:
 
 
 def read_r_ref(diagnostics_path: Path) -> dict:
-    """r_hat_ref from the gate diagnostics (II.1.1): the offline reference reliability, the
+    """r_hat_ref from the gate diagnostics (paper Sec. 3): the offline reference reliability, the
     same value for every arm. step09 computed it on the labelled gate split at lambda = none;
     this step only copies it into the report, so no split's labels are read here and nothing
     downstream can condition on it."""
@@ -128,7 +128,7 @@ def read_r_ref(diagnostics_path: Path) -> dict:
 
 
 def bootstrap_settings(configs) -> tuple[int, int]:
-    """(n_boot, seed) for the CIs of this analysis (III.1.2).
+    """(n_boot, seed) for the CIs of this analysis (paper Sec. 4.6).
 
     B = 10000 is locked. The seed is this run's seed, derived from the one master seed
     (component ``exp1_run``), and is written into the analysis output and the run snapshot.
@@ -138,7 +138,7 @@ def bootstrap_settings(configs) -> tuple[int, int]:
 
 
 def outcome_from_y_star(states, ecfg) -> dict:
-    """state_id -> EvalRecord: D_Exp1's y*, the Exp 1 outcome (v0.9, II.9.1).
+    """state_id -> EvalRecord: D_Exp1's y*, the Exp 1 outcome (paper Sec. 3).
 
     Read through the label gate (EXP1_OUTCOME) and refused if any record was made by an E other
     than the configured one; every state of the run must have one.
@@ -176,7 +176,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     cfgs = load_config()
     assert_frozen(cfgs, extra_files=[TEMPLATES_PATH], only_sections=GUARD_SECTIONS)
-    # II.4.4: a controller whose model id starts with stub- is for tests only (the verifiers'
+    # a controller whose model id starts with stub- is for tests only (the verifiers'
     # rule applied to the controller); a formal step refuses it before anything else happens
     model = str(get(cfgs["models"], "controller.model", ""))
     if is_stub_controller(model):
@@ -211,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     taus = load_tau(paths.FROZEN_TAU)
     channel = DegradeChannel.load(paths.FROZEN_CHANNEL)
 
-    # 1) the outcome: D_Exp1's y* from step05, recorded before any controller call (II.9.1)
+    # 1) the outcome: D_Exp1's y* from step05, recorded before any controller call (paper Sec. 3)
     ecfg = judge.build_config(cfgs["models"])  # the one E; re-checks the prompt sha256
     e_labels = outcome_from_y_star(states, ecfg)
     jpath = paths.resolve(get(cfgs["exp1"], "outcome.judgments_file"))
@@ -264,19 +264,19 @@ def main(argv: list[str] | None = None) -> int:
     channel_rows = list(read_jsonl(rd / "channel.jsonl"))
     n_boot, boot_seed = bootstrap_settings(cfgs)
     analysis = exp1_did.analyze(rows, seed=boot_seed, n_boot=n_boot, channel_rows=channel_rows)
-    # II.1.1: the offline reference sits NEXT TO the H2 strata, never inside them
+    # paper Sec. 3: the offline reference sits NEXT TO the H2 strata, never inside them
     analysis["h2_reference_r_ref"] = read_r_ref(
         paths.DATA / "diagnostics" / "gate_diagnostics.json"
     )
     report = {
         "run_summary": summary,
-        # D-2026-09-24d / D-2026-09-25b: how often a lambda level sent the controller exactly
+        # how often a lambda level sent the controller exactly
         # lambda_low's prompt (main) and showed exactly lambda_low's s_obs (auxiliary)
         "identical_to_low": exp1.identity_to_low_by_lambda(rows),
         "parse_fail": parse_fail.report(rows, by=parse_fail.BY_LAMBDA),
         "analysis": analysis,
         "error_boundary_alignment": error_boundary.exp1(rows),
-        # III.1.2 (v1.0): accept rate by arm x lambda x observed (y1, y2), descriptive
+        # paper Sec. 4.6: accept rate by arm x lambda x observed (y1, y2), descriptive
         "evidence_sensitivity": evidence_sensitivity.exp1(rows),
     }
     (rd / "report.json").write_text(

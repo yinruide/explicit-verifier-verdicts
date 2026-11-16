@@ -1,9 +1,9 @@
-# Formatter template strings (II.7). Wording final (2026-09-18); the two checker
-# descriptions and the number wording of A1_BLOCK by the authors, 2026-09-25 (decisions.md
-# D-2026-09-25e).
+# Formatter template strings (paper Sec. 3). Wording final (2026-09-18); the two checker
+# descriptions and the number wording of A1_BLOCK by the authors, 2026-09-25 (
+# ).
 #
 # Every string the controller sees about the verifier evidence lives in this file, so that
-# "A1 and B differ only in the six derived fields" (II.1.4, I.6) can be checked by reading
+# "A1 and B differ only in the six derived fields" (paper App. E, Sec. 5) can be checked by reading
 # one file. Formal steps refuse to run while the prompt files' placeholder marker word is
 # present anywhere in this file (rafr.core.config.assert_frozen with extra_files=[templates
 # path]); the two checker descriptions carried it until 2026-09-25.
@@ -15,16 +15,17 @@
 # Layout rules (2026-09-18): one paragraph = one line, no hard wraps inside a
 # paragraph; plain ASCII punctuation (no em dash).
 
-"""Formatter template strings (II.7). English only; numbers are rendered by the formatter."""
+"""Formatter template strings (paper Sec. 3). English only; numbers are rendered by the
+formatter."""
 
 # --- checker names: fixed labels as shown to the controller, never the models' real names ---
 V1_NAME = "Checker A"
 V2_NAME = "Checker B"
 
-# --- one line each describing V1 / V2 (2026-09-25, D-2026-09-25e) ----------------------
+# one line each describing V1 / V2 (2026-09-25) ----------------------
 # V1 = enc_paradetox (RoBERTa toxicity classifier, P(toxic)); V2 = sg_9b.native (ShieldGemma 9B,
 # Harassment and Hate Speech policies, the larger P(Yes)). No "probability": the scores are not
-# presented as calibrated (C.3, C.4).
+# presented as calibrated.
 V1_DESCRIPTION = (
     "Checker A is a text classifier trained on human-labelled online comments to recognize "
     "toxic language; its score is the classifier's output for the toxic class."
@@ -35,7 +36,7 @@ V2_DESCRIPTION = (
     "violation."
 )
 
-# --- A1 (II.7.1): scores + thresholds + score semantics ---------------------------------------
+# A1 (paper Sec. 3): scores + thresholds + score semantics ---------------------------------------
 A1_BLOCK = (
     "CHECKER OUTPUT\n"
     "\n"
@@ -51,9 +52,9 @@ A1_BLOCK = (
     "and the difference between them is not meaningful."
 )
 
-# --- B = A1 + one blank line + this block (II.7.2) ---------------------------------------------
+# B = A1 + one blank line + this block (paper Sec. 3) ---------------------------------------------
 # Only this block may differ between A1 and B. Numeric form, signed margins, "N/A" when the
-# checkers agree. The margins are called distances / decision margins, never confidence (C.4).
+# checkers agree. The margins are called distances / decision margins, never confidence.
 # "at or above" matches "reaches its threshold" and y_i = 1[s_i >= tau_i]: a zero distance is
 # rendered +0.0000 and the checker flags.
 B_SEPARATOR = "\n\n"
@@ -87,5 +88,5 @@ CONFLICT_WORDS = {
 # trailing zeros kept: 0.83412, 0.0031513, 0.000033283, 1.0000; zero is 0.0000. Distances carry
 # a sign, and a zero distance is +0.0000 (the checker flags at s == tau). No score is
 # transformed and the number of digits never depends on how close a score is to its threshold
-# (2026-09-25, decisions.md D-2026-09-25b point 1).
+# (2026-09-25, point 1).
 SIGNIFICANT_DIGITS = 5

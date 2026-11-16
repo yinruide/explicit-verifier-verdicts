@@ -1,4 +1,4 @@
-"""Appendix M execution configuration: scientific choices remain visibly pending.
+"""paper Sec. 5, App. D execution configuration: scientific choices remain visibly pending.
 
 The controller backbone and decoding are inherited from Core, never configured here.
 """
@@ -147,4 +147,4 @@ class MathRunConfig(BaseModel):
             raise ValueError(
                 "the authors must review research scope, data and pricing before live work"
             )
-        # M.10 smoke is checked immediately before Exp 2, not before initial generation.
+        # smoke is checked immediately before Exp 2, not before initial generation.

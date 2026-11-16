@@ -4,7 +4,7 @@ Nothing here is imported at package import time: the candidates build their back
 first ``score()`` call (:meth:`BaseVerifier.build_backend`), so the whole test suite runs on
 a machine with no GPU dependencies installed and no weights on disk.
 
-Determinism (score_spec.md, II.10). The same ``(model_version, text)`` must give the same
+Determinism (score_spec.md). The same ``(model_version, text)`` must give the same
 score bit-for-bit across calls and processes, so this module:
 
 * runs ``model.eval()`` under ``torch.inference_mode()`` -- no dropout, no autograd;
@@ -29,7 +29,7 @@ from rafr.verifiers.candidates.base import UNPINNED, Truncation, VerifierConfigE
 from rafr.verifiers.candidates.guard_lm import CHAT, RAW, LabelGroup
 
 #: cuBLAS needs this *before* CUDA is initialised for deterministic GEMM workspaces;
-#: ``env/setup.sh`` exports it too, this is the belt-and-braces copy.
+#: the RunPod driver (not released) exports it too, this is the belt-and-braces copy.
 os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 DEVICE_ENV = "RAFR_VERIFIER_DEVICE"

@@ -1,4 +1,4 @@
-"""Appendix M production orchestration with Core offline external boundaries."""
+"""paper Sec. 5, App. D production orchestration with Core offline external boundaries."""
 
 from __future__ import annotations
 
@@ -70,8 +70,8 @@ def test_initial_unresolved_retries_same_prompt_fresh_seed_then_excludes(tmp_pat
 def test_initial_e_error_retries_same_answer_twice_then_drops_question(
     tmp_path, monkeypatch, fault
 ):
-    # M.2.3 is unchanged by the M.9 revision of 2026-10-08: a wall-clock timeout of the
-    # first answer still excludes the question; it is not UNRESOLVED here.
+    # The design is unchanged by the paper App. D.1 revision of 2026-10-08: a wall-clock timeout of
+    # the first answer still excludes the question; it is not UNRESOLVED here.
     h = make_harness(tmp_path, monkeypatch, n=4, e_faults={0: fault})
     summary = h.pipeline.generate()
     assert summary["n_excluded"] == 1
@@ -201,7 +201,7 @@ def test_unresolved_rewrite_is_normal_action_scored_again_and_terminal_failure(
 def test_exp2_e_wall_clock_timeout_after_two_retries_is_unresolved_not_a_stop(
     tmp_path, monkeypatch
 ):
-    # M.9 in-place revision 2026-10-08.
+    # paper App. D.1 in-place revision 2026-10-08.
     h = make_harness(tmp_path, monkeypatch)
     prepare_gate(h)
     h.pipeline.exp2()
@@ -248,7 +248,7 @@ def test_exp2_e_wall_clock_timeout_after_two_retries_is_unresolved_not_a_stop(
     h.pipeline.judge()
     assert len(h.grader.calls) == calls
     assert (h.root / "exp2/trajectories.jsonl").read_bytes() == judged
-    # Counted as a task failure, in M.8's unresolved rate and in sensitivity analysis (c).
+    # Counted as a task failure, in the design's unresolved rate and in sensitivity analysis (c).
     summary = summarize_exp2(list(trajectories.values()), n_boot=20, seed=0)
     arm = row["arm"]
     assert summary["complete"] is True and summary["n_terminal_unresolved"] == 1
@@ -267,7 +267,8 @@ def test_exp2_e_wall_clock_timeout_after_two_retries_is_unresolved_not_a_stop(
     ],
 )
 def test_exp2_other_e_errors_still_stop_the_judgment_step(tmp_path, monkeypatch, fault):
-    # II.9.1 for every E error other than the worker wall-clock timeout (M.9, 2026-10-08).
+    # paper Sec. 3 for every E error other than the worker wall-clock timeout (paper App. D.1,
+    # 2026-10-08).
     h = make_harness(tmp_path, monkeypatch)
     prepare_gate(h)
     h.pipeline.exp2()

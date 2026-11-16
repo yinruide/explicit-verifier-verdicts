@@ -1,9 +1,9 @@
-"""Unified LLM client (II.8.2 structured output, II.10 reproducibility).
+"""Unified LLM client (paper Sec. 4.6 structured output, reproducibility).
 
 Flow: ``LLMRequest`` -> cache lookup (key = model + version + decoding + seed + prompt hash +
 attempt) -> provider call -> cache write -> ledger row -> ``LLMResponse``.
 
-Network / rate-limit retries are NOT the parse retries of II.8.2 (which the caller drives by
+Network / rate-limit retries are NOT the parse retries of paper Sec. 4.6 (which the caller drives by
 issuing a new request with ``attempt + 1``) and never count as one. Two layers exist:
 
 * inside the provider SDKs (``network.max_retries``), invisible here -- switched off (0) in
@@ -101,7 +101,7 @@ class LLMRequest:
         return self.schema.__name__ if self.schema else None
 
     def prompt_hash(self) -> str:
-        """Hash of system + messages + output schema (II.10 ``prompt hash``)."""
+        """Hash of system + messages + output schema (``prompt hash``)."""
         payload = {
             "system": self.system,
             "messages": self.messages,
@@ -110,7 +110,7 @@ class LLMRequest:
         return sha256_hex(canonical_json(payload))
 
     def cache_key(self) -> str:
-        """II.10: model & version, all decoding params, seed, prompt hash, attempt index."""
+        """model & version, all decoding params, seed, prompt hash, attempt index."""
         payload = {
             "provider": self.provider,
             "api": self.api,

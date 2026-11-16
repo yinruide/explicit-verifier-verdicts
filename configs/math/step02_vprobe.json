@@ -1,0 +1,438 @@
+{
+  "schema": "math-step02-vprobe-v1",
+  "status": "Reviewed by Ruide 2026-10-08 (A segment): candidate list, the six licences, Qwen PRM trust_remote_code at its pinned revision, and the judge settings approved. Added 2026-10-08 (second round): the Gemma judge gemma4_12b_it; its licence (Apache 2.0, not gated) and the 12B size approved by Ruide the same day",
+  "basis": "protocol v1.1 M.4, M.12; 0.5 step 2; II.2.4; II.4.1-II.4.3; II.10; C.19; C.20",
+  "run_dir": "runs/math_formal_n9000",
+  "inputs": "data/math/vprobe/probe_inputs.jsonl",
+  "splits": [
+    "d_fit",
+    "unlabeled_pool"
+  ],
+  "label_purpose": "verifier_selection",
+  "seed_component": "step02_probe",
+  "gate": {
+    "reading": "C.20 (d): recall on D_gate's E-INCORRECT subset",
+    "n_gate": 1500,
+    "pis": [
+      0.0,
+      0.5,
+      1.0
+    ],
+    "deltas": [
+      0.1,
+      0.15
+    ],
+    "reps": 2000
+  },
+  "pod": {
+    "basis": "II.10 detox formal pod, configs/models.yaml verifiers.formal_pod (checked by env/_formal_pod.check_pod)",
+    "gpu": "A100 SXM 80GB",
+    "image": "runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.16.1",
+    "container_disk_gb": 200,
+    "remote_dir_name": "rafr_math_vprobe"
+  },
+  "families": {
+    "qwen_prm": {
+      "form": "prm",
+      "note": "M.4 named candidate"
+    },
+    "math_shepherd": {
+      "form": "prm",
+      "note": "M.4 named candidate; trained on MATH / GSM8K train (M.4)"
+    },
+    "deepseek_judge": {
+      "form": "llm_judge",
+      "note": "M.4 'DeepSeek LLM judge'; deepseek-ai chat models on a DeepSeek base that fit an A100 80GB in bf16"
+    },
+    "gemma_judge": {
+      "form": "llm_judge",
+      "note": "Google LLM judge (Ruide 2026-10-08): the latest Gemma generation that transformers 5.16.1 supports natively and that fits an A100 80GB in bf16 (Gemma 4); one model, the same prompt and adapter as the DeepSeek judges, its own chat template",
+      "selection": "Gemma 4 instruction-tuned checkpoints: E2B, E4B, 12B (dense, encoder-free), 26B-A4B (mixture of experts), 31B (dense). Taken: the largest one that runs under the judges' approved settings unchanged (bf16, eager, fixed batch [8, 4096]) and whose score cannot depend on its batch neighbours by construction (II.10): 31B exceeds 80 GB at that shape (about 58 GiB weights + 24 GiB eager attention), 26B-A4B routes tokens to experts, so the per-expert matrix shapes change with the batch content; 12B remains. Chosen before any score."
+    }
+  },
+  "candidates": [
+    {
+      "candidate_id": "qwen_prm",
+      "family": "qwen_prm",
+      "params_b": 7.6,
+      "license": {
+        "name": "Qwen LICENSE AGREEMENT (2024-09-19)",
+        "file_in_repo": "LICENSE"
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "configuration.json",
+          "generation_config.json",
+          "model.safetensors.index.json",
+          "model-*.safetensors",
+          "configuration_qwen2_rm.py",
+          "modeling_qwen2_rm.py",
+          "tokenizer.json",
+          "tokenizer_config.json",
+          "vocab.json",
+          "merges.txt",
+          "LICENSE"
+        ],
+        "weight_bytes": 15256983860
+      },
+      "spec": {
+        "form": "prm",
+        "vendor": "Qwen (Alibaba Cloud)",
+        "base_model": "Qwen2.5-Math-7B",
+        "model_id": "Qwen/Qwen2.5-Math-PRM-7B",
+        "revision": "0610740060112df12585d00a1c5f4624d2f59051",
+        "implementation": "qwen_prm",
+        "settings": {
+          "tokenizer_revision": "0610740060112df12585d00a1c5f4624d2f59051",
+          "aggregation": "min",
+          "max_tokens": 4096,
+          "dtype": "bfloat16",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; trust_remote_code approved for the repository's configuration_qwen2_rm.py and modeling_qwen2_rm.py at revision 0610740060112df12585d00a1c5f4624d2f59051 only (their sha256 are pinned by rafr_model_manifest.json)",
+          "trust_remote_code": true
+        }
+      },
+      "reviewed": [
+        "license",
+        "trust_remote_code: executes modeling_qwen2_rm.py / configuration_qwen2_rm.py at the pinned revision"
+      ]
+    },
+    {
+      "candidate_id": "math_shepherd",
+      "family": "math_shepherd",
+      "params_b": 7.2,
+      "license": {
+        "name": "none published (no license field, no LICENSE file)",
+        "file_in_repo": null,
+        "note": "repository publishes no licence"
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "pytorch_model.bin.index.json",
+          "pytorch_model-*.bin",
+          "special_tokens_map.json",
+          "tokenizer.model",
+          "tokenizer_config.json"
+        ],
+        "weight_bytes": 15825733593
+      },
+      "spec": {
+        "form": "prm",
+        "vendor": "Peking University with DeepSeek-AI (Math-Shepherd, ACL 2024)",
+        "base_model": "Mistral-7B",
+        "model_id": "peiyi9979/math-shepherd-mistral-7b-prm",
+        "revision": "45dc0a3c9ec699b645085c098ed38dc99fba4617",
+        "implementation": "math_shepherd",
+        "settings": {
+          "tokenizer_revision": "45dc0a3c9ec699b645085c098ed38dc99fba4617",
+          "aggregation": "min",
+          "max_tokens": 4096,
+          "dtype": "bfloat16",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; NOTE: the repository publishes no licence (no license field, no LICENSE file)",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license"
+      ],
+      "attribution": {
+        "paper": "Wang et al., Math-Shepherd, ACL 2024 (long) pp. 9426-9439; arXiv 2312.08935",
+        "authors": "Peiyi Wang, Damai Dai, Zhifang Sui (Peking University); Runxin Xu, Deli Chen, Yu Wu (DeepSeek-AI); Lei Li (HKU); Zhihong Shao (Tsinghua); Yifei Li (OSU); arXiv v3: first author's contribution during an internship at DeepSeek-AI",
+        "base_model": "Mistral-7B (the released 7B PRM, the paper's RL setting)",
+        "training_data": "GSM8K and MATH training problems; solutions from 7B / 13B generators trained one epoch on those sets; step labels from LLemma-7B as completer (trained on MetaMATH), hard estimation, N = 8",
+        "vendor_overlap": "training source overlaps DeepSeek-AI (3 of 9 authors), base differs; a note only (Ruide 2026-10-08): math_shepherd x a DeepSeek judge is scored and analysed like every pair M.4 allows, and V1 / V2 follow the C.19 pair rule once the B-segment tables exist"
+      }
+    },
+    {
+      "candidate_id": "ds_math_instruct",
+      "family": "deepseek_judge",
+      "params_b": 6.9,
+      "license": {
+        "name": "DEEPSEEK LICENSE AGREEMENT v1.0",
+        "file_in_repo": "LICENSE"
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "generation_config.json",
+          "pytorch_model.bin.index.json",
+          "pytorch_model-*.bin",
+          "tokenizer.json",
+          "tokenizer_config.json",
+          "LICENSE"
+        ],
+        "weight_bytes": 13820824960
+      },
+      "spec": {
+        "form": "llm_judge",
+        "vendor": "DeepSeek",
+        "base_model": "deepseek-math-7b-base",
+        "model_id": "deepseek-ai/deepseek-math-7b-instruct",
+        "revision": "0a5828f800a36df0fd7f0ed581b983246c0677ff",
+        "implementation": "hf_yes_no_judge",
+        "settings": {
+          "tokenizer_revision": "0a5828f800a36df0fd7f0ed581b983246c0677ff",
+          "input_format": "chat_template",
+          "add_special_tokens": false,
+          "yes_token": " Yes",
+          "no_token": " No",
+          "dtype": "bfloat16",
+          "batch_size": 8,
+          "max_input_tokens": 4096,
+          "prompt_sha256": "3fd0cada3d0d5546cc175247a4f3ac250c6c4b18266e52e1560886b04b04369f",
+          "attn_implementation": "eager",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license",
+        "verdict tokens: confirmed on the pod by greedy decoding (runbook 5)"
+      ]
+    },
+    {
+      "candidate_id": "ds_math_rl",
+      "family": "deepseek_judge",
+      "params_b": 6.9,
+      "license": {
+        "name": "DEEPSEEK LICENSE AGREEMENT v1.0",
+        "file_in_repo": "LICENSE"
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "generation_config.json",
+          "model.safetensors.index.json",
+          "model-*.safetensors",
+          "tokenizer.json",
+          "tokenizer_config.json",
+          "LICENSE"
+        ],
+        "weight_bytes": 13820763136
+      },
+      "spec": {
+        "form": "llm_judge",
+        "vendor": "DeepSeek",
+        "base_model": "deepseek-math-7b-base",
+        "model_id": "deepseek-ai/deepseek-math-7b-rl",
+        "revision": "f3cd419a172ff5a100e9a563ebfe7900d78e9740",
+        "implementation": "hf_yes_no_judge",
+        "settings": {
+          "tokenizer_revision": "f3cd419a172ff5a100e9a563ebfe7900d78e9740",
+          "input_format": "chat_template",
+          "add_special_tokens": false,
+          "yes_token": " Yes",
+          "no_token": " No",
+          "dtype": "bfloat16",
+          "batch_size": 8,
+          "max_input_tokens": 4096,
+          "prompt_sha256": "3fd0cada3d0d5546cc175247a4f3ac250c6c4b18266e52e1560886b04b04369f",
+          "attn_implementation": "eager",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license",
+        "verdict tokens: confirmed on the pod by greedy decoding (runbook 5)"
+      ]
+    },
+    {
+      "candidate_id": "ds_llm_chat",
+      "family": "deepseek_judge",
+      "params_b": 6.9,
+      "notes": [
+        "preflight (B segment 2026-10-09, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (Ruide); P(No) right / wrong: 2 + 3 = 0.00407 / 0.00359 (wrong lower), 7 x 8 = 0.00034 / 0.00063; greedy verdict Yes on all four toy items (P(Yes) 0.994-0.998)"
+      ],
+      "license": {
+        "name": "DEEPSEEK LICENSE AGREEMENT v1.0 (model card: license_name deepseek; no LICENSE file in the repo)",
+        "file_in_repo": null
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "generation_config.json",
+          "pytorch_model.bin.index.json",
+          "pytorch_model-*.bin",
+          "tokenizer.json",
+          "tokenizer_config.json"
+        ],
+        "weight_bytes": 13820824960
+      },
+      "spec": {
+        "form": "llm_judge",
+        "vendor": "DeepSeek",
+        "base_model": "deepseek-llm-7b-base",
+        "model_id": "deepseek-ai/deepseek-llm-7b-chat",
+        "revision": "afbda8b347ec881666061fa67447046fc5164ec8",
+        "implementation": "hf_yes_no_judge",
+        "settings": {
+          "tokenizer_revision": "afbda8b347ec881666061fa67447046fc5164ec8",
+          "input_format": "chat_template",
+          "add_special_tokens": false,
+          "yes_token": " Yes",
+          "no_token": " No",
+          "dtype": "bfloat16",
+          "batch_size": 8,
+          "max_input_tokens": 4096,
+          "prompt_sha256": "3fd0cada3d0d5546cc175247a4f3ac250c6c4b18266e52e1560886b04b04369f",
+          "attn_implementation": "eager",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0 per the model card (no LICENSE file in the repository)",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license",
+        "verdict tokens: confirmed on the pod by greedy decoding (runbook 5)"
+      ]
+    },
+    {
+      "candidate_id": "ds_v2_lite_chat",
+      "family": "deepseek_judge",
+      "params_b": 15.7,
+      "not_scored": "Ruide 2026-10-09: not scored. Preflight (B segment, real weights) failed two checks: batch invariance (a score alone differs from the same item in a batch; mixture of experts), which II.10 requires, and the direction check (exit 7). P(No) right / wrong: 2 + 3 = 0.01799 / 0.02298, 7 x 8 = 0.01799 / 0.01406 (wrong lower); greedy verdict ' Yes' on all four toy items (P 0.92-0.93)",
+      "license": {
+        "name": "DEEPSEEK LICENSE AGREEMENT v1.0",
+        "file_in_repo": "LICENSE"
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "generation_config.json",
+          "model.safetensors.index.json",
+          "model-*.safetensors",
+          "tokenizer.json",
+          "tokenizer_config.json",
+          "LICENSE"
+        ],
+        "weight_bytes": 31413626576
+      },
+      "spec": {
+        "form": "llm_judge",
+        "vendor": "DeepSeek",
+        "base_model": "DeepSeek-V2-Lite",
+        "model_id": "deepseek-ai/DeepSeek-V2-Lite-Chat",
+        "revision": "85864749cd611b4353ce1decdb286193298f64c7",
+        "implementation": "hf_yes_no_judge",
+        "settings": {
+          "tokenizer_revision": "85864749cd611b4353ce1decdb286193298f64c7",
+          "input_format": "chat_template",
+          "add_special_tokens": false,
+          "yes_token": " Yes",
+          "no_token": " No",
+          "dtype": "bfloat16",
+          "batch_size": 8,
+          "max_input_tokens": 4096,
+          "prompt_sha256": "3fd0cada3d0d5546cc175247a4f3ac250c6c4b18266e52e1560886b04b04369f",
+          "attn_implementation": "eager",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license",
+        "verdict tokens: confirmed on the pod by greedy decoding (runbook 5)",
+        "native transformers DeepseekV2 implementation (the repo's own modeling_deepseek.py is not downloaded and not run)"
+      ]
+    },
+    {
+      "candidate_id": "gemma4_12b_it",
+      "family": "gemma_judge",
+      "params_b": 12.0,
+      "license": {
+        "name": "Apache License 2.0 (model card: license apache-2.0, license_link https://ai.google.dev/gemma/docs/gemma_4_license; no LICENSE file in the repo)",
+        "file_in_repo": null
+      },
+      "download": {
+        "allow_patterns": [
+          "config.json",
+          "generation_config.json",
+          "model.safetensors",
+          "tokenizer.json",
+          "tokenizer_config.json",
+          "chat_template.jinja"
+        ],
+        "weight_bytes": 23919549408
+      },
+      "spec": {
+        "form": "llm_judge",
+        "vendor": "Google DeepMind (Gemma 4)",
+        "base_model": "gemma-4-12B",
+        "model_id": "google/gemma-4-12B-it",
+        "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "implementation": "hf_yes_no_judge",
+        "settings": {
+          "tokenizer_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+          "input_format": "chat_template",
+          "add_special_tokens": false,
+          "yes_token": "Yes",
+          "no_token": "No",
+          "dtype": "bfloat16",
+          "batch_size": 8,
+          "max_input_tokens": 4096,
+          "prompt_sha256": "3fd0cada3d0d5546cc175247a4f3ac250c6c4b18266e52e1560886b04b04369f",
+          "attn_implementation": "eager",
+          "device_map": "auto",
+          "local_files_only": true,
+          "license_reviewed": true,
+          "license_review_reference": "Ruide 2026-10-08, second-round review of docs/math/step02_probe_plan.md: approved; Apache License 2.0, not a gated repository; model size 12B",
+          "trust_remote_code": false
+        }
+      },
+      "reviewed": [
+        "license: approved by Ruide 2026-10-08 (Apache License 2.0, not a gated repository)",
+        "verdict tokens: proposed \"Yes\" / \"No\" without a leading space (the chat template's generation prompt ends with an empty thought channel, '<|turn>model\\n<|channel>thought\\n<channel|>'); each one token (10784 / 3771) in the pinned tokenizer; confirmed on the pod by greedy decoding (runbook 5)",
+        "native transformers Gemma4Unified implementation (model_type gemma4_unified; no repository code)"
+      ]
+    }
+  ],
+  "overlap_sets": [
+    {
+      "name": "math_train",
+      "repo_id": "EleutherAI/hendrycks_math",
+      "revision": "21a5633873b6a120296cce3e2df9d5550074f4a3",
+      "license": "mit",
+      "field": "problem",
+      "files": [
+        "algebra/train-00000-of-00001.parquet",
+        "counting_and_probability/train-00000-of-00001.parquet",
+        "geometry/train-00000-of-00001.parquet",
+        "intermediate_algebra/train-00000-of-00001.parquet",
+        "number_theory/train-00000-of-00001.parquet",
+        "prealgebra/train-00000-of-00001.parquet",
+        "precalculus/train-00000-of-00001.parquet"
+      ]
+    },
+    {
+      "name": "gsm8k_train",
+      "repo_id": "openai/gsm8k",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "license": "mit",
+      "field": "question",
+      "files": [
+        "main/train-00000-of-00001.parquet"
+      ]
+    }
+  ]
+}

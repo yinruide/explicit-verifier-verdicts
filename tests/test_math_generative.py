@@ -1,4 +1,4 @@
-"""Generative math verifiers (rafr.domains.math.generative; M.4 v1.2, II.10 generative variant).
+"""Generative math verifiers (rafr.domains.math.generative; paper Sec. 5, generative variant).
 
 Configuration checks run everywhere. The decoding loop runs on a scripted fake model (a word
 tokenizer and a model that emits a fixed continuation per prompt) where torch is installed: stop

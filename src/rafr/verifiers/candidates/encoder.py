@@ -1,4 +1,5 @@
-"""Encoder classifier candidates (II.4.1: "encoder classifier" half of the heterogeneous pair).
+"""Encoder classifier candidates (paper Sec. 5: "encoder classifier" half of the heterogeneous
+pair).
 
 Two shapes of head are covered, because the two candidates differ:
 

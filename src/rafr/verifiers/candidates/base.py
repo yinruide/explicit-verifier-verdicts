@@ -1,4 +1,4 @@
-"""Shared machinery for the real V1 / V2 candidates (II.4.1, App. A.2).
+"""Shared machinery for the real V1 / V2 candidates (paper Sec. 5).
 
 Everything numeric in this module is plain Python. A *backend* turns texts into rows of raw
 logits (plain floats); this module chunks the input, normalises those rows into a score in
@@ -31,7 +31,7 @@ BATCH_SIZE_ENV = "RAFR_VERIFIER_BATCH_SIZE"
 #: memory-relevant number is the inference batch size above.
 DEFAULT_BATCH_LIMIT = 4096
 
-#: Marker for a revision that ``env/download_models.sh`` never pinned. Formal scoring
+#: Marker for a revision that the RunPod driver (not released) never pinned. Formal scoring
 #: refuses it (see :mod:`rafr.verifiers.batch_score`).
 UNPINNED = "unpinned"
 
@@ -148,7 +148,7 @@ class RawScoreBackend(Protocol):
     """Turns texts into rows of raw logits. The only place torch may appear.
 
     ``revision`` is the commit the weights were actually loaded from; it goes into
-    ``model_version`` and therefore into every row of the scores table (App. A.2).
+    ``model_version`` and therefore into every row of the scores table.
     ``raw_rows`` must preserve input order and return one row per text. What a row *means*
     is fixed by the candidate: class logits for an encoder, one logit per label-token group
     for a guard LM.
@@ -170,7 +170,7 @@ class BaseVerifier:
     Subclasses implement :meth:`normalise_row` (pure) and :meth:`build_backend` (lazy).
     """
 
-    #: Human-readable, copied verbatim into the verifier card (App. A.2).
+    # Human-readable, copied verbatim into the verifier card.
     score_semantics: str = ""
     normalization: str = ""
 
@@ -202,7 +202,7 @@ class BaseVerifier:
 
     @property
     def model_version(self) -> str:
-        """``<hf repo>@<commit sha>`` (App. A.2). ``@unpinned`` until the download manifest
+        """``<hf repo>@<commit sha>``. ``@unpinned`` until the download manifest
         pins a revision; formal scoring refuses that."""
         return f"{self.repo_id}@{self.revision}"
 

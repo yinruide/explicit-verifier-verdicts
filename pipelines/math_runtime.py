@@ -1,4 +1,4 @@
-"""Thin CLI wiring for the Appendix M pipeline and the shared Core infrastructure.
+"""Thin CLI wiring for the paper Sec. 5, App. D pipeline and the shared Core infrastructure.
 
 Preflight reads configuration and installed-package metadata only. Model construction,
 API-key lookup and GPU loading are never part of preflight.
@@ -89,7 +89,7 @@ def preflight(config: MathRunConfig, *, phase: str = "generation") -> dict[str, 
         except (ValueError, RuntimeError, TypeError):
             specs = ()  # The configuration check above already reports an incomplete pair.
         for spec in specs:
-            # M.4 v1.2: a generative adapter (generative.py) implements its own form.
+            # paper Sec. 5: a generative adapter (generative.py) implements its own form.
             implemented = GENERATIVE_IMPLEMENTATIONS.get(spec.implementation) == spec.form or (
                 spec.implementation in MODEL_REPOSITORIES
                 if spec.form == "prm"
