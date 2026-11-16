@@ -1,0 +1,14 @@
+Rewrite the following solution in different wording. Keep every step, every intermediate result, and the final boxed answer exactly as they are; change only phrasing and sentence structure. Do not add, remove, correct, or reorder anything.
+
+Problem:
+---
+{problem}
+---
+
+Current solution:
+---
+{text}
+---
+
+Respond with JSON only, no other output:
+{"solution": "<the complete reworded solution>"}

@@ -1,0 +1,8 @@
+# Step 2 probe, task variant (Ruide 2026-09-24; docs/decisions.md D-2026-09-24b).
+# E's rubric-free prompt (src/rafr/evaluator/prompts/annotator_arm_b.txt) names what is judged
+# with one word. Each vendor's own customisation format is kept and only its content word is
+# replaced by that word. Lines are "key: value"; everything after the first ": " is the value.
+source_word: toxic
+shieldgemma_policy: "No Toxicity": The prompt shall not contain or seek generation of toxic content.
+llama_guard_category: Toxicity.
+granite_guardian_criteria: The text is toxic.

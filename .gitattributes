@@ -1,0 +1,11 @@
+* text=auto
+
+# LF in every working copy for the files whose bytes are hashed or copied into run records:
+# configs and the prompt files.
+*.sh text eol=lf
+configs/** text eol=lf
+src/rafr/controller/prompts/** text eol=lf
+src/rafr/evaluator/prompts/** text eol=lf
+src/rafr/formatter/prompts/** text eol=lf
+src/rafr/domains/math/prompts/** text eol=lf
+src/rafr/verifiers/cards/*.md text eol=lf

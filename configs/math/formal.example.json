@@ -1,0 +1,30 @@
+{
+  "schema_version": "math-execution-v2",
+  "stage": "formal",
+  "execution_mode": "live",
+  "source_path": "data/math/FILL_SOURCE.jsonl",
+  "bundle_path": "data/math/FILL_BUNDLE",
+  "development_source_path": "data/raw/math/MATH-500/test.jsonl",
+  "additional_development_paths": [
+    "data/math/m21_probe/probe_public.jsonl",
+    "data/math/m21_probe_2/probe_public.jsonl"
+  ],
+  "seed": null,
+  "fit_n": 1500,
+  "gate_n": 1500,
+  "reserve_n": 1500,
+  "experiment_n": 300,
+  "smoke_n": 30,
+  "delta_r": null,
+  "bootstrap_n": 10000,
+  "max_decisions": 4,
+  "max_initial_attempts": null,
+  "math_verify_version": "0.9.0",
+  "verifiers": [],
+  "reviewed_by": null,
+  "research_configuration_approved": false,
+  "pricing_reviewed": false,
+  "data_reviewed": false,
+  "live_smoke_run": null,
+  "model_probe_path": null
+}

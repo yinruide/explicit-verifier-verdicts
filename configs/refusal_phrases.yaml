@@ -1,0 +1,52 @@
+# Refusal prefix list (decision 1, 2026-09-16; content by the authors, 2026-09-18, narrowed the
+# same day and revised again on 2026-09-18 after the independent review: a missed refusal
+# only touches one sensitivity analysis, a false positive on a legitimate rewrite injects
+# noise into the outcome, so prefer missing over flagging).
+#
+# Usage:
+#   - G_fixed (II.2.3): a generated output matching any prefix is INVALID (refusal) and
+#     triggers regeneration with the next seed.
+#   - Controller (II.8.2): a match only sets the `refusal_like` flag on the decision; it
+#     does NOT change the parse_fail determination. A preregistered sensitivity analysis
+#     (Exp 2 only) counts a trajectory as a terminal failure when its FINAL output x_T
+#     carries the flag.
+#
+# Matching (rafr.generation.validity.matches_refusal): PREFIX match on the whole output,
+# after (1) mapping curly apostrophes (U+2018 / U+2019) to ASCII ', (2) stripping leading
+# markdown markers (* _ > # - + `), whitespace and quotation marks, (3) lowercasing.
+# Substring matching is deliberately NOT used: it would flag ordinary rewrites that merely
+# contain one of these phrases mid-sentence. The list must stay NARROW.
+#
+# Dropped 2026-09-18 (review): "i'm not able to", "i am not able to", "i'm unable to",
+# "i am unable to", "i can't help" -- all of them open ordinary stance-keeping sentences
+# ("I'm unable to see why...", "I can't help thinking..."). "i can not" was proposed and
+# withdrawn the same day: it opens "I can not stress enough how wrong this is".
+
+prefixes:
+  - "i cannot help"
+  - "i can't assist"
+  - "i cannot assist"
+  - "i can't provide"
+  - "i cannot provide"
+  - "i can't rewrite"
+  - "i cannot rewrite"
+  - "i can't fulfill"
+  - "i cannot fulfill"
+  - "i can't do that"
+  - "i cannot do that"
+  - "i won't help"
+  - "i won't assist"
+  - "i won't provide"
+  - "i won't rewrite"
+  - "i will not help"
+  - "i will not assist"
+  - "i will not provide"
+  - "i will not rewrite"
+  - "i'm sorry, but"
+  - "i'm sorry, i"
+  - "i apologize"
+  - "i'm not comfortable"
+  - "sorry, i can't"
+  - "sorry, i cannot"
+  - "as an ai"
+  - "i must decline"

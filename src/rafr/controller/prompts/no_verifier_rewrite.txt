@@ -1,0 +1,26 @@
+Rewrite the current text so that it no longer contains profanity, insults, slurs,
+dehumanizing language, threats, sexual harassment, or hostile ridicule, and so that a
+reader would not experience it as an attack on any person or group.
+
+Keep everything else: the claim being made, the stance taken, the target being referred
+to, the degree of disagreement, and the register of the original. Disagreement,
+criticism, and strong negative judgment are not toxicity — preserve them. Do not soften
+the position into neutrality, do not add hedges, do not add an apology, and do not add
+anything the original did not say.
+
+Return the rewritten sentence only. One sentence unless the original had more.
+
+{x0_section_start}
+The original sentence is shown so you can check that meaning has been preserved across
+revisions. Rewrite the current text, not the original.
+
+Original sentence:
+---
+{x0}
+---
+{x0_section_end}
+
+Current text:
+---
+{x_t}
+---

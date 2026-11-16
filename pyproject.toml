@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "explicit-verifier-verdicts"
+version = "1.0.0"
+description = "Code for 'When Do Explicit Verifier Verdicts Help LLM Agents? Evidence Quality and Repair in Self-Correction'"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+# Every version is pinned to the one the paper's runs used (Python 3.11.5 for the CPU-side
+# pipeline and analysis; the GPU stages ran on Python 3.12.3 with torch 2.8.0+cu128).
+dependencies = [
+  "pydantic==2.13.5",
+  "PyYAML==6.0.3",
+  "pandas==3.0.5",
+  "pyarrow==25.0.1",
+  "numpy==2.4.6",
+  "openai==3.14.1",
+  "anthropic==1.6.0",
+  "huggingface_hub==1.31.0",
+  "python-dotenv==1.2.3",
+]
+
+[project.optional-dependencies]
+# Tables and figures from the released run records (`make tables`, `make figures`).
+analysis = [
+  "matplotlib==3.11.2",
+]
+# Mathematics: the evaluator E (Math-Verify) and its parser stack.
+math = [
+  "math-verify==0.9.0",
+  "latex2sympy2_extended==1.11.0",
+  "sympy==1.14.0",
+  "antlr4-python3-runtime==4.13.2",
+]
+# GPU inference for the verifiers V1 / V2 (state scoring and the in-loop scoring of Experiment 2).
+gpu = [
+  "torch==2.8.0",
+  "transformers==5.16.1",
+  "tokenizers==0.23.2",
+  "accelerate==1.15.0",
+  "safetensors==0.8.0",
+  "jinja2==3.1.6",
+  "sentencepiece==0.2.2",
+  "protobuf==6.33.6",
+  "hf_xet==1.6.0",
+  "hf_transfer==0.1.9",
+]
+# Detoxification Experiment 2's descriptive semantic-preservation report (CPU; needs the gpu group's
+# torch and transformers as well).
+semantic = [
+  "sentence-transformers==6.1.0",
+  "sacrebleu==2.6.0",
+]
+dev = [
+  "pytest==9.1.1",
+  "ruff==0.16.8",
+  "matplotlib==3.11.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"rafr.controller" = ["prompts/*.txt"]
+"rafr.evaluator" = ["prompts/*.txt"]
+"rafr.domains.math" = ["prompts/*.txt", "prompts/perturb/*.txt"]
+"rafr.formatter" = ["prompts/math/*.txt", "prompts/math_ext/*.txt", "prompts/detox/*.txt"]
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["error::DeprecationWarning:rafr.*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "pipelines", "analysis"]
+extend-exclude = ["data", "runs", "frozen", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "T20"]
+ignore = [
+  "S101",  # assert is fine in tests and invariants
+  "S603", "S607",  # subprocess use in snapshot.py is intentional (git)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "T20", "N812"]
+"pipelines/**" = ["T20", "N812"]
+"analysis/**" = ["T20", "N812"]
+# The command-line entry points under src/ print their progress on purpose.
+"src/rafr/verifiers/batch_score.py" = ["T20"]
+"src/rafr/verifiers/cards/generate.py" = ["T20"]
+"src/rafr/verifiers/cards/factory_card.py" = ["T20"]
+"src/rafr/verifiers/candidates/registry.py" = ["T20"]
+"src/rafr/verifiers/probe_run.py" = ["T20", "N812"]

@@ -1,0 +1,15 @@
+{task}
+
+If a correction is needed, rewrite the current solution in full. Check it against the original problem and preserve all problem conditions.
+
+{x0_section_start}
+Problem:
+---
+{x0}
+---
+{x0_section_end}
+
+Current solution:
+---
+{x_t}
+---

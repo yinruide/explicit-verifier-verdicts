@@ -1,0 +1,6 @@
+ESTIMATED FROM SEPARATE LABELED EXAMPLES
+
+{v1_name} estimated probability that its flag decision is wrong: {pihat1}
+{v2_name} estimated probability that its flag decision is wrong: {pihat2}
+
+A flag decision is the yes or no shown above for that checker. Each estimate is based on that checker's score alone: among separate examples whose correct labels are known, it is how often the checker's flag decision was wrong at similar scores.

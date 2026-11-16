@@ -1,0 +1,174 @@
+# Post-pilot extension experiments (2026-10-31). NOT part of the preregistered runs:
+# their code paths, run directories and result files are never changed or overwritten, and every
+# extension run writes a run directory of its own (runs/<run_id_prefix>_<cohort>_<timestamp>).
+# Read by pipelines/ext_*.py only. The formal-run guard (rafr.experiments.ext_config) refuses an
+# extension run while any value here is TBD or an extension prompt file still carries the
+# placeholder marker. This session wires detox only; math is the authors'.
+#
+# The preregistered files the extension reads are named with their sha256 and checked on every
+# read: a changed file is refused, never silently used.
+
+domain: detox
+
+prompts:
+  # Drafts until the authors write them (placeholder marker inside): the No Verifier controller
+  # instructions (system.txt / rewrite.txt with the checker parts deleted) and detox's pi-hat block.
+  no_verifier_system_file: src/rafr/controller/prompts/no_verifier_system.txt
+  no_verifier_rewrite_file: src/rafr/controller/prompts/no_verifier_rewrite.txt
+  # templates.DERIVED_BLOCK with the two distance lines and the two distance sentences deleted
+  verdict_only_file: src/rafr/formatter/prompts/detox/verdict_only.txt
+  pihat_file: src/rafr/formatter/prompts/detox/pihat.txt
+
+calibration:
+  # g_i(s) = sigmoid(a_i logit(s) + b_i) = P(task failure | s_i = s), per verifier (the authors
+  # 2026-10-31). Fitted once on the unlabeled pool, diagnosed on D_gate, frozen; Exp 1 and Exp 2
+  # only read the frozen file, and refuse it unless its sha256 is frozen_sha256.
+  fit_split: unlabeled_pool         # y* read with purpose calibration_fit
+  diagnostics_split: d_gate         # y* read with purpose calibration_diag
+  frozen_file: frozen/calibration_detox.json
+  # the prior-corrected refit (2026-10-31, reply to stop point C), 2026-10-31; diagnostics
+  # on D_gate: runs/ext_calibration_detox_20261031T084115Z
+  frozen_sha256: 81a94c63143bec3f41f66496ab1569469361fdbf445c6f23d4562d20c063ca90
+  prior_correction:
+    # 2026-10-31 (reply to stop point C): the pool is what D_Exp1 left after taking its
+    # 300 states from the remaining E-UNSAFE, so its failure rate is below the population's; D_Exp1
+    # being a uniform draw among those, only the class prior moved. a stays; b += delta,
+    # delta = logit(p_R) - logit(p_pool), p_pool = the pool's failure rate,
+    # p_R = (pool failures + |D_Exp1|) / (pool states + |D_Exp1|). Only the pool's counts and the
+    # design fact "every D_Exp1 state is a failure" enter; no D_gate or D_Exp1 label is read. Both
+    # premises are asserted first (rafr.calibration.fit.check_prior_premises).
+    added_failures_split: d_exp1
+  superseded:
+    # stop point C's first fit, without the prior correction: renamed, kept, read by no run
+    file: frozen/calibration_detox_v1_no_prior_correction.json
+    sha256: 7228f1b94ffade4dfd6a0278113146cad96c3649f0376e3c669a2d1f93a862c9
+    diagnostics: runs/ext_calibration_detox_20261031T074422Z
+    reason: no prior correction (Michael 2026-10-31, reply to stop point C)
+  diagnostics_dir: runs             # runs/ext_calibration_detox_<timestamp>/
+  epsilon: 1.0e-7                   # logit clip: s -> clip(s, eps, 1 - eps)
+  max_clip_share: 0.01              # any verifier x split cell above 1% clipped: stop and report
+  targets: platt_smoothed           # (N+ + 1) / (N+ + 2) and 1 / (N- + 2); no other regularization
+  ece_bins: 10                      # equal-frequency
+  bootstrap:                        # III.1.2: 95% percentile, B = 10000; unit = state
+    n_boot: 10000
+    alpha: 0.05
+    seed_component: ext_calibration_boot
+  # no quality threshold: a converged, finite fit without leakage is used and reported as is
+
+cohorts:
+  e_incorrect:
+    # the original D_Exp1 (E-UNSAFE by construction); primary metric false accept
+    states_split: d_exp1
+  e_correct:
+    # D_gate states E judged correct (detox: SAFE), drawn once without replacement; all of them
+    # if fewer than n. y* read with purpose ecorrect_cohort. Primary metric false reject.
+    source_split: d_gate
+    correct_label: SAFE
+    n: 300
+    seed_component: ext_ecorrect_cohort
+    file: data/ext/ecorrect_cohort_detox.jsonl
+    # stop point C, 2026-10-31: 479 of D_gate's 600 states E-SAFE, 300 drawn; the file is under
+    # data/ (not in git) and is pinned by this sha256; its header records the seed and the id hash
+    file_sha256: 3636f13bdbf8cef12f5c1cf93eae8a891e141212897453686aae403ab48fa149
+
+smoke:
+  # Stop point D's engineering smokes (2026-10-31; pipelines/_ext_smoke.py): states
+  # outside every formal set, as step 10a. E-incorrect: the pool's E-UNSAFE states (y* under
+  # dry_run, as steps 3 and 10a); E-correct: D_gate's SAFE states the cohort did not draw (y* under
+  # ext_smoke). Drawn with this seed component; seed namespace <namespace>_smoke; a cache of the
+  # run's own; run directories <run_id_prefix>_smoke_<cohort>_<ts>, refused by the analysis. No
+  # channel check against the original run (stop point B's regression covers all 2,700 cells).
+  seed_component: ext_smoke
+
+exp1:
+  lambdas: [low, mid, high]
+  run_id_prefix: exp1ext
+  permuted_b_seed_component: permuted_b          # the original II.7.3 / C.22 table rule
+  pihat_mismatch_seed_component: ext_pihat_mismatch  # independent of permuted-B's table
+  e_incorrect:
+    seed_namespace: exp1            # the original Exp 1 seeds: same per-state seed per state
+    arms: [no_verifier, verdict_only, B_pihat, B_pihat_mismatched]
+    # A1, B, permuted-B on D_Exp1 are the original run's decisions, read only, never rerun
+    reused_arms: [A1, B, permuted_B]
+    original_run: runs/exp1_20260928T000021Z
+    original_sha256:
+      decisions.jsonl: 44c14713200f24f7e2f707e9c4e1b16e355e75ac84ed9385bf113d798ba152c3
+      channel.jsonl: c65b18b87ecb17d8c795f131595becc8932a807c2df6d1c1dfd8a15a7256e39c
+      permutation.jsonl: bd9606370a0060bd0f4424005219e14c0a390f0ae7573535c821bad7a5fb393e
+  e_correct:
+    seed_namespace: exp1_ecorrect   # a new experiment id
+    arms: [A1, B, permuted_B, no_verifier, verdict_only, B_pihat, B_pihat_mismatched]
+
+exp2:
+  k: 4
+  run_id_prefix: exp2ext
+  # The original 150 / 150 trajectories, their assignment and statistics are untouched; full
+  # pairing over the 300 starts is reported as a separate extension.
+  priority:
+    P0: [no_verifier, B_pihat]
+    P1: [verdict_only]
+    P2: [A1_B_fill, e_correct]
+  e_incorrect:
+    seed_namespace: exp2            # the original Exp 2 seeds
+    new_arms: [no_verifier, B_pihat, verdict_only]   # every one of the 300 D_Exp1 starts
+    fill_arms: [A1, B]              # each only on the starts the original assigned to the other
+    original_run: runs/exp2_20260928T033025Z
+    original_sha256:
+      assignment.jsonl: 7346e694d2674f918a05bfb6e276eed961ba0c1bd354bb1e5079528a4e3d1d0c
+      trajectories.jsonl: 01325d6408728e282cf5b63cfa061c3adc7bd611ac1bb948cbf9136160739d29
+      round_judgments.jsonl: c9dc23b90152e45b72a3aac1ee6edada56237f2cc435ec1b905eaf19113759db
+      # the original x_T re-judged by Grok 4.6 (II.3): the panel sensitivity's original rows
+      panel_grok.jsonl: 0515f5b0bf7693f7dad16adc62e672a3877ab2980d8fe3900bb1386c0b1305c2
+    x1_file: data/exp2/x1_states.jsonl
+    x1_sha256: 3533e159a746751e23025b92f6c1fa759a41bffd7f266f604e5f10efa234525f
+    t1_scores:
+      # 2026-10-31: reuse on. The source is the original Exp 2's round-1 in-process
+      # scores (300 x 2, bit for bit step 6's; stop point A), NOT step 6's table; its path and
+      # sha256 go into every extension run's metadata.
+      reuse: true
+      source: runs/exp2_20260928T033025Z/rounds/round_1/scores.jsonl
+      source_sha256: 86f3eb72641de941036da459abd7d61ee3c1b431898d0a585eec12bb3a4b772a
+  e_correct:
+    seed_namespace: exp2_ecorrect   # a new experiment id
+    arms: [A1, B, no_verifier, verdict_only, B_pihat]
+    t1_scores:
+      # not reused: every start is scored once in process at t = 1 and the arms share it; the
+      # scores are compared bit for bit with step 6's D_gate scores, for the record only
+      reuse: false
+      compare_with_step06: true
+
+analysis:
+  # 2026-10-31 (reply to stop point B). Every contrast is "less information - more
+  # information", the direction of the original D-bar = A1 - B: a positive value means the added
+  # information reduced errors. Every extension result is exploratory: the intervals are not
+  # corrected for multiple comparisons and every cell is reported. Exp 1's main accounting counts
+  # a parse_fail as not accepted (a false reject in e_correct); the other two are sensitivities.
+  # Exp 2 pairs only the starts on which both arms ran and reports n per contrast; its e_correct
+  # metric is the corruption rate (the authors' name for it), not TFR. analysis/ext_contrasts.py reads
+  # extension run directories only (<run_id_prefix>_*, with ext_meta.json, no smoke run).
+  contrasts:                        # every experiment and cohort
+    - [no_verifier, A1]
+    - [A1, verdict_only]
+    - [verdict_only, B]
+    - [B, B_pihat]
+    - [B_pihat_mismatched, B_pihat]
+  extra_contrasts:
+    exp1:
+      e_correct: [[A1, B], [permuted_B, B]]     # on the false reject rate
+    exp2:
+      e_incorrect: [[A1, B]]        # full pairing over the 300 starts: data once P2's fill ran
+      e_correct: [[A1, B]]
+  cited_not_recomputed:
+    exp1:
+      e_incorrect:
+        # the preregistered results (step 13's formal tables), cited, not recomputed
+        contrasts: [[A1, B], [permuted_B, B]]
+        tables_dir: runs/analysis_20260928T124804Z
+        sha256:
+          T06_exp1_did.json: 2c03bb11ad9d371bba186a46bc7d30a458eca2be0f2a8bcb4a8fadb7e0002253
+          T06_exp1_delta_by_lambda.json: 5222cea99f562aca520b5443280c26c75b616814b8467d796d6ce6766ff4d03a
+  contrasts_confirmed: 2026-10-31 Michael (reply to stop point B)
+  bootstrap:                        # III.1.2: 95% percentile, B = 10000; unit = x0 (paired)
+    n_boot: 10000
+    alpha: 0.05
+    seed_component: ext_analysis_boot

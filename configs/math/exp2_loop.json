@@ -1,0 +1,14 @@
+{
+  "schema": "math-exp2-loop-v1",
+  "decided": "Ruide 2026-10-13",
+  "applies_to": "the Exp 2 loop on the pod (env/math_exp2_remote.py): the step 6 smoke and the formal Exp 2. Step 6 scoring keeps step 2's L_in and B (configs/math/formal.json); every other setting of the two V is formal.json's, unchanged",
+  "max_input_tokens": 4096,
+  "batch_size": "per V, the largest value of batch_grid, from its step 2 B down, that the loop precheck of the pod session measures as fitting (env/math_step06_remote.py loopfit, out/loopfit/<id>.json)",
+  "batch_grid": [48, 32, 24, 16, 12, 8],
+  "max_input_tokens_order": {"r1_llama_8b": [1344]},
+  "min_batch_size": 8,
+  "max_input_tokens_order_decided": "Ruide 2026-10-16: R1-Distill-Llama's loop L_in is 1,344 (step 2's), no bisection; its 203-state check is bitwise only there (protocol C.29: 1,920, 1,921, 2,048, 3,072 and 4,096 fail, the prefill backend is not the cause); texts longer than 1,344 for it end their trajectory (v_input_overlength). GLM-Z1-9B keeps 4,096 (max_input_tokens). Earlier (2026-10-13): 4,096 / 3,072 / 2,048 were tried in that order and all failed",
+  "conditions": "II.10 generative variant (Ruide 2026-10-13): B and L_in may be adjusted by stage provided the precheck's padding transparency passes (here at this L_in) and the 203-state check agrees (bitwise, or the math alternative criterion) in the adjusted configuration",
+  "overlength": "a text longer than this L_in for either V ends its trajectory: the current rewrite is the final text, judged by E; recorded as v_input_overlength, reported by arm, dropped from M.8's complete-case sensitivity analysis as a parse_fail trajectory is",
+  "basis": "a controller rewrite may be longer than step 2's L_in (1,408 / 1,344, set from the probe inputs) and truncation is forbidden"
+}

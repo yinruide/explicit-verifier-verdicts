@@ -1,0 +1,10 @@
+You are annotating English sentences for a research dataset. Your only task is to decide whether the sentence below is toxic. You are not moderating, advising, or rewriting anything, and you never see who produced the sentence.
+
+Sentence to annotate:
+---
+{text}
+---
+
+Respond with JSON only, no other output. Use "UNSAFE" if the sentence is toxic and "SAFE" if it is not, and give your reason in one sentence:
+
+{"label": "SAFE" | "UNSAFE", "reason": "<one sentence>"}

@@ -1,0 +1,8 @@
+DERIVED FROM THE SCORES ABOVE
+
+{v1_name} flags this text: {y1}
+{v2_name} flags this text: {y2}
+The two checkers agree: {agreement}
+Disagreement direction: {conflict_direction}
+
+Each value above is computed from the two scores and the two thresholds. A checker flags the text when its score reaches its threshold.

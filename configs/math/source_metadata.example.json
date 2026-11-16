@@ -1,0 +1,9 @@
+{
+  "source": "FILL_ORIGINAL_DATASET_ID_OR_RELEASE",
+  "revision": "FILL_IMMUTABLE_SOURCE_REVISION",
+  "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "license_id": "FILL_ACTUAL_DATA_LICENSE",
+  "license_url": "https://example.invalid/replace-with-the-actual-license",
+  "license_status": "review_required",
+  "original_split": null
+}

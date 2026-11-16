@@ -1,0 +1,257 @@
+# Model configuration — protocol II.1.4 (control variables), II.9.1 (model-source separation).
+#
+# Conventions used in every config file:
+#   TBD          -> value not yet decided. Formal steps (step04 and later) refuse to run
+#                   while any TBD remains (see rafr.core.config.assert_frozen).
+#                   The comment next to each TBD says WHO decides it and at WHICH step.
+#   LOCKED v0.6  -> locked by protocol v0.6 and still locked in v0.8; not a tunable.
+#   LOCKED v0.8  -> locked by protocol v0.8; not a tunable.
+#
+# Seeds are NOT configured here. Every random component derives its seed from the single
+# `data.yaml: seeds.master` (decision, 2026-09-17); see rafr.core.seeding.component_seed.
+#
+# Model-source separation (II.9.1, App. D): controller = OpenAI GPT-5.6 series,
+# E = Anthropic Claude Opus 5, hence V1/V2 must come from neither OpenAI nor Anthropic.
+
+controller:
+  provider: openai
+  # OpenAI Chat Completions is used (not the Responses API) because only Chat
+  # Completions exposes `seed`, which II.8.2 requires to be fixed and recorded.
+  api: chat_completions
+  model: gpt-5.6-terra  # 2026-09-20 (0.5 step 3a): tier within the GPT-5.6 series
+  # `version` is the model's `created` timestamp as returned by the API, NOT a dated snapshot
+  # id: this model generation ships no dated snapshot ids (`gpt-5.6-terra-2026-06-23` and the
+  # like do not exist), so the creation date is the only version string the provider gives us.
+  # II.9.1 still wants a frozen, recorded version -- see the limitation in docs/progress.md.
+  version: "2026-06-23" # 2026-09-20: `created` = 2026-06-23
+  decoding:
+    temperature: null   # NOT SENT (2026-09-20). The model accepts only its default
+                        # value 1; sending 0.2 fails with `unsupported_value`. null = not sent,
+                        # recorded as null (II.8.2), so the effective value is the provider
+                        # default. The rule of decision 14 still holds: a model that rejects
+                        # temperature makes the call fail loudly, nothing is silently degraded.
+    top_p: null         # null = provider default; recorded as such
+    max_output_tokens: 8192  # Decision (2026-09-17). II.8.2: set generously so that
+                             # MALFORMED_JSON (truncation) stays rare; it is reported as its own
+                             # category. A reasoning tier counts thinking tokens against this.
+    reasoning_effort: medium # Decision (2026-09-20), sent explicitly, fixed and
+                             # recorded (II.8.2). It used to be null = not sent: with E then
+                             # carrying an explicit `effort`, leaving this unset would run the
+                             # two models of one experiment under two different conventions,
+                             # and a logged null records "not sent", not the tier that
+                             # actually ran. (E's effort is not sent since 2026-09-23, to match
+                             # the retest; this controller setting is unchanged.) medium
+                             # rather than low because the controller has
+                             # to weigh the checker evidence against the text -- that weighing
+                             # IS the behaviour the experiment measures, so it is not the
+                             # place to save tokens; high is waste on a judgment this short.
+                             # All three tiers were verified to be accepted (2026-09-20).
+  # How the per-call seed is derived from the controller's component seed
+  # (component_seed(master, "controller")). Decision (group 3, 2026-09-16):
+  # per_state, with the experiment name in the derivation so that Exp 1 and Exp 2 sample
+  # independently and never share a cache key.
+  #   fixed      same seed for every call (dry-run fallback only)
+  #   per_state  derived from (seed, experiment, state_id, t): shared by all arms and lambdas
+  #   per_cell   derived from (seed, experiment, state_id, arm, lambda, t)
+  # Parse retries derive a further seed from (call seed, attempt); the attempt index is also
+  # part of the cache key (II.10). OpenAI's seed is best-effort either way.
+  seed_scheme: per_state
+  # Structured output is enforced with a JSON schema (II.8.2). Schema lives in code:
+  # rafr.contracts.schemas.ControllerOutput
+  structured_output: true
+  system_prompt_file: src/rafr/controller/prompts/system.txt          # (2026-09-18); {k} = K_MAX_ROUNDS
+  rewrite_prompt_file: src/rafr/controller/prompts/rewrite.txt        # (2026-09-18)
+  parse_retry_prompt_file: src/rafr/controller/prompts/parse_retry.txt # (2026-09-18)
+  # Network behaviour only: not part of the request, the cache key or the G_fixed config hash.
+  # G_fixed inherits this block (inherit_backbone_from), so it covers both. (2026-09-23,
+  # as for E) 429 / connection errors / 5xx are retried by rafr.llm.client with the counted
+  # exponential backoff -- 2, 4, 8, 16, 32, 60, 60, 60 s (+-20% jitter, never shorter than the
+  # server's retry-after) -- and every event is logged. The SDK's own retries are OFF so that
+  # none is hidden. Completely separate from the 2 parse retries (II.8.2) and from G_fixed's
+  # regeneration attempts (II.2.3); when they run out the step stops and is resumed later.
+  network:
+    max_retries: 0            # SDK-level retries (off, see above; was 5 until 2026-09-23)
+    transient_retries: 8      # re-sends of one request after a 429 / network / 5xx
+    backoff_base_s: 2
+    backoff_cap_s: 60
+    timeout_s: 120
+
+g_fixed:
+  # II.2.3: same backbone, same version, same detox instruction as the controller,
+  # but reads no verifier feedback and no A1/B. Backbone fields are inherited from
+  # `controller` (model, version, api, provider, network). Decoding is written out
+  # separately, but it is NOT free to drift: since 2026-09-20 it must match the
+  # controller's block except for `temperature` (II.2.3 puts a `> 0` floor on G_fixed
+  # that no rule puts on the controller) and `seed` (derived per component, popped here).
+  # tests/test_invariants_extra.py asserts exactly that, key set included.
+  inherit_backbone_from: controller
+  decoding:
+    temperature: null   # NOT SENT (2026-09-20), same provider limitation as the
+                        # controller: only the default value 1 is accepted. II.2.3 requires
+                        # temperature > 0 -- with the parameter omitted that is satisfied by
+                        # the provider default (1), which is exactly the value this line used
+                        # to ask for. The code treats "not sent" as satisfying the rule and
+                        # records the fact per run (rafr.generation.g_fixed.temperature_record).
+    top_p: null
+    max_output_tokens: 8192  # Decision (2026-09-17); one rewritten sentence, set loose
+    reasoning_effort: medium # Decision (2026-09-20): must equal the controller's.
+                             # II.2.3 fixes G_fixed to the controller's backbone and version
+                             # so that the two batches of states are same-source -- that is
+                             # what the transport argument rests on (II.7 / protocol line 269),
+                             # and in Exp 2 the seam is inside one trajectory: x1 comes from
+                             # G_fixed, x2.. from the controller. On a reasoning model the
+                             # effort tier changes generation behaviour, so letting it drift
+                             # would make "same backbone, same version" hollow. Left null it
+                             # would have run at the tier's own default -- unrecorded, and
+                             # possibly not medium. See tests: the two decoding blocks are
+                             # asserted equal apart from temperature (II.2.3 puts a > 0 floor
+                             # on G_fixed alone) and seed (derived per component).
+  prompt_file: src/rafr/controller/prompts/g_fixed.txt   # (2026-09-18)
+  # NOTE (decision 4, 2026-09-16): Exp 2's x1 is generated by exactly this configuration
+  # and validity rule, before randomization. Exp 2 therefore reuses g_fixed, not a copy.
+
+evaluator:
+  # E (II.9): binary SAFE/UNSAFE judgment; one E shared by all conditions; sees text only.
+  # v0.9 (II.9.1, App. D): ONE E for all four uses -- x0 prefilter (step00), y* of every state
+  # (step05), the Exp 1 outcome (= D_Exp1's y*, step11) and the Exp 2 round judgments (step12).
+  # This block is the only E configuration; every step builds E from it through
+  # rafr.evaluator.judge.build_config, so no use can configure an E of its own. Change any value
+  # below and the whole chain is rebuilt on the new E (II.9.1), never patched.
+  provider: anthropic
+  api: messages
+  family: claude-opus-5       # LOCKED v0.6 (App. D): E = Claude Opus 5
+  model: claude-opus-5        # 2026-09-20: exact API model id
+  # `version` is the model's `created_at` as returned by the API, NOT a dated snapshot id:
+  # this model generation ships no dated snapshot ids (`claude-opus-5-20260724` and the like
+  # do not exist), so the creation date is the only version string the provider gives us.
+  # II.9.1 still wants a frozen, recorded version -- see the limitation in docs/progress.md.
+  version: "2026-07-24"       # 2026-09-20: `created_at` = 2026-07-24
+  decoding:
+    temperature: null         # NOT SENT (2026-09-20): this model rejects the parameter
+                              # outright ("`temperature` is deprecated for this model"), so the
+                              # old pin to 0 is gone. null = not sent, recorded as null (II.8.2).
+    # E's decoding is the retest's, item by item (2026-09-23, option (a)): the request
+    # E sends must be the one kappa = .945 and the arm A / B comparison were measured with.
+    # tests/test_evaluator.py builds the retest's request through the retest's own code and
+    # asserts ours is byte-identical.
+    effort: null              # NOT SENT (2026-09-23): the retest sent no effort
+                              # (reasoning_params: {}), so the model runs at its own default
+                              # tier; null is recorded as null. Was `low` (2026-09-20) --
+                              # never measured, and the retest did not run at it.
+    max_output_tokens: 4096   # 2026-09-23: the retest's max_tokens (was 1024). A binary
+                              # label plus one sentence of reason is ~70 output tokens, so this
+                              # is a ceiling, not a working limit.
+    # Anthropic Messages API has no seed parameter; seed is recorded as null for E.
+  # E is called exactly as the retest called it (2026-09-23): plain prompt, no system
+  # prompt, one user message, NO structured output; the answer text is parsed by
+  # rafr.evaluator.judge.parse_response (a copy of the retest's parser). kappa = .945 and the
+  # arm A / B comparison were measured under that calling convention. judge.build_config
+  # refuses `true` here.
+  structured_output: false
+  # v0.9 (C.14): the rubric-free prompt, the authors' arm B of the annotator-selection test, moved
+  # here from annotation/ on 2026-09-23 (approved; bytes unchanged, hash unchanged). The
+  # round-1 judge.txt + scale.txt are retired to archive/round1/prompts/ and are never read here.
+  prompt_file: src/rafr/evaluator/prompts/annotator_arm_b.txt
+  # sha256 of that file, LF-normalized (= the bytes git stores; see judge.prompt_sha256). Every
+  # step recomputes it at start-up and refuses to run on a mismatch; every E record carries it.
+  prompt_sha256: 064ae77770ca5cbc77252c42f043018ac7fb4bfe6d4153a530fd16d874b2cbfe
+  # Network behaviour only: not part of E's identity, of the request or of the cache key.
+  # (2026-09-23) 429 / connection errors / 5xx are retried by rafr.llm.client with an
+  # exponential backoff -- 2, 4, 8, 16, 32, 60, 60, 60 s (+-20% jitter, never shorter than
+  # the server's retry-after) -- and every event is counted and logged. The SDK's own retries
+  # are OFF so that none is hidden. These retries are separate from E's 2 parse retries and
+  # never count as an E failure; when they run out the step stops and is resumed later.
+  network:
+    max_retries: 0            # SDK-level retries (off, see above)
+    transient_retries: 8      # re-sends of one request after a 429 / network / 5xx
+    backoff_base_s: 2
+    backoff_cap_s: 60
+    timeout_s: 120
+
+panel:
+  # II.3 / III.1.2 (v0.9): Exp 2 sensitivity analysis ONLY. After the Exp 2 loop each member
+  # re-judges the x_T of both arms and is analysed on its own -- no merging, no tie rule. Never
+  # enters tau, the gate or Exp 1 (App. B.1). Runs on the laptop (keys from .env), never on the
+  # pod. Code: rafr.evaluator.panel; providers: rafr.llm.providers.openai_compatible.
+  #
+  # Same prompt as E (II.3): there is deliberately no prompt key here. The members are shown
+  # models.evaluator.prompt_file (hash-checked against models.evaluator.prompt_sha256) as one
+  # plain user message, no system prompt, no structured output, parsed by E's parser, with E's
+  # 2 parse retries. max_output_tokens 4096 and nothing sent for reasoning match E (II.9.1:
+  # effort not sent, max_tokens 4096) and the annotator-selection run that measured these two
+  # models (reasoning_params {} there as well).
+  #
+  # App. D: the model versions (and hence the ids pinned below) are the authors', before the panel
+  # re-judges x_T. 2026-09-24 (stop point C; docs/decisions.md D-2026-09-24c): the ids and
+  # versions the 2026-09-22 annotator-selection test actually called (its calls.jsonl: 800 calls
+  # per model, every one with these values), and temperature 0.0 as that test sent it.
+  on_failure: exclude_and_report  # 2026-09-24: a member that still refuses / is blocked /
+                              # cannot be parsed after its 2 retries leaves that trajectory out of
+                              # THAT member's TFR only; the count is reported per arm
+  members:
+    grok:
+      provider: xai
+      family: grok-4.6        # II.3
+      model: grok-4.6         # 2026-09-24: the selection test's model id
+      version: "1.0@fp_9a755add8c"  # 2026-09-24: the selection test's recorded version
+                              # (GET /v1/language-models 2026-09-22: version 1.0, fp_9a755add8c)
+      decoding:
+        temperature: 0.0      # 2026-09-24: as the selection test sent it to this model
+        reasoning_params: {}  # nothing sent: provider default, as E and the selection test
+        max_output_tokens: 4096
+    # qwen (Qwen3.8-Max via DashScope) removed, 2026-09-28 (docs/decisions.md
+    # D-2026-09-28b): the DashScope endpoint was unreachable from the laptop at step 12, so the
+    # detox pilot's panel is Grok only; Qwen is kept for the math domain.
+  # Network behaviour only, as for E: counted backoff in rafr.llm.client, SDK retries off.
+  network:
+    max_retries: 0
+    transient_retries: 8
+    backoff_base_s: 2
+    backoff_cap_s: 60
+    timeout_s: 120
+
+verifiers:
+  # V1, V2 (II.4): heterogeneous, not from Anthropic, OpenAI, Qwen or xAI (II.9.1 v0.9: E, the
+  # controller and the panel). Final selection by the authors after the step 2 probe (0.5 step 2).
+  # score() contract: src/rafr/contracts/score_spec.md
+  #
+  # ONE scoring path (task 2026-09-24 section 3; decisions.md D-2026-09-24b point 4): step 6's
+  # scores table, Exp 2's in-process scoring and the probe all score through this factory, which
+  # imports the probe's own scoring code and checks every parameter against the probe's records
+  # (a difference raises). The registry guard backend (double BOS) is not on this path; formal
+  # steps refuse any other factory. App. D's "verifier factory path" is this line.
+  factory: rafr.verifiers.factory:make_verifier
+  # Where the probe's records live (download manifest, meta, preflight, environment): the laptop
+  # CPU run of the encoder (cpu record, dry run only) and the GPU run pulled back by
+  # env/sync_data.py (cuda records of every scored configuration, the encoder included).
+  probe_records: [data/probe/local, data/probe/remote]
+  # 2026-09-25 after the step 2 probe (decisions.md D-2026-09-25): probe config_ids, also
+  # the verifier_id of every scores-table row. Both are scored from the probe's cuda records.
+  v1:
+    id: enc_paradetox         # s-nlp/roberta_toxicity_classifier@048c25bb, P(toxic)
+  v2:
+    id: sg_9b.native          # google/shieldgemma-9b@b8b63601, max P(Yes) of Harassment / Hate Speech
+  # The one pod every formal score comes from (2026-09-24; decisions.md D-2026-09-24c
+  # point 6): step 6's D_gate / D_Exp1 and Exp 2's in-process scoring run on this image and GPU
+  # only. env/step06_gpu.py and env/exp2_gpu.py check it before they start anything, and the
+  # jobs check it again on the pod (rafr.verifiers.formal_pod). A container cannot see its image
+  # name, so `expect` lists what the tag promises and the container shows: the image's
+  # CUDA_VERSION, torch and its CUDA, the Ubuntu release, and the GPU name nvidia-smi / torch
+  # report for an A100 SXM 80GB.
+  formal_pod:
+    image: runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404
+    gpu: A100 SXM 80GB
+    expect:
+      cuda_version: "12.8.1"          # cu1281
+      torch: "2.8.0"                  # torch280 (the local build suffix, e.g. +cu128, is ignored)
+      torch_cuda: "12.8"              # torch.version.cuda of a cu128 build
+      ubuntu: "24.04"                 # ubuntu2404
+      gpu_name: NVIDIA A100-SXM4-80GB
+  # Deterministic stub used ONLY for dry run (step03) and tests. Never a formal verifier.
+  stub:
+    v1_id: stub-v1
+    v2_id: stub-v2
+
+# No pricing block (decision, 2026-09-17): the ledger reports call counts and token
+# counts per purpose, which is what the run actually produces. Converting tokens to dollars
+# needed four more frozen-config values and blocked formal runs on typing in a price list.

@@ -1,0 +1,9 @@
+{task}
+
+Problem:
+---
+{x0}
+---
+
+Respond with JSON only, no other output:
+{"solution": "<your complete solution>"}

@@ -1,0 +1,1 @@
+Checker B is a language model that reads the problem and the solution, reasons about them, and then judges whether the final answer is correct; its score is its output for the answer being wrong.

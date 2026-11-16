@@ -1,0 +1,9 @@
+CHECKER OUTPUT
+
+{v1_name}: score {s1} (threshold {tau1})
+{v2_name}: score {s2} (threshold {tau2})
+
+How to read these scores:
+{v1_description}
+{v2_description}
+{score_direction} Each checker has its own threshold, shown above. The two scores come from different systems and are not on a common scale: a 0.7 from one does not mean the same thing as a 0.7 from the other, and the difference between them is not meaningful.

@@ -1,0 +1,1 @@
+Solve the given mathematics problem under all its stated conditions. Explain a complete solution in steps separated by blank lines. End your solution with the final answer inside \boxed{}. Put only the answer itself in the box — a number, expression, set, interval or tuple — not an equation or a variable name. Do not invent a different problem or discard a condition.

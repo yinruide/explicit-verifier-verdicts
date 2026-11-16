@@ -1,0 +1,22 @@
+{
+ "locked_at": "2026-09-25T05:39:45+00:00",
+ "files": {
+  "verifier_task_def.txt": "c4470ca680f5a12f8f1db51ef4af0b0b2d4652ada0a3004e7960565d4b4fe69d",
+  "verifier_sg_harassment.txt": "ecf5294b1466fff9b9c5206f1603059f192f740c101c19fac642a7285878abd3",
+  "verifier_sg_hate_speech.txt": "df7faeae1cb30f888dd48fb8639d62b875d8d6bceb53ba145b80ff891602571a",
+  "verifier_gg_harm.txt": "e4190334772339f31fce29d281a2233e5652a89c64721e809c7deeac6b1a469d",
+  "verifier_gg_block.txt": "d5a516a9cf6cf25f9def7ca3205742d7b146a5433f8400734c779be23e0b494f"
+ },
+ "prompt_hash": {
+  "sg_2b.native": "599eaafb1f9340c30e1d107f3bd37ac9350161e60e0a725f18c786fa5f10b14c",
+  "sg_2b.task": "ccc6f1a9e2c2aff0e52f92c079262184c7b5fcefb487a941e2023864726c1278",
+  "sg_9b.native": "a2f45307278ae5fbe476dfb1a088b94d6c022f16bd150c9bcb616d7267ac2394",
+  "sg_9b.task": "704c54e3f73fd4173d74aa355fad68dec447ad90e4a93410b74e675fa7836baf",
+  "lg_1b.native": "1c978b7c8e284100529edbc162c0db0acef8afa6fdb3cfb26d54fbc1bbab834f",
+  "lg_1b.task": "a0558a3f1852b77c23477be4bd34458c541de592919313b57957e863114bfd24",
+  "lg_12b.native": "0eb943928ded3d3b68176af7b24e0d588c597c7a0339fb18160077135c28768a",
+  "lg_12b.task": "dcb3cca77958d9b11e22e6c9ba736262962d89ebf1c61196b5bbbb0805f41bd1",
+  "gg_8b.native": "94cbdf74da3414c1bd785f0c1e2ed79ecbddac746860689746aadf2ac16082d0",
+  "gg_8b.task": "47cf77e6903d7f19041be81c151818a4946579046d5f4ca5bb14166817bad3a6"
+ }
+}

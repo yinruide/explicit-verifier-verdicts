@@ -1,0 +1,99 @@
+# Exp 2 — naturalistic sequential validation (protocol 0.2, II.8.3, II.9.3).
+# TBD convention: see configs/models.yaml header.
+
+design:
+  arms: [A1, B]                     # II.1.3: representation randomly assigned; no permuted-B
+  k: 4                              # LOCKED v0.6 (II.8.3): K = 4 controller decisions
+  channel: identity                 # II.1.3: no channel in Exp 2 (enforced in code)
+
+loop:
+  # Decision 4(c) (2026-09-16), supplementing 0.2 / II.8.3:
+  #   x1 is produced by the G_fixed configuration (same backbone, same detox instruction,
+  #   no feedback), with the same validity/regeneration/drop rule, for ALL x0 BEFORE
+  #   randomization. The controller then makes at most K decisions starting at t = 1
+  #   (accept allowed from t = 1 on). x0 itself is never presented for accept/reject.
+  initial_rewrite: g_fixed
+  first_decision_t: 1
+  # Round-synchronous batching (II.8.3): all trajectories finish round t, non-accepted texts
+  # are scored as one batch by V1/V2, then round t+1 starts. Every round is written to disk
+  # and the run can resume from any round.
+  batch_by_round: true
+  checkpoint_every_round: true
+
+x0:
+  # Decision (group 6d, 2026-09-16): Exp 2 reuses the D_Exp1 x0 and their G_fixed states as
+  # x1. The former `fresh` option (a separate disjoint split built by step04) was removed;
+  # reinstating it would need a new split in data.yaml plus a step04 run. D_Exp1 is disjoint
+  # from D_fit / D_gate / D_gate_reserve by construction (II.2.4).
+  source: d_exp1
+  # No count: II.8.3 says Exp 2 reuses D_Exp1, so it runs on ALL of it. A cap would only be a
+  # silent way to drop states (decision, 2026-09-17).
+
+randomization:
+  # Decision 9 (2026-09-16): balanced permutation, unit = x0, equal arm sizes; seed logged.
+  scheme: balanced_permutation
+  # The assignment seed derives from data.yaml seeds.master (component "exp2_randomization").
+
+controller:
+  show_x0: true                     # decision 8 (2026-09-16)
+  parse_max_retries: 2              # LOCKED v0.6 (II.8.2)
+  parse_fail_alert_threshold: 0.02  # LOCKED v0.6 (II.8.2)
+  # parse_fail accounting (II.8.2): x_{t+1} = x_t, the round is consumed as usual.
+
+analysis:
+  # III.1.2 (v0.8): TFR_A1 - TFR_B with a 95% percentile bootstrap that resamples
+  # TRAJECTORIES WITHIN ARM (stratified), keeping the randomized arm sizes fixed.
+  bootstrap:
+    method: percentile_bootstrap    # LOCKED v0.8 (III.1.2)
+    n_boot: 10000                   # LOCKED v0.8 (III.1.2)
+    stratify_by: arm                # LOCKED v0.8 (III.1.2)
+    # The bootstrap seed is this run's seed, derived from seeds.master (component "exp2_run").
+  # II.8.2 (v0.8): Exp 2 reports parse_fail by arm x ROUND (Exp 1 is by arm x lambda).
+  parse_fail_report_by: round
+  # Descriptive report (2026-09-18): among terminal texts E judged SAFE, the share
+  # whose semantic-preservation score quality(x0, x_T) (I.6, II.4.3) is BELOW the
+  # preregistered cutpoint, per arm. Watches for hollowed-out rewrites that satisfy E by
+  # saying nothing. Not an outcome and not a sensitivity analysis.
+  semantic_preservation:
+    # Cutpoint rule (2026-09-28): the 10% quantile of quality(x0, x1) over the 600 D_fit
+    # pairs (x1 = the G_fixed state), numpy's default (linear) quantile. Computed and written
+    # here by `python pipelines/step12_exp2.py cutpoint` (report in
+    # data/diagnostics/semantic_cutpoint.json); no label is read, D_Exp1 and the Exp 2 texts
+    # are never touched. Never typed in by hand.
+    cutpoint: 0.7164976537227631
+    cutpoint_rule:
+      population: d_fit
+      quantile: 0.10
+      method: linear
+    # quality(x0, x_T) = the TextDetox similarity (2026-09-28). The three sub-metrics
+    # follow the TextDetox 2024 official evaluation (II.2.1; rafr.domains.detox.semantic),
+    # CPU only. Model revisions and library versions are pinned and checked at load.
+    protocol:
+      reference: pan-webis-de/pan-code clef24/text-detoxification/evaluate.py @88037f4602d013698c31985764a17f086baa451f
+      quality: similarity
+      device: cpu
+      similarity:                   # LaBSE embeddings, 1 - cosine distance
+        model: sentence-transformers/LaBSE
+        revision: 836121a0533e5664b21c7aacc5d22951f2b8b25b
+        library: sentence-transformers==6.1.0
+      toxicity:                     # STA: P(neutral); never V1 (II.2.1, App. B.1)
+        model: textdetox/xlmr-large-toxicity-classifier
+        revision: b9c7c563427c591fc318d91eb592381ae2fbde66
+        target_label: 0             # id2label {0: neutral, 1: toxic}; evaluate.py main() passes 0
+        batch_size: 32
+        max_length: 512
+      fluency:                      # chrF against a human reference, / 100
+        metric: chrf
+        library: sacrebleu==2.6.0
+
+sensitivity:
+  # II.8.2 (v0.7): preregistered sensitivity analysis — a trajectory whose FINAL output x_T
+  # carries the refusal_like flag is counted as a terminal failure. A refusal-looking rewrite
+  # earlier in the trajectory does not count when x_T itself is fine. Exp 2 only; the main
+  # analysis is unaffected. The two parse_fail sensitivities of II.8.2 are always run.
+  refusal_like_as_failure: true
+
+run:
+  # seed derives from data.yaml seeds.master (component "exp2_run"); it is written on every
+  # log row and into the run snapshot (II.10).
+  run_id_prefix: exp2

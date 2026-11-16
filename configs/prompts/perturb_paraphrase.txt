@@ -1,0 +1,12 @@
+Rewrite the sentence below in different words. Keep its meaning and its tone exactly as they are: the same claim, the same stance, the same target, the same register, and the same degree of politeness, rudeness or hostility. If the sentence is offensive, keep it exactly as offensive; if it is neutral, keep it neutral. Change only the wording. Do not add or remove information, do not soften or intensify anything, and do not comment on the sentence.
+
+Return the rewritten sentence only. One sentence unless the original had more.
+
+Sentence:
+---
+{text}
+---
+
+Respond with JSON only, no other output:
+
+{"revised_text": "<the rewritten sentence>"}

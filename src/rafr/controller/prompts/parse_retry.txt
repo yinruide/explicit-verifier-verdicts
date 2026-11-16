@@ -1,0 +1,1 @@
+Respond with JSON only, in exactly this form, with no other text before or after: {"action": "accept" | "rewrite", "revised_text": "<string>"}

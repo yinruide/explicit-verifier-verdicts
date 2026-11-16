@@ -1,0 +1,121 @@
+{
+  "schema_version": "math-execution-v2",
+  "stage": "formal",
+  "execution_mode": "live",
+  "source_path": "data/math/formal_n9000/source.jsonl",
+  "bundle_path": "data/math/formal_n9000/bundle",
+  "development_source_path": "data/raw/math/MATH-500/test.jsonl",
+  "additional_development_paths": [
+    "data/math/m21_probe/probe_public.jsonl",
+    "data/math/m21_probe_2/probe_public.jsonl",
+    "data/math/gen_check_n12/bundle/public_questions.jsonl"
+  ],
+  "seed": 18042406,
+  "fit_n": 1500,
+  "gate_n": 1500,
+  "reserve_n": 1500,
+  "experiment_n": 300,
+  "smoke_n": 30,
+  "delta_r": 0.1,
+  "bootstrap_n": 10000,
+  "max_decisions": 4,
+  "max_initial_attempts": 3,
+  "math_verify_version": "0.9.0",
+  "verifiers": [
+    {
+      "form": "llm_judge",
+      "vendor": "Zhipu AI (Z.ai)",
+      "base_model": "GLM-4-9B-0414",
+      "model_id": "zai-org/GLM-Z1-9B-0414",
+      "revision": "b221b06fefb23ca320922cf6e68ab5f2fb82de81",
+      "implementation": "hf_generative_judge",
+      "lineage": {
+        "vendors": [
+          "Zhipu AI (Z.ai)"
+        ],
+        "bases": [
+          "GLM-4-0414"
+        ],
+        "reasoning_data": []
+      },
+      "settings": {
+        "tokenizer_revision": "b221b06fefb23ca320922cf6e68ab5f2fb82de81",
+        "model_class": "AutoModelForCausalLM",
+        "prompt_file": "gen_judge.txt",
+        "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+        "verdict_prompt_file": "gen_judge_verdict.txt",
+        "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+        "stop_string": "</think>",
+        "eos_token_ids": [
+          151329,
+          151336,
+          151338
+        ],
+        "positive_token": " Yes",
+        "negative_token": " No",
+        "dtype": "bfloat16",
+        "attn_implementation": "rafr_gqa_decode",
+        "batch_size": 48,
+        "max_input_tokens": 1408,
+        "max_new_tokens": 6144,
+        "max_forced_tokens": 128,
+        "device_map": "auto",
+        "local_files_only": true,
+        "license_reviewed": true,
+        "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; MIT License (LICENSE in the repository), not a gated repository",
+        "trust_remote_code": false
+      }
+    },
+    {
+      "form": "llm_judge",
+      "vendor": "DeepSeek",
+      "base_model": "Llama-3.1-8B",
+      "model_id": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+      "revision": "6a6f4aa4197940add57724a7707d069478df56b1",
+      "implementation": "hf_generative_judge",
+      "lineage": {
+        "vendors": [
+          "DeepSeek",
+          "Meta"
+        ],
+        "bases": [
+          "Llama 3.1"
+        ],
+        "reasoning_data": [
+          "DeepSeek-R1 (800k curated samples)"
+        ]
+      },
+      "settings": {
+        "tokenizer_revision": "6a6f4aa4197940add57724a7707d069478df56b1",
+        "model_class": "AutoModelForCausalLM",
+        "prompt_file": "gen_judge.txt",
+        "prompt_sha256": "209cdd27883549c3abdf63e13afefe4d0f50853f8fbc2240e73d5f6c60317ab1",
+        "verdict_prompt_file": "gen_judge_verdict.txt",
+        "verdict_prompt_sha256": "5dc510b52a07c3dfdb4d10dc1b1103ab069aa61afd2b97972eb38f6aa1c61545",
+        "stop_string": "</think>",
+        "eos_token_ids": [
+          128001
+        ],
+        "positive_token": " Yes",
+        "negative_token": " No",
+        "dtype": "bfloat16",
+        "attn_implementation": "rafr_gqa_decode",
+        "batch_size": 32,
+        "max_input_tokens": 1344,
+        "max_new_tokens": 6144,
+        "max_forced_tokens": 128,
+        "device_map": "auto",
+        "local_files_only": true,
+        "license_reviewed": true,
+        "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; MIT License (LICENSE in the repository); the model is derived from Llama-3.1-8B-Base and is also subject to the Llama 3.1 Community License; not a gated repository",
+        "trust_remote_code": false
+      }
+    }
+  ],
+  "reviewed_by": "Ruide 2026-10-04",
+  "research_configuration_approved": true,
+  "pricing_reviewed": true,
+  "data_reviewed": true,
+  "live_smoke_run": null,
+  "model_probe_path": null
+}

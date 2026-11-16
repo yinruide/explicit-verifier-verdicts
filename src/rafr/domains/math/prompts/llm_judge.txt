@@ -1,0 +1,9 @@
+Here is a math problem and a solution to it.
+
+Problem:
+{problem}
+
+Solution:
+{solution}
+
+Is the final answer of this solution correct? Answer only Yes or No.

@@ -1,0 +1,9 @@
+Here is a math problem and a solution to it.
+
+Problem:
+{problem}
+
+Solution:
+{solution}
+
+Decide whether this solution's final answer is correct. The solution's final answer is the last boxed expression in it. Think it through first; you will then be asked for a one-word verdict.

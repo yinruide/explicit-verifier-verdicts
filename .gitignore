@@ -1,0 +1,27 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+
+# Data and outputs never enter git: the run records live in a separate data directory
+# (RAFR_DATA_DIR); regenerated tables and figures go to out/.
+/data/
+/runs/
+/frozen/
+/out/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

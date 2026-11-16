@@ -1,0 +1,1 @@
+For both checkers, a higher score means the checker considers the solution more likely to be wrong. The two scores are on different scales and cannot be compared directly.
