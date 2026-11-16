@@ -53,6 +53,7 @@ from analysis._common import (
     same_sign,
 )
 from rafr.contracts.schemas import BOOTSTRAP_B, K_MAX_ROUNDS
+from rafr.core import paths
 from rafr.experiments.exp1 import identity_to_low_by_lambda
 from rafr.logging.writer import read_jsonl
 
@@ -324,7 +325,10 @@ def load_inputs(
     outcome: list[dict[str, Any]] = []
     meta = exp1_dir / "e_judgments_hash.json"
     if meta.is_file():
-        opath = Path(json.loads(meta.read_text(encoding="utf-8"))["file"])
+        rec = json.loads(meta.read_text(encoding="utf-8"))
+        opath = paths.relocate(rec["file"], sha256=rec.get("sha256"))
+        if not opath.is_file():
+            raise FileNotFoundError(f"Exp 1 outcome file {rec['file']} named by {meta} not found")
         guard(opath, what="Exp 1 outcome file")
         outcome = _jsonl(opath)
     gate = None

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import pytest
@@ -203,6 +204,22 @@ def test_current_repo_state_is_frozen():
 def test_paths_resolve_relative_to_root():
     assert paths.resolve("configs/models.yaml") == paths.ROOT / "configs" / "models.yaml"
     assert (paths.CONFIGS / "models.yaml").exists()
+
+
+def test_paths_relocate_maps_recorded_path_onto_data_root(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(paths, "DATA_ROOT", tmp_path)
+    copy = tmp_path / "data" / "scores" / "x.jsonl"
+    copy.parent.mkdir(parents=True)
+    copy.write_bytes(b'{"a": 1}\n')
+    sha = hashlib.sha256(copy.read_bytes()).hexdigest()
+    recorded = r"C:\elsewhere\repo\data\scores\x.jsonl"
+    assert paths.relocate(recorded) == copy
+    assert paths.relocate(recorded, sha256=sha) == copy
+    # a copy with other bytes is not used: the recorded path comes back unchanged
+    assert paths.relocate(recorded, sha256="0" * 64) == Path(recorded)
+    assert paths.relocate("/elsewhere/repo/data/scores/missing.jsonl") == Path(
+        "/elsewhere/repo/data/scores/missing.jsonl"
+    )
 
 
 def test_get_dotted():

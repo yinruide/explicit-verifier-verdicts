@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 
 def repo_root() -> Path:
@@ -81,6 +82,27 @@ def resolve(path: str | os.PathLike[str]) -> Path:
     if p.parts and p.parts[0] in DATA_PREFIXES:
         return DATA_ROOT / p
     return ROOT / p
+
+
+def relocate(recorded: str | os.PathLike[str], *, sha256: str | None = None) -> Path:
+    """Map an absolute path recorded in a run record onto this checkout's data directory.
+
+    Run records store the absolute paths of the machine that wrote them. Each tail of the
+    recorded path that starts with a ``data``, ``runs`` or ``frozen`` component is looked up
+    under :data:`DATA_ROOT`, and the first copy found there is returned -- provided its sha256
+    equals ``sha256`` when that is given. With no such copy the recorded path is returned as is.
+    """
+    text = os.fspath(recorded)
+    parts = PureWindowsPath(text).parts if "\\" in text else Path(text).parts
+    for i, part in enumerate(parts):
+        if part not in DATA_PREFIXES:
+            continue
+        candidate = DATA_ROOT.joinpath(*parts[i:])
+        if candidate.is_file() and (
+            sha256 is None or hashlib.sha256(candidate.read_bytes()).hexdigest() == sha256
+        ):
+            return candidate
+    return Path(text)
 
 
 def shown(path: str | os.PathLike[str]) -> str:
