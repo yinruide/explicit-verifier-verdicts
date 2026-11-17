@@ -127,7 +127,7 @@ M71_DIRECTION = (
 )
 
 
-def test_repo_descriptions_are_ruides_final_m71_sentences():
+def test_repo_descriptions_are_the_final_m71_sentences():
     """paper Sec. 3 (2026-10-12): two identical sentences, Checker A = V1, B = V2."""
     import json
 

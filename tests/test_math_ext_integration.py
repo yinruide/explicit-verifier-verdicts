@@ -82,7 +82,7 @@ def test_cli_and_real_evidence_gate_resolve_external_manifest_the_same_way(
         pytest.fail("supplied relative manifest must be opened, not silently skipped")
 
 
-def test_native_t1_public_loop_judge_and_ruide_consumer(native_source, tmp_path):
+def test_native_t1_public_loop_judge_and_exp2_finals_consumer(native_source, tmp_path):
     source = native_source
     starts = source.states(Split.D_EXP1)
     export = native_t1(source, starts)

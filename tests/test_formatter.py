@@ -359,7 +359,7 @@ def test_templates_final_and_free_of_the_placeholder_marker():
     assert not any(isinstance(n, ast.Import | ast.ImportFrom) for n in ast.walk(tree))
 
 
-def test_ruides_wording_of_the_descriptions_and_the_scale_sentence():
+def test_verbatim_checker_descriptions_and_scale_sentence():
     """verbatim: the two checker descriptions (with "output" where the authors'
     draft said "estimated probability") and the scale sentence's numbers."""
     assert tpl.V1_DESCRIPTION == (

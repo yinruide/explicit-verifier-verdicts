@@ -47,7 +47,7 @@ def _filled_models() -> dict:
     return m
 
 
-def test_the_real_config_carries_ruides_app_d_values():
+def test_the_real_config_carries_the_app_d_panel_values():
     """2026-09-24: the ids and versions the 2026-09-22
     selection test actually called, temperature 0.0, exclude_and_report. 2026-09-28
     the detox pilot's panel is Grok only (DashScope unreachable)."""
