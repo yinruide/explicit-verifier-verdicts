@@ -1,7 +1,7 @@
 {
  "schema": "math-step02-round2-v1",
- "status": "B segment ready after the precheck (2026-10-11). Ruide 2026-10-11 (A-segment review): judge prompts written; step-side prompts confirmed (repository text); missing verdicts by rule (b) force_remaining; L_gen whole 6144, ThinkPRM 4096, DeepCritic 8192; B from plan 10.12, fixed after the precheck measures it; sdpa, subject to the GPU precheck (batch invariance and padding transparency); stop point A (Ruide 2026-10-11): decoding attention rafr_gqa_decode (sdpa without the repeat_kv copies of the static cache for a one-token query; generative.grouped_decode_attention), speed-tested on one candidate before the prechecks are rerun; PRM800K does not trigger the source rule; Olmo-3.1 does and is excluded; parameter cap 15B removes Gemma 4 31B and GLM-Z1-32B; MATH test overlap checked; step-side truncation = an item whose score holds any forced verdict; the full stage scores D_fit and a stratified pool sample (all E-INCORRECT and 1,000 E-CORRECT), p-weighted.",
- "basis": "protocol v1.2 M.4, M.4.1, II.10 generative scoring variant, C.28 (two-stage program; Ruide 2026-10-11 decisions), 0.5 step 2; Ruide 2026-10-11 second batch (C.28, M.4 parameter cap)",
+ "status": "B segment ready after the precheck (2026-10-11). 2026-10-11 (A-segment review): judge prompts written; step-side prompts confirmed (repository text); missing verdicts by rule (b) force_remaining; L_gen whole 6144, ThinkPRM 4096, DeepCritic 8192; B from plan 10.12, fixed after the precheck measures it; sdpa, subject to the GPU precheck (batch invariance and padding transparency); stop point A (2026-10-11): decoding attention rafr_gqa_decode (sdpa without the repeat_kv copies of the static cache for a one-token query; generative.grouped_decode_attention), speed-tested on one candidate before the prechecks are rerun; PRM800K does not trigger the source rule; Olmo-3.1 does and is excluded; parameter cap 15B removes Gemma 4 31B and GLM-Z1-32B; MATH test overlap checked; step-side truncation = an item whose score holds any forced verdict; the full stage scores D_fit and a stratified pool sample (all E-INCORRECT and 1,000 E-CORRECT), p-weighted.",
+ "basis": "protocol v1.2 M.4, M.4.1, II.10 generative scoring variant, C.28 (two-stage program; 2026-10-11 decisions), 0.5 step 2; 2026-10-11 second batch (C.28, M.4 parameter cap)",
  "run_dir": "runs/math_formal_n9000",
  "probe_inputs": "data/math/vprobe/probe_inputs.jsonl",
  "label_purpose": "verifier_selection",
@@ -15,18 +15,18 @@
   "split": "d_fit",
   "per_stratum": 150,
   "seed_key": "round2_screen",
-  "tau": "II.4.1 F1, strata weighted p and 1 - p, on the 300 (in sample); Ruide 2026-10-11",
+  "tau": "II.4.1 F1, strata weighted p and 1 - p, on the 300 (in sample); 2026-10-11",
   "order": [
    "gate joint pass at delta_R 0.10, descending",
    "phi of errors (weighted), ascending",
    "both miss on E-INCORRECT, ascending"
   ],
   "truncation_max": 0.3,
-  "truncation_reading": "whole-solution judges: unweighted share of the 300 that reached L_gen; step side: unweighted share of the 300 whose score holds any forced verdict (Ruide 2026-10-11, C.28). Over 30% keeps the candidate out of the full stage; by stratum and p-weighted shares reported beside it",
+  "truncation_reading": "whole-solution judges: unweighted share of the 300 that reached L_gen; step side: unweighted share of the 300 whose score holds any forced verdict (2026-10-11, C.28). Over 30% keeps the candidate out of the full stage; by stratum and p-weighted shares reported beside it",
   "miss_rate_floor": 0.1,
-  "miss_rate_reading": "per V, 1 - TPR on the 150 E-INCORRECT at the screening tau (Ruide 2026-10-11: below 0.10 the V is not paired)",
+  "miss_rate_reading": "per V, 1 - TPR on the 150 E-INCORRECT at the screening tau (2026-10-11: below 0.10 the V is not paired)",
   "top_pairs": 4,
-  "selection": "Ruide selects V1, V2 and one backup candidate on this table; the full stage scores only these three and verifies them on the formal C.19 table; if the selected pair fails TPR - r >= 2 delta_R or the Exp 2 floor there, the pair with the backup comes in (C.28, Ruide 2026-10-11, third batch, before the screening table). The first four unblocked pairs are listed for reference only"
+  "selection": "The authors select V1, V2 and one backup candidate on this table; the full stage scores only these three and verifies them on the formal C.19 table; if the selected pair fails TPR - r >= 2 delta_R or the Exp 2 floor there, the pair with the backup comes in (C.28, 2026-10-11, third batch, before the screening table). The first four unblocked pairs are listed for reference only"
  },
  "check203": {
   "n": 203,
@@ -147,12 +147,12 @@
      "device_map": "auto",
      "local_files_only": true,
      "license_reviewed": true,
-     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
+     "license_review_reference": "2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
      "trust_remote_code": false
     }
    },
-   "literature_flags": "Literature check 2026-10-11 (plan 10.10): trained on PRM800K problem-solution prefixes; PRM800K's solutions were generated by OpenAI's GPT-4-based generator (Lightman et al. 2023, sec. 2.2) -- the verification chains themselves were written by QwQ-32B-Preview. PRM800K includes 4.5K MATH test problems. Whether OpenAI-generated solutions as training inputs fall under M.4's OpenAI rule is Ruide's call. Ruide 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
-   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)",
+   "literature_flags": "Literature check 2026-10-11 (plan 10.10): trained on PRM800K problem-solution prefixes; PRM800K's solutions were generated by OpenAI's GPT-4-based generator (Lightman et al. 2023, sec. 2.2) -- the verification chains themselves were written by QwQ-32B-Preview. PRM800K includes 4.5K MATH test problems. Whether OpenAI-generated solutions as training inputs fall under M.4's OpenAI rule is the authors' call. 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and the authors fix it at stop point A (2026-10-11)",
    "notes": [
     "screening (2026-10-12, 300 states, p-weighted, tau in sample): TPR - r 0.128, below 2 delta_R = 0.20 (delta_R 0.10); AUROC 0.571 (runs/math_vprobe2/20261012T044451Z_screen)"
    ]
@@ -240,13 +240,13 @@
      "device_map": "auto",
      "local_files_only": true,
      "license_reviewed": true,
-     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card metadata), not a gated repository",
+     "license_review_reference": "2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card metadata), not a gated repository",
      "trust_remote_code": false
     }
    },
-   "literature_flags": "Literature check 2026-10-11 (plan 10.10): SFT critiques by Qwen2.5-72B-Instruct seeded from PRM800K; RL on 40.7K PRM800K items (the README says RL1.5 reran the same RL data); PRM800K's solutions were generated by OpenAI's GPT-4-based generator. Whether that falls under M.4's OpenAI rule is Ruide's call. Ruide 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
-   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)",
-   "not_scored": "Ruide 2026-10-11 pre-decision (precheck failure -> excluded): precheck exit 5 on the GPU (tiny bf16 model: 2 of 4 toy items differ scored alone vs in the batch). The failure came from a precheck defect since fixed (e940515): the tiny L_in equalled its two longest toy inputs (224 tokens), so those rows had no padding and, scored alone among copies, made a batch without any padding, where transformers drops the prefill mask and uses another kernel. Every scored input is shorter than L_in. Not re-tested and not reinstated (Ruide 2026-10-12)"
+   "literature_flags": "Literature check 2026-10-11 (plan 10.10): SFT critiques by Qwen2.5-72B-Instruct seeded from PRM800K; RL on 40.7K PRM800K items (the README says RL1.5 reran the same RL data); PRM800K's solutions were generated by OpenAI's GPT-4-based generator. Whether that falls under M.4's OpenAI rule is the authors' call. 2026-10-11: does not trigger the source rule -- the V learns critique reasoning written by Qwen models; the OpenAI-generated text is only the solutions being critiqued (C.28)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and the authors fix it at stop point A (2026-10-11)",
+   "not_scored": "2026-10-11 pre-decision (precheck failure -> excluded): precheck exit 5 on the GPU (tiny bf16 model: 2 of 4 toy items differ scored alone vs in the batch). The failure came from a precheck defect since fixed (e940515): the tiny L_in equalled its two longest toy inputs (224 tokens), so those rows had no padding and, scored alone among copies, made a batch without any padding, where transformers drops the prefill mask and uses another kernel. Every scored input is shorter than L_in. Not re-tested and not reinstated (2026-10-12)"
   },
   {
    "candidate_id": "gemma4_12b",
@@ -328,12 +328,12 @@
      "device_map": "auto",
      "local_files_only": true,
      "license_reviewed": true,
-     "license_review_reference": "Ruide 2026-10-08 (round 1, same revision): approved; Apache License 2.0, not a gated repository",
+     "license_review_reference": "2026-10-08 (round 1, same revision): approved; Apache License 2.0, not a gated repository",
      "trust_remote_code": false
     }
    },
-   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
-   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)"
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (2026-10-11)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and the authors fix it at stop point A (2026-10-11)"
   },
   {
    "candidate_id": "ministral3_14b",
@@ -408,12 +408,12 @@
      "device_map": "auto",
      "local_files_only": true,
      "license_reviewed": true,
-     "license_review_reference": "Ruide 2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
+     "license_review_reference": "2026-10-11, round-2 A segment: approved; Apache License 2.0 (model card), not a gated repository",
      "trust_remote_code": false
     }
    },
-   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
-   "batch_note": "B 32 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: peak reserved 76.30 GiB + 3 GiB margin > 79.25 GiB, exit 13); 24 is the next value of the plan 10.8 grid, per Ruide 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 24"
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (2026-10-11)",
+   "batch_note": "B 32 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: peak reserved 76.30 GiB + 3 GiB margin > 79.25 GiB, exit 13); 24 is the next value of the plan 10.8 grid, per the authors, 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 24"
   },
   {
    "candidate_id": "glmz1_9b",
@@ -490,8 +490,8 @@
      "trust_remote_code": false
     }
    },
-   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
-   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and Ruide fixes it at stop point A (Ruide 2026-10-11)"
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (2026-10-11)",
+   "batch_note": "B from the memory and cost model (plan 10.12); the GPU precheck measures it and the authors fix it at stop point A (2026-10-11)"
   },
   {
    "candidate_id": "r1_llama_8b",
@@ -567,13 +567,13 @@
      "trust_remote_code": false
     }
    },
-   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (Ruide 2026-10-11)",
-   "batch_note": "B 48 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: CUDA out of memory in the prefill of the full-size run, 78.37 GiB in use, 13.73 GiB of it reserved but unallocated); 32 is the next value of the plan 10.8 grid, per Ruide 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 32",
+   "verdict_tokens_note": "' Yes' / ' No' are single tokens after 'Verdict:' in this tokenizer (checked 2026-10-11); preflight's greedy check on the pod decides (2026-10-11)",
+   "batch_note": "B 48 from the memory and cost model (plan 10.12) did not fit in the GPU precheck (2026-10-11: CUDA out of memory in the prefill of the full-size run, 78.37 GiB in use, 13.73 GiB of it reserved but unallocated); 32 is the next value of the plan 10.8 grid, per the authors, 2026-10-11 (B = the largest that the precheck measures as fitting); the precheck measures it at 32",
    "notes": [
-    "preflight (B segment 2026-10-11, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (Ruide 2026-10-11 pre-decision; 2026-10-12: handled as round 1's ds_llm_chat); error score right / wrong: 2 + 3 = 0.0000440 / 0.0001398, 7 x 8 = 0.0001795 / 0.0001795 (equal, so not higher); all four toy items scored near zero. Recorded beside its discrimination on the 300 screening states (p-weighted, tau in sample; runs/math_vprobe2/20261012T044451Z_screen): AUROC 0.778, TPR 0.587, FPR 0.147, TPR - r 0.383, miss rate 0.413"
+    "preflight (B segment 2026-10-11, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (2026-10-11 pre-decision; 2026-10-12: handled as round 1's ds_llm_chat); error score right / wrong: 2 + 3 = 0.0000440 / 0.0001398, 7 x 8 = 0.0001795 / 0.0001795 (equal, so not higher); all four toy items scored near zero. Recorded beside its discrimination on the 300 screening states (p-weighted, tau in sample; runs/math_vprobe2/20261012T044451Z_screen): AUROC 0.778, TPR 0.587, FPR 0.147, TPR - r 0.383, miss rate 0.413"
    ],
    "accepted_preflight_failures": {
-    "direction": "Ruide 2026-10-11 (direction failure: still scored, recorded) and 2026-10-12 (V2; handled as round 1's ds_llm_chat)"
+    "direction": "2026-10-11 (direction failure: still scored, recorded) and 2026-10-12 (V2; handled as round 1's ds_llm_chat)"
    }
   }
  ],
@@ -593,7 +593,7 @@
     "prealgebra/test-00000-of-00001.parquet",
     "precalculus/test-00000-of-00001.parquet"
    ],
-   "why": "PRM800K (ThinkPRM, DeepCritic) holds 4.5K MATH test problems (Ruide 2026-10-11)"
+   "why": "PRM800K (ThinkPRM, DeepCritic) holds 4.5K MATH test problems (2026-10-11)"
   }
  ],
  "excluded_candidates": [
@@ -602,21 +602,21 @@
    "model_id": "google/gemma-4-31B-it",
    "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
    "params_b": 31.3,
-   "reason": "Ruide 2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (31.3B)"
+   "reason": "2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (31.3B)"
   },
   {
    "candidate_id": "olmo31_32b",
    "model_id": "allenai/Olmo-3.1-32B-Think",
    "revision": "832c3f543499af8fe68b88359501de9cb7840544",
    "params_b": 32.2,
-   "reason": "Ruide 2026-10-11: the source rule (M.4, C.28 hard constraint 2) -- the Olmo 3 report documents reasoning traces generated by GPT-4.1 and o4-mini in the base's midtraining; excluded. (It is also above the 15B cap.) The rule can only be applied to what model builders disclose (C.28 limitation)"
+   "reason": "2026-10-11: the source rule (M.4, C.28 hard constraint 2) -- the Olmo 3 report documents reasoning traces generated by GPT-4.1 and o4-mini in the base's midtraining; excluded. (It is also above the 15B cap.) The rule can only be applied to what model builders disclose (C.28 limitation)"
   },
   {
    "candidate_id": "glmz1_32b",
    "model_id": "zai-org/GLM-Z1-32B-0414",
    "revision": "8eb2858992c1f749e2a6d4075455decc2484722d",
    "params_b": 32.6,
-   "reason": "Ruide 2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (32.6B)"
+   "reason": "2026-10-11: parameter cap, dense models of at most 15B parameters (M.4, C.28): a verifier must cost far less than the controller and be of the size of detox's verifiers (32.6B)"
   }
  ],
  "full_stage": {
@@ -627,13 +627,13 @@
    "seed_key": "round2_pool_sample"
   },
   "weights": "pool metrics with the strata weighted p and 1 - p (as in the screening); tau on D_fit (all 1,500, Core fit_tau)",
-  "decided": "Ruide 2026-10-11 (C.28)",
+  "decided": "2026-10-11 (C.28)",
   "n_states": 2424,
   "inputs": "data/math/vprobe2/full_inputs.jsonl sha256 9d02cbabb72309f0e4d75608bad6bca766d7738ef034a912740b4228387fa040: 1,200 D_fit + 224 pool E-INCORRECT + 1,000 pool E-CORRECT"
  },
  "overlap_note": "round 2 checks math_test here and reuses round 1's math_train and gsm8k_train (configs/math/step02_vprobe.json); data/math/vprobe2/overlap.json holds all three and their union, which the full stage's excl-overlap column drops",
  "stop_point_b": {
-  "decided": "Ruide 2026-10-12, stop point B, on runs/math_vprobe2/20261012T044451Z_screen (report.md sha256 a8880bc3fc01834683e315174e33f863de9959d5c5e17dea0d82fbf0ef7afa04)",
+  "decided": "2026-10-12, stop point B, on runs/math_vprobe2/20261012T044451Z_screen (report.md sha256 a8880bc3fc01834683e315174e33f863de9959d5c5e17dea0d82fbf0ef7afa04)",
   "v1": "glmz1_9b",
   "v2": "r1_llama_8b",
   "backup": null,
@@ -642,7 +642,7 @@
    "r1_llama_8b"
   ],
   "delta_r": 0.1,
-  "verification": "formal C.19 table of the full stage; delta_R 0.10: each V needs TPR - r >= 0.20 and the Exp 2 floor (miss rate >= 0.10 on the pool's E-INCORRECT); otherwise stop and report, Ruide decides (no backup)",
+  "verification": "formal C.19 table of the full stage; delta_R 0.10: each V needs TPR - r >= 0.20 and the Exp 2 floor (miss rate >= 0.10 on the pool's E-INCORRECT); otherwise stop and report, the authors decide (no backup)",
   "full_stage_result": {
    "run": "runs/math_vprobe2/20261012T181148Z_full",
    "report_sha256": "3b5a807a8f2c6753ca1e9b8fc43524a9f13666fea8c250e8427fc3732291118b",

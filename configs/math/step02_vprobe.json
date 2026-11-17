@@ -1,6 +1,6 @@
 {
   "schema": "math-step02-vprobe-v1",
-  "status": "Reviewed by Ruide 2026-10-08 (A segment): candidate list, the six licences, Qwen PRM trust_remote_code at its pinned revision, and the judge settings approved. Added 2026-10-08 (second round): the Gemma judge gemma4_12b_it; its licence (Apache 2.0, not gated) and the 12B size approved by Ruide the same day",
+  "status": "Reviewed by the authors, 2026-10-08 (A segment): candidate list, the six licences, Qwen PRM trust_remote_code at its pinned revision, and the judge settings approved. Added 2026-10-08 (second round): the Gemma judge gemma4_12b_it; its licence (Apache 2.0, not gated) and the 12B size approved by the authors the same day",
   "basis": "protocol v1.1 M.4, M.12; 0.5 step 2; II.2.4; II.4.1-II.4.3; II.10; C.19; C.20",
   "run_dir": "runs/math_formal_n9000",
   "inputs": "data/math/vprobe/probe_inputs.jsonl",
@@ -48,7 +48,7 @@
     },
     "gemma_judge": {
       "form": "llm_judge",
-      "note": "Google LLM judge (Ruide 2026-10-08): the latest Gemma generation that transformers 5.16.1 supports natively and that fits an A100 80GB in bf16 (Gemma 4); one model, the same prompt and adapter as the DeepSeek judges, its own chat template",
+      "note": "Google LLM judge (2026-10-08): the latest Gemma generation that transformers 5.16.1 supports natively and that fits an A100 80GB in bf16 (Gemma 4); one model, the same prompt and adapter as the DeepSeek judges, its own chat template",
       "selection": "Gemma 4 instruction-tuned checkpoints: E2B, E4B, 12B (dense, encoder-free), 26B-A4B (mixture of experts), 31B (dense). Taken: the largest one that runs under the judges' approved settings unchanged (bf16, eager, fixed batch [8, 4096]) and whose score cannot depend on its batch neighbours by construction (II.10): 31B exceeds 80 GB at that shape (about 58 GiB weights + 24 GiB eager attention), 26B-A4B routes tokens to experts, so the per-expert matrix shapes change with the batch content; 12B remains. Chosen before any score."
     }
   },
@@ -93,7 +93,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; trust_remote_code approved for the repository's configuration_qwen2_rm.py and modeling_qwen2_rm.py at revision 0610740060112df12585d00a1c5f4624d2f59051 only (their sha256 are pinned by rafr_model_manifest.json)",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; trust_remote_code approved for the repository's configuration_qwen2_rm.py and modeling_qwen2_rm.py at revision 0610740060112df12585d00a1c5f4624d2f59051 only (their sha256 are pinned by rafr_model_manifest.json)",
           "trust_remote_code": true
         }
       },
@@ -137,7 +137,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; NOTE: the repository publishes no licence (no license field, no LICENSE file)",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; NOTE: the repository publishes no licence (no license field, no LICENSE file)",
           "trust_remote_code": false
         }
       },
@@ -149,7 +149,7 @@
         "authors": "Peiyi Wang, Damai Dai, Zhifang Sui (Peking University); Runxin Xu, Deli Chen, Yu Wu (DeepSeek-AI); Lei Li (HKU); Zhihong Shao (Tsinghua); Yifei Li (OSU); arXiv v3: first author's contribution during an internship at DeepSeek-AI",
         "base_model": "Mistral-7B (the released 7B PRM, the paper's RL setting)",
         "training_data": "GSM8K and MATH training problems; solutions from 7B / 13B generators trained one epoch on those sets; step labels from LLemma-7B as completer (trained on MetaMATH), hard estimation, N = 8",
-        "vendor_overlap": "training source overlaps DeepSeek-AI (3 of 9 authors), base differs; a note only (Ruide 2026-10-08): math_shepherd x a DeepSeek judge is scored and analysed like every pair M.4 allows, and V1 / V2 follow the C.19 pair rule once the B-segment tables exist"
+        "vendor_overlap": "training source overlaps DeepSeek-AI (3 of 9 authors), base differs; a note only (2026-10-08): math_shepherd x a DeepSeek judge is scored and analysed like every pair M.4 allows, and V1 / V2 follow the C.19 pair rule once the B-segment tables exist"
       }
     },
     {
@@ -193,7 +193,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
           "trust_remote_code": false
         }
       },
@@ -243,7 +243,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
           "trust_remote_code": false
         }
       },
@@ -257,7 +257,7 @@
       "family": "deepseek_judge",
       "params_b": 6.9,
       "notes": [
-        "preflight (B segment 2026-10-09, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (Ruide); P(No) right / wrong: 2 + 3 = 0.00407 / 0.00359 (wrong lower), 7 x 8 = 0.00034 / 0.00063; greedy verdict Yes on all four toy items (P(Yes) 0.994-0.998)"
+        "preflight (B segment 2026-10-09, real weights): direction check FAILED (exit 7) and the candidate was scored regardless (the authors); P(No) right / wrong: 2 + 3 = 0.00407 / 0.00359 (wrong lower), 7 x 8 = 0.00034 / 0.00063; greedy verdict Yes on all four toy items (P(Yes) 0.994-0.998)"
       ],
       "license": {
         "name": "DEEPSEEK LICENSE AGREEMENT v1.0 (model card: license_name deepseek; no LICENSE file in the repo)",
@@ -295,7 +295,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0 per the model card (no LICENSE file in the repository)",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0 per the model card (no LICENSE file in the repository)",
           "trust_remote_code": false
         }
       },
@@ -308,7 +308,7 @@
       "candidate_id": "ds_v2_lite_chat",
       "family": "deepseek_judge",
       "params_b": 15.7,
-      "not_scored": "Ruide 2026-10-09: not scored. Preflight (B segment, real weights) failed two checks: batch invariance (a score alone differs from the same item in a batch; mixture of experts), which II.10 requires, and the direction check (exit 7). P(No) right / wrong: 2 + 3 = 0.01799 / 0.02298, 7 x 8 = 0.01799 / 0.01406 (wrong lower); greedy verdict ' Yes' on all four toy items (P 0.92-0.93)",
+      "not_scored": "2026-10-09: not scored. Preflight (B segment, real weights) failed two checks: batch invariance (a score alone differs from the same item in a batch; mixture of experts), which II.10 requires, and the direction check (exit 7). P(No) right / wrong: 2 + 3 = 0.01799 / 0.02298, 7 x 8 = 0.01799 / 0.01406 (wrong lower); greedy verdict ' Yes' on all four toy items (P 0.92-0.93)",
       "license": {
         "name": "DEEPSEEK LICENSE AGREEMENT v1.0",
         "file_in_repo": "LICENSE"
@@ -346,7 +346,7 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
+          "license_review_reference": "2026-10-08, A-segment review of docs/math/step02_probe_plan.md: approved; DEEPSEEK LICENSE AGREEMENT v1.0",
           "trust_remote_code": false
         }
       },
@@ -396,12 +396,12 @@
           "device_map": "auto",
           "local_files_only": true,
           "license_reviewed": true,
-          "license_review_reference": "Ruide 2026-10-08, second-round review of docs/math/step02_probe_plan.md: approved; Apache License 2.0, not a gated repository; model size 12B",
+          "license_review_reference": "2026-10-08, second-round review of docs/math/step02_probe_plan.md: approved; Apache License 2.0, not a gated repository; model size 12B",
           "trust_remote_code": false
         }
       },
       "reviewed": [
-        "license: approved by Ruide 2026-10-08 (Apache License 2.0, not a gated repository)",
+        "license: approved by the authors, 2026-10-08 (Apache License 2.0, not a gated repository)",
         "verdict tokens: proposed \"Yes\" / \"No\" without a leading space (the chat template's generation prompt ends with an empty thought channel, '<|turn>model\\n<|channel>thought\\n<channel|>'); each one token (10784 / 3771) in the pinned tokenizer; confirmed on the pod by greedy decoding (runbook 5)",
         "native transformers Gemma4Unified implementation (model_type gemma4_unified; no repository code)"
       ]
