@@ -1,6 +1,8 @@
 # When Do Explicit Verifier Verdicts Help LLM Agents? Evidence Quality and Repair in Self-Correction
 
-Code for the paper. Paper: `ARXIV_LINK_TBD`. Data: `DATA_DOWNLOAD_URL_TBD`.
+Code for the paper. Paper: `ARXIV_LINK_TBD`. Data: `release_data.zip` on the
+[latest GitHub release](https://github.com/yinruide/explicit-verifier-verdicts/releases/latest)
+(see [Data](#data)).
 
 > **Content warning.** The detoxification data (ParaDetox source sentences, the model's rewrites
 > of them and the evaluator's reasons, inside the released run records) contain offensive and
@@ -48,21 +50,42 @@ needed for detoxification's descriptive semantic-preservation report.
 
 ## Data
 
-Download the data archive from `DATA_DOWNLOAD_URL_TBD` and unpack it anywhere:
+The data archive, `release_data.zip` (about 28 MB; 216 MB unpacked), is attached to the latest
+GitHub release. Download it, unpack it into the data directory and check every file against the
+sha256 in `MANIFEST.tsv`:
+
+```bash
+curl -L -O https://github.com/yinruide/explicit-verifier-verdicts/releases/latest/download/release_data.zip
+unzip -q release_data.zip      # creates the data directory release_data/
+(cd release_data && tail -n +2 MANIFEST.tsv | awk -F'\t' '{print $3 "  " $1}' | sha256sum -c --quiet) \
+  && echo "all files match MANIFEST.tsv"
+```
+
+`sha256sum -c` names any file whose sha256 differs and exits non-zero (on macOS, replace
+`sha256sum -c --quiet` with `shasum -a 256 -c`). Without `unzip` or `sha256sum` (on Windows, for
+example), Python does both steps:
+
+```bash
+python -c "import zipfile; zipfile.ZipFile('release_data.zip').extractall('.')"
+python -c "import csv, hashlib, pathlib, sys; d = pathlib.Path('release_data'); rows = list(csv.DictReader(open(d / 'MANIFEST.tsv', encoding='utf-8'), delimiter='\t')); bad = [r['path'] for r in rows if hashlib.sha256((d / r['path']).read_bytes()).hexdigest() != r['sha256']]; print(len(rows) - len(bad), 'of', len(rows), 'files match MANIFEST.tsv'); bad and sys.exit('differ: ' + ', '.join(bad))"
+```
+
+The data directory then holds:
 
 ```
-<data dir>/
+release_data/
   runs/      run records of every experiment the paper reports, and the original analysis outputs
   data/      splits, first-attempt states, labels and verifier scores, gate diagnostics, cohorts
   frozen/    parameters fixed before the experiments that use them (see below)
   LICENSE, DATA_LICENSE.md        CC BY-NC-SA 4.0 and the upstream terms
-  MANIFEST.tsv, MANIFEST.json     every file with its size and sha256
+  MANIFEST.tsv, MANIFEST.json     every file with its size and sha256 (the manifests list the
+                                  other 288 files, not themselves)
 ```
 
 Point the code at it:
 
 ```bash
-export RAFR_DATA_DIR=/path/to/data
+export RAFR_DATA_DIR=$PWD/release_data
 ```
 
 **`frozen/`** sits in the data directory, not in git. It holds the parameters each later stage
