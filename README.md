@@ -1,20 +1,21 @@
 # When Do Explicit Verifier Verdicts Help LLM Agents? Evidence Quality and Repair in Self-Correction
 
-Code for the paper. Paper: `ARXIV_LINK_TBD`. Data: `release_data.zip` on the
-[latest GitHub release](https://github.com/yinruide/explicit-verifier-verdicts/releases/latest)
-(see [Data](#data)).
+Ruide Yin, Nanyi Zhao (New York University)
 
-> **Content warning.** The detoxification data (ParaDetox source sentences, the model's rewrites
-> of them and the evaluator's reasons, inside the released run records) contain offensive and
-> toxic language.
+[Paper (PDF)](paper/explicit_verifier_verdicts.pdf) · [Data (release v1.0)](https://github.com/yinruide/explicit-verifier-verdicts/releases/tag/v1.0)
 
 ## Abstract
 
 LLM agents in generate-check-revise loops accept or revise their outputs based on reports from imperfect automated verifiers, yet how those reports are shown to the agent is usually an ad hoc choice. We show that this choice changes an agent's accept/rewrite decisions and the final outcome of the loop when the evidence is identical. Holding first attempts and verifier scores fixed, we vary only the presentation (no verifier output, raw scores and thresholds, or explicit verdicts, margins and cross-verifier agreement), cross it with a hidden degradation of the scores, and run the full revision loop in text detoxification and mathematical problem solving. In mathematics, explicit fields lowered false accepts by 10.7 points on intact scores and by 1.3 points once every score had been replaced; stating each verdict accounted for most of the gain without raising false rejects, and lowered terminal failure by 3.7 points. In detoxification, where the agent already used raw scores as well as the best fixed rule, showing verifier output lowered terminal failure from 0.70 to 0.47 and explicit fields changed single decisions by at most 3 points. The design separates presentation from evidence quality and single decisions from final outputs, and applies to other agents and verifiers.
 
+> **Content warning.** The detoxification data (ParaDetox source sentences, the model's rewrites
+> of them and the evaluator's reasons, inside the released run records) contain offensive and
+> toxic language.
+
 ## Licences
 
 * Code (this repository): **Apache-2.0** (`LICENSE`).
+* Paper (the PDF in `paper/`): not covered by Apache-2.0; copyright is held by the authors.
 * Data (the released run records): **CC BY-NC-SA 4.0**, non-commercial research use only. The data
   archive carries `LICENSE` (the licence text) and `DATA_LICENSE.md`, which lists every upstream
   source (datasets, verifier models, API providers), its terms and links; users of the data must
@@ -30,6 +31,7 @@ LLM agents in generate-check-revise loops accept or revise their outputs based o
 | `scripts/gpu/` | GPU-side workers of the mathematics stages (verifier scoring, Experiment 2 loops); see [GPU workers](#gpu-workers-for-the-mathematics-stages) |
 | `configs/` | Run configurations (models, seeds, channel, experiments) as used for the paper |
 | `tests/` | Offline test suite (no API call, no GPU) |
+| `paper/` | The paper (PDF) |
 
 The data (run records and frozen parameter files) are not in git. They live in a separate data
 directory that the code finds through the `RAFR_DATA_DIR` environment variable.
@@ -256,10 +258,11 @@ the model outputs in the run records.
 ## Citation
 
 ```bibtex
-@misc{TBD,
-  title  = {When Do Explicit Verifier Verdicts Help LLM Agents? Evidence Quality and Repair in Self-Correction},
-  author = {TBD},
-  year   = {TBD},
-  note   = {arXiv:TBD}
+@misc{yin2026explicit,
+  title        = {When Do Explicit Verifier Verdicts Help {LLM} Agents? Evidence Quality and Repair in Self-Correction},
+  author       = {Yin, Ruide and Zhao, Nanyi},
+  year         = {2026},
+  howpublished = {\url{https://github.com/yinruide/explicit-verifier-verdicts}},
+  note         = {Preprint}
 }
 ```
