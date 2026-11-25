@@ -2,7 +2,7 @@
 
 Ruide Yin, Nanyi Zhao (New York University)
 
-[Paper (PDF)](paper/explicit_verifier_verdicts.pdf) · [Data (release v1.0)](https://github.com/yinruide/explicit-verifier-verdicts/releases/tag/v1.0)
+[Paper (PDF)](https://yinruide.github.io/explicit-verifier-verdicts/paper/explicit_verifier_verdicts.pdf) · [Data (release v1.0)](https://github.com/yinruide/explicit-verifier-verdicts/releases/tag/v1.0)
 
 ## Abstract
 
